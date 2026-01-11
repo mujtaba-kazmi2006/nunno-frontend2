@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { TrendingUp, TrendingDown, ChevronDown, ChevronUp, Thermometer } from 'lucide-react'
 import { API_ENDPOINTS } from '../config/api'
+import useBinanceWebSocket from '../hooks/useBinanceWebSocket'
 
 export default function MiniWidgets() {
+    const { prices, isConnected } = useBinanceWebSocket(['BTCUSDT', 'ETHUSDT'])
     const [btcData, setBtcData] = useState(null)
     const [ethData, setEthData] = useState(null)
     const [temperature, setTemperature] = useState(50)
@@ -10,25 +12,27 @@ export default function MiniWidgets() {
     const [isExpanded, setIsExpanded] = useState(false)
     const [loading, setLoading] = useState(true)
 
+    // Update BTC and ETH data from WebSocket
     useEffect(() => {
-        fetchAllData()
-        const interval = setInterval(fetchAllData, 60000)
+        if (prices['BTCUSDT']) {
+            setBtcData(prices['BTCUSDT'])
+            setLoading(false)
+        }
+        if (prices['ETHUSDT']) {
+            setEthData(prices['ETHUSDT'])
+            setLoading(false)
+        }
+    }, [prices])
+
+    // Fetch market sentiment separately (less frequent updates)
+    useEffect(() => {
+        fetchSentiment()
+        const interval = setInterval(fetchSentiment, 60000) // Every 60 seconds
         return () => clearInterval(interval)
     }, [])
 
-    const fetchAllData = async () => {
+    const fetchSentiment = async () => {
         try {
-            // Fetch BTC price
-            const btcResponse = await fetch(API_ENDPOINTS.PRICE_HISTORY('BTCUSDT'))
-            const btcResult = await btcResponse.json()
-            setBtcData(btcResult)
-
-            // Fetch ETH price
-            const ethResponse = await fetch(API_ENDPOINTS.PRICE_HISTORY('ETHUSDT'))
-            const ethResult = await ethResponse.json()
-            setEthData(ethResult)
-
-            // Fetch market sentiment
             const sentimentResponse = await fetch(API_ENDPOINTS.NEWS('BTCUSDT'))
             const sentimentData = await sentimentResponse.json()
             if (sentimentData.fear_greed_index) {
@@ -36,9 +40,7 @@ export default function MiniWidgets() {
                 setSentiment(sentimentData.sentiment)
             }
         } catch (error) {
-            console.error('Failed to fetch widget data:', error)
-        } finally {
-            setLoading(false)
+            console.error('Failed to fetch sentiment data:', error)
         }
     }
 

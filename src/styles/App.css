@@ -612,12 +612,75 @@ body {
 .signal-chip {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm);
-    background: var(--bg-tertiary);
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    color: var(--text-secondary);
+    gap: 6px;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #4f46e5;
+    transition: all 0.2s ease;
+}
+
+.signal-chip.bullish {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #065f46;
+}
+
+.signal-chip.bearish {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #991b1b;
+}
+
+.signal-chip.neutral {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    color: #374151;
+}
+
+.signal-chip:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.signal-chip svg {
+    flex-shrink: 0;
+}
+
+.signal-strength {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.7;
+}
+
+.show-more-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.show-more-btn:hover {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border-color: #d1d5db;
+    color: #4b5563;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.show-more-btn:active {
+    transform: translateY(0);
 }
 
 .levels-grid {
@@ -1051,85 +1114,92 @@ body {
     .desktop-only {
         display: none !important;
     }
-}
 
-/* Responsive Design */
-@media (max-width: 1024px) {
+    /* Make main container full-screen on mobile */
     .main-container {
-        grid-template-columns: 280px 1fr;
-        gap: var(--spacing-lg);
-        padding: var(--spacing-lg);
-    }
-}
-
-@media (max-width: 768px) {
-    .main-container {
-        grid-template-columns: 1fr;
-        padding: var(--spacing-md);
         display: flex;
         flex-direction: column;
-        overflow-y: auto;
-        /* Allow scrolling on mobile */
-        height: auto;
-        /* Override fixed height */
+        height: 100vh;
+        padding: 0;
+        gap: 0;
     }
 
-    .sidebar {
-        order: 2;
-        /* Move widgets below chat on mobile, or keep above? */
-        /* Let's put widgets atop */
-        order: -1;
-        flex-direction: row;
-        /* Horizontal scroll or stack? */
-        overflow-x: auto;
-        padding-bottom: var(--spacing-sm);
-        flex-shrink: 0;
-        height: auto;
-    }
-
-    /* Stack widgets vertically if they don't fit horizontally */
-    .sidebar>* {
-        min-width: 250px;
-        flex-shrink: 0;
-    }
-
+    /* Chat takes full screen on mobile */
     .chat-container {
-        height: 600px;
-        /* Min height for chat */
-        min-height: 60vh;
+        flex: 1;
+        height: 100vh;
+        min-height: 100vh;
     }
 
     .chat-interface {
         height: 100%;
-        border-radius: var(--radius-lg);
+        border-radius: 0;
+        border: none;
     }
 
-    /* Adjust Hamburger positioning space */
-    .main-container {
+    /* Better touch targets */
+    button,
+    a,
+    input,
+    textarea {
+        min-height: 44px;
+        touch-action: manipulation;
+    }
+
+    /* Reduce padding on mobile */
+    .messages-container {
+        padding: var(--spacing-md);
         padding-top: 60px;
-        /* Make room for the button */
+        /* Space for menu button */
+    }
+
+    .input-container {
+        padding: var(--spacing-md);
+    }
+
+    /* Optimize suggestion chips for mobile */
+    .suggestion-chip {
+        font-size: 0.8125rem;
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+
+    /* Educational card mobile adjustments */
+    .educational-card {
+        margin-top: var(--spacing-sm);
+    }
+
+    .card-body {
+        padding: var(--spacing-md);
+    }
+
+    /* Signals grid - single column on mobile */
+    .signals-grid {
+        grid-template-columns: 1fr;
     }
 
     /* Reduce chat font sizes for mobile readability */
     .message-text {
         font-size: 0.875rem;
-        /* 14px on mobile */
         padding: var(--spacing-sm) var(--spacing-md);
         line-height: 1.5;
     }
 
     .message-heading {
         font-size: 0.9375rem;
-        /* Slightly smaller headings on mobile */
     }
 
     .message-content {
         max-width: 100%;
-        /* Use full width on mobile */
     }
 }
 
 @media (max-width: 480px) {
+
+    /* Adjust for mobile menu button */
+    .main-container {
+        padding-top: 0;
+    }
+
     .sidebar {
         flex-direction: column;
         /* Stack widgets vertically on very small screens */

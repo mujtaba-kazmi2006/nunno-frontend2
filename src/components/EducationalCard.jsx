@@ -1,7 +1,10 @@
-import { TrendingUp, TrendingDown, AlertCircle, CheckCircle } from 'lucide-react'
+import { TrendingUp, TrendingDown, AlertCircle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import PredictionChart from './PredictionChart'
+import { useState } from 'react'
 
 export default function EducationalCard({ data }) {
+    const [showAllIndicators, setShowAllIndicators] = useState(false)
+
     if (!data) return null
 
     const getConfidenceColor = (confidence) => {
@@ -21,6 +24,17 @@ export default function EducationalCard({ data }) {
         if (bias === 'bearish') return 'bearish'
         return 'neutral'
     }
+
+    // Combine all signals from confluences
+    const allSignals = [
+        ...(data.confluences?.bullish_signals || []).map(s => ({ ...s, type: 'bullish' })),
+        ...(data.confluences?.bearish_signals || []).map(s => ({ ...s, type: 'bearish' })),
+        ...(data.confluences?.neutral_signals || []).map(s => ({ ...s, type: 'neutral' }))
+    ]
+
+    // Fallback to old signals array if confluences not available
+    const displaySignals = allSignals.length > 0 ? allSignals : (data.signals || [])
+    const signalsToShow = showAllIndicators ? displaySignals : displaySignals.slice(0, 6)
 
     return (
         <div className={`educational-card ${getBiasClass(data.bias)}`}>
@@ -82,15 +96,44 @@ export default function EducationalCard({ data }) {
                 )}
 
                 <div className="signals-section">
-                    <h5>📊 Key Signals</h5>
+                    <h5>📊 Technical Indicators ({displaySignals.length} total)</h5>
                     <div className="signals-grid">
-                        {data.signals?.slice(0, 4).map((signal, index) => (
-                            <div key={index} className="signal-chip">
-                                <CheckCircle size={14} />
-                                <span>{signal.replace(/_/g, ' ')}</span>
-                            </div>
-                        ))}
+                        {signalsToShow.map((signal, index) => {
+                            // Handle both old format (string) and new format (object)
+                            const isObject = typeof signal === 'object'
+                            const displayText = isObject ? signal.indicator : signal.replace(/_/g, ' ')
+                            const signalType = isObject ? signal.type : 'neutral'
+
+                            return (
+                                <div key={index} className={`signal-chip ${signalType}`} title={isObject ? signal.condition : ''}>
+                                    <CheckCircle size={14} />
+                                    <span>{displayText}</span>
+                                    {isObject && signal.strength && (
+                                        <span className="signal-strength">{signal.strength}</span>
+                                    )}
+                                </div>
+                            )
+                        })}
                     </div>
+
+                    {displaySignals.length > 6 && (
+                        <button
+                            className="show-more-btn"
+                            onClick={() => setShowAllIndicators(!showAllIndicators)}
+                        >
+                            {showAllIndicators ? (
+                                <>
+                                    <ChevronUp size={16} />
+                                    Show Less
+                                </>
+                            ) : (
+                                <>
+                                    <ChevronDown size={16} />
+                                    Show {displaySignals.length - 6} More Indicators
+                                </>
+                            )}
+                        </button>
+                    )}
                 </div>
 
                 {data.key_levels && (

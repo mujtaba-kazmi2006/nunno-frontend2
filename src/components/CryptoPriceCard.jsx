@@ -1,29 +1,34 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { AreaChart, Area, ResponsiveContainer, YAxis } from 'recharts'
 import { TrendingUp, TrendingDown } from 'lucide-react'
-import { API_ENDPOINTS } from '../config/api'
+import useBinanceWebSocket from '../hooks/useBinanceWebSocket'
 
 export default function CryptoPriceCard({ ticker, name, onClick }) {
-    const [data, setData] = useState(null)
+    const { prices, isConnected } = useBinanceWebSocket([ticker])
+    const [priceData, setPriceData] = useState(null)
+    const [chartData, setChartData] = useState(null)
     const [loading, setLoading] = useState(true)
+    const lastChartUpdate = useRef(0)
 
     useEffect(() => {
-        fetchPriceData()
-        const interval = setInterval(fetchPriceData, 60000)
-        return () => clearInterval(interval)
-    }, [ticker])
+        // Update data when WebSocket provides new prices
+        if (prices[ticker]) {
+            // Always update price (text)
+            setPriceData(prev => ({
+                current_price: prices[ticker].current_price,
+                percent_change: prices[ticker].percent_change
+            }))
 
-    const fetchPriceData = async () => {
-        try {
-            const response = await fetch(API_ENDPOINTS.PRICE_HISTORY(ticker))
-            const result = await response.json()
-            setData(result)
-        } catch (error) {
-            console.error(`Failed to fetch price for ${ticker}`, error)
-        } finally {
+            // Update chart only every 10 seconds (10000ms)
+            const now = Date.now()
+            if (now - lastChartUpdate.current > 10000 || !chartData) {
+                setChartData(prices[ticker].history)
+                lastChartUpdate.current = now
+            }
+
             setLoading(false)
         }
-    }
+    }, [prices, ticker])
 
     if (loading) {
         return (
@@ -40,9 +45,9 @@ export default function CryptoPriceCard({ ticker, name, onClick }) {
         )
     }
 
-    if (!data) return null
+    if (!priceData || !chartData) return null
 
-    const isPositive = data.percent_change >= 0
+    const isPositive = priceData.percent_change >= 0
     const color = isPositive ? '#22c55e' : '#ef4444'
     const gradientId = `colorPrice${ticker}`
 
@@ -63,12 +68,12 @@ export default function CryptoPriceCard({ ticker, name, onClick }) {
                     <h4 className="text-gray-500 text-sm font-medium">{name}</h4>
                     <div className="flex items-baseline gap-2">
                         <span className="text-xl font-bold text-gray-900">
-                            ${data.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            ${priceData.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     </div>
                     <div className={`flex items-center gap-1 text-xs font-semibold mt-1 ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
                         {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                        {Math.abs(data.percent_change).toFixed(2)}%
+                        {Math.abs(priceData.percent_change).toFixed(2)}%
                     </div>
                 </div>
                 <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-indigo-50 transition-colors">
@@ -83,7 +88,7 @@ export default function CryptoPriceCard({ ticker, name, onClick }) {
 
             <div className="h-16 w-full mt-2">
                 <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data.history}>
+                    <AreaChart data={chartData}>
                         <defs>
                             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="5%" stopColor={color} stopOpacity={0.2} />
@@ -98,7 +103,7 @@ export default function CryptoPriceCard({ ticker, name, onClick }) {
                             fillOpacity={1}
                             fill={`url(#${gradientId})`}
                             isAnimationActive={true}
-                            animationDuration={1500}
+                            animationDuration={500}
                         />
                         <YAxis domain={['auto', 'auto']} hide />
                     </AreaChart>

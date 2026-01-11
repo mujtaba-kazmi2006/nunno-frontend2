@@ -1,16 +1,28 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import ChatInterface from './components/ChatInterface'
 import MarketTemperature from './components/MarketTemperature'
 import CryptoPriceCard from './components/CryptoPriceCard'
-import NunnoPricing from './components/NunnoPricing'
 import CollapsibleSidebar from './components/CollapsibleSidebar'
-import MiniWidgets from './components/MiniWidgets'
 import { Menu } from 'lucide-react'
-
 import CryptoDetailModal from './components/CryptoDetailModal'
 
-function Dashboard({ userName, setUserName, userAge }) {
+// Lazy load non-critical components
+const NunnoPricing = lazy(() => import('./components/NunnoPricing'))
+const AccountSettings = lazy(() => import('./components/AccountSettings'))
+const ChatHistory = lazy(() => import('./components/ChatHistory'))
+const HelpSupport = lazy(() => import('./components/HelpSupport'))
+
+// Loading fallback component
+function LoadingFallback() {
+    return (
+        <div className="flex items-center justify-center h-full">
+            <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+        </div>
+    )
+}
+
+function Dashboard({ userAge }) {
     const [selectedTicker, setSelectedTicker] = useState(null);
 
     return (
@@ -30,11 +42,9 @@ function Dashboard({ userName, setUserName, userAge }) {
                 />
             </div>
 
-            {/* Mobile Mini Widgets - Shown only on mobile */}
-            <MiniWidgets />
-
+            {/* Chat Container - Full screen on mobile, normal on desktop */}
             <div className="chat-container">
-                <ChatInterface userName={userName} userAge={userAge} />
+                <ChatInterface userAge={userAge} />
             </div>
 
             <CryptoDetailModal
@@ -46,25 +56,24 @@ function Dashboard({ userName, setUserName, userAge }) {
     )
 }
 
-function MainLayout({ children, userName, setUserName }) {
+function MainLayout({ children }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     return (
         <div className="flex h-screen bg-gray-50 overflow-hidden relative">
             <CollapsibleSidebar
-                userName={userName}
                 isCollapsed={isCollapsed}
                 setIsCollapsed={setIsCollapsed}
             />
 
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
                 {/* Mobile Menu Trigger */}
-                <div className="md:hidden p-4 absolute top-0 left-0 z-10">
+                <div className="md:hidden p-3 absolute top-0 left-0 z-10">
                     <button
                         onClick={() => setIsCollapsed(false)}
-                        className="p-2 bg-white rounded-lg shadow-md text-gray-600 hover:text-indigo-600"
+                        className="p-2.5 bg-white rounded-xl shadow-lg text-gray-600 hover:text-indigo-600 hover:shadow-xl transition-all"
                     >
-                        <Menu size={24} />
+                        <Menu size={22} />
                     </button>
                 </div>
 
@@ -77,16 +86,20 @@ function MainLayout({ children, userName, setUserName }) {
 }
 
 function App() {
-    const [userName, setUserName] = useState('User')
     const [userAge, setUserAge] = useState(18)
 
     return (
         <BrowserRouter>
-            <MainLayout userName={userName} setUserName={setUserName}>
-                <Routes>
-                    <Route path="/" element={<Dashboard userName={userName} setUserName={setUserName} userAge={userAge} />} />
-                    <Route path="/pricing" element={<NunnoPricing />} />
-                </Routes>
+            <MainLayout>
+                <Suspense fallback={<LoadingFallback />}>
+                    <Routes>
+                        <Route path="/" element={<Dashboard userAge={userAge} />} />
+                        <Route path="/pricing" element={<NunnoPricing />} />
+                        <Route path="/settings" element={<AccountSettings />} />
+                        <Route path="/history" element={<ChatHistory />} />
+                        <Route path="/support" element={<HelpSupport />} />
+                    </Routes>
+                </Suspense>
             </MainLayout>
         </BrowserRouter>
     )

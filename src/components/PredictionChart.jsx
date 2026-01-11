@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 export default function PredictionChart({ data, support, resistance, currentPrice, bias }) {
@@ -7,12 +8,14 @@ export default function PredictionChart({ data, support, resistance, currentPric
     const chartColor = bias === 'bullish' ? '#22c55e' : bias === 'bearish' ? '#ef4444' : '#6366f1'
     const gradientId = `colorPrice${Math.random()}`
 
-    // Format data for chart
-    const chartData = data.map((item, index) => ({
-        ...item,
-        index: index,
-        displayTime: index % 10 === 0 ? item.timestamp.split(' ')[0] : '' // Show every 10th label
-    }))
+    // Memoize chart data transformation to prevent recalculation on every render
+    const chartData = useMemo(() => {
+        return data.map((item, index) => ({
+            ...item,
+            index: index,
+            displayTime: index % 10 === 0 ? item.timestamp.split(' ')[0] : '' // Show every 10th label
+        }))
+    }, [data])
 
     return (
         <div className="prediction-chart">
@@ -105,6 +108,7 @@ export default function PredictionChart({ data, support, resistance, currentPric
                         fill="none"
                         dot={false}
                         strokeOpacity={0.6}
+                        isAnimationActive={false}
                     />
                     <Area
                         type="monotone"
@@ -114,6 +118,7 @@ export default function PredictionChart({ data, support, resistance, currentPric
                         fill="none"
                         dot={false}
                         strokeOpacity={0.6}
+                        isAnimationActive={false}
                     />
 
                     {/* Main Price Area */}
@@ -124,7 +129,7 @@ export default function PredictionChart({ data, support, resistance, currentPric
                         strokeWidth={2}
                         fill={`url(#${gradientId})`}
                         dot={false}
-                        animationDuration={800}
+                        animationDuration={300}
                     />
                 </AreaChart>
             </ResponsiveContainer>

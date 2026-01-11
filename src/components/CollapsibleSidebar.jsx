@@ -13,9 +13,14 @@ import {
     UserPlus
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import LoginSignup from './LoginSignup';
+import MarketTemperature from './MarketTemperature';
+import CryptoPriceCard from './CryptoPriceCard';
 
-export default function CollapsibleSidebar({ userName, isCollapsed, setIsCollapsed }) {
-    const [isLoggedIn, setIsLoggedIn] = useState(false); // Mock login state
+export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
+    const { user, logout, isAuthenticated } = useAuth();
+    const [showLoginModal, setShowLoginModal] = useState(false);
     const location = useLocation();
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -63,7 +68,8 @@ export default function CollapsibleSidebar({ userName, isCollapsed, setIsCollaps
                 {/* Toggle Button */}
                 <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className={`absolute -right-3 top-9 bg-indigo-600 text-white p-1.5 rounded-full shadow-lg hover:bg-indigo-700 transition-colors z-50 ${isMobile && isCollapsed ? 'hidden' : ''}`}
+                    className={`absolute -right-3 top-9 bg-indigo-600 text-white p-1.5 rounded-full shadow-lg hover:bg-indigo-700 transition-colors z-50 ${isMobile && isCollapsed ? 'hidden' : ''
+                        }`}
                 >
                     {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
                 </button>
@@ -85,7 +91,7 @@ export default function CollapsibleSidebar({ userName, isCollapsed, setIsCollaps
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto overflow-x-hidden">
+                <nav className="px-4 py-6 space-y-2 overflow-y-auto overflow-x-hidden">
                     {menuItems.map((item) => (
                         <Link
                             key={item.path}
@@ -121,13 +127,45 @@ export default function CollapsibleSidebar({ userName, isCollapsed, setIsCollaps
                             )}
                         </Link>
                     ))}
+                </nav>
 
-                    <div className="my-4 border-t border-gray-100" />
+                {/* Market Widgets Section - Shows ONLY on mobile when expanded */}
+                {!isCollapsed && isMobile && (
+                    <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-4 overflow-y-auto">
+                        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-2">Market Overview</h3>
 
-                    {/* User Items (only if logged in) */}
-                    {isLoggedIn && userItems.map((item) => (
+                        <div className="space-y-2">
+                            {/* Market Temperature Widget */}
+                            <div className="scale-90 origin-top">
+                                <MarketTemperature />
+                            </div>
+
+                            {/* Crypto Price Cards */}
+                            <div className="scale-90 origin-top">
+                                <CryptoPriceCard
+                                    ticker="BTCUSDT"
+                                    name="Bitcoin"
+                                    compact={true}
+                                />
+                            </div>
+
+                            <div className="scale-90 origin-top">
+                                <CryptoPriceCard
+                                    ticker="ETHUSDT"
+                                    name="Ethereum"
+                                    compact={true}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="mt-auto border-t border-gray-100" />
+
+                {/* User Items (only if logged in) */}
+                {isAuthenticated && userItems.map((item) => (
+                    <div key={item.label} className="px-4 py-2">
                         <Link
-                            key={item.label}
                             to={item.path}
                             onClick={() => isMobile && setIsCollapsed(true)}
                             className="flex items-center px-4 py-3 text-gray-600 rounded-xl hover:bg-gray-50 hover:text-indigo-600 transition-all group relative overflow-hidden whitespace-nowrap"
@@ -142,27 +180,27 @@ export default function CollapsibleSidebar({ userName, isCollapsed, setIsCollaps
                                 </div>
                             )}
                         </Link>
-                    ))}
-                </nav>
+                    </div>
+                ))}
 
                 {/* Footer / User Profile */}
                 <div className="p-4 border-t border-gray-100 bg-gray-50/50">
-                    {isLoggedIn ? (
+                    {isAuthenticated ? (
                         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
                             <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold flex-shrink-0 shadow-md transform hover:scale-105 transition-transform cursor-pointer">
-                                {userName.charAt(0)}
+                                {user?.name?.charAt(0) || 'U'}
                             </div>
 
                             {!isCollapsed && (
                                 <div className="flex-1 overflow-hidden">
-                                    <h4 className="text-sm font-bold text-gray-800 truncate">{userName}</h4>
-                                    <p className="text-xs text-gray-500 truncate">Pro Member</p>
+                                    <h4 className="text-sm font-bold text-gray-800 truncate">{user?.name || 'User'}</h4>
+                                    <p className="text-xs text-gray-500 truncate capitalize">{user?.tier} Plan</p>
                                 </div>
                             )}
 
                             {!isCollapsed && (
                                 <button
-                                    onClick={() => setIsLoggedIn(false)}
+                                    onClick={logout}
                                     className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                 >
                                     <LogOut size={18} />
@@ -174,20 +212,23 @@ export default function CollapsibleSidebar({ userName, isCollapsed, setIsCollaps
                             {!isCollapsed ? (
                                 <>
                                     <button
-                                        onClick={() => setIsLoggedIn(true)}
+                                        onClick={() => setShowLoginModal(true)}
                                         className="w-full py-2.5 bg-indigo-600 text-white rounded-xl font-semibold shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all flex items-center justify-center gap-2"
                                     >
                                         <LogIn size={18} />
                                         <span>Log In</span>
                                     </button>
-                                    <button className="w-full py-2.5 bg-white text-indigo-600 border border-indigo-200 rounded-xl font-semibold hover:bg-indigo-50 transition-all flex items-center justify-center gap-2">
+                                    <button
+                                        onClick={() => setShowLoginModal(true)}
+                                        className="w-full py-2.5 bg-white text-indigo-600 border border-indigo-200 rounded-xl font-semibold hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
+                                    >
                                         <UserPlus size={18} />
                                         <span>Sign Up</span>
                                     </button>
                                 </>
                             ) : (
                                 <button
-                                    onClick={() => setIsLoggedIn(true)}
+                                    onClick={() => setShowLoginModal(true)}
                                     className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-md hover:bg-indigo-700 transition-all"
                                 >
                                     <LogIn size={20} />
@@ -197,6 +238,9 @@ export default function CollapsibleSidebar({ userName, isCollapsed, setIsCollaps
                     )}
                 </div>
             </div>
+
+            {/* Login/Signup Modal */}
+            {showLoginModal && <LoginSignup onClose={() => setShowLoginModal(false)} />}
         </>
     );
 }

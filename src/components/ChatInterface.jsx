@@ -3,8 +3,11 @@ import { Send, Loader, Sparkles, TrendingUp, DollarSign, BookOpen } from 'lucide
 import { sendMessage } from '../services/api'
 import EducationalCard from './EducationalCard'
 import TermDefinition from './TermDefinition'
+import { useAuth } from '../contexts/AuthContext'
 
-export default function ChatInterface({ userName, userAge }) {
+export default function ChatInterface({ userAge }) {
+    const { user } = useAuth()
+    const userName = user?.name || 'User'
     const [messages, setMessages] = useState([
         {
             role: 'assistant',

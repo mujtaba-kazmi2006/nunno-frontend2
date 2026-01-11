@@ -101,8 +101,8 @@ export default function NunnoPricing() {
                         <button
                             onClick={() => setBillingCycle('monthly')}
                             className={`px-6 py-2.5 rounded-full transition-all font-medium ${billingCycle === 'monthly'
-                                    ? 'bg-purple-600 text-white shadow-md'
-                                    : 'text-gray-600 hover:text-purple-600'
+                                ? 'bg-purple-600 text-white shadow-md'
+                                : 'text-gray-600 hover:text-purple-600'
                                 }`}
                         >
                             Monthly
@@ -110,8 +110,8 @@ export default function NunnoPricing() {
                         <button
                             onClick={() => setBillingCycle('annual')}
                             className={`px-6 py-2.5 rounded-full transition-all font-medium ${billingCycle === 'annual'
-                                    ? 'bg-purple-600 text-white shadow-md'
-                                    : 'text-gray-600 hover:text-purple-600'
+                                ? 'bg-purple-600 text-white shadow-md'
+                                : 'text-gray-600 hover:text-purple-600'
                                 }`}
                         >
                             Annual
@@ -132,8 +132,8 @@ export default function NunnoPricing() {
                             <div
                                 key={index}
                                 className={`relative bg-white rounded-2xl p-8 ${plan.popular
-                                        ? 'border-4 border-purple-500 shadow-2xl shadow-purple-200'
-                                        : 'border-2 border-gray-200 shadow-lg'
+                                    ? 'border-4 border-purple-500 shadow-2xl shadow-purple-200'
+                                    : 'border-2 border-gray-200 shadow-lg'
                                     } hover:shadow-xl transition-all duration-300`}
                                 style={{
                                     boxShadow: plan.popular
@@ -194,8 +194,8 @@ export default function NunnoPricing() {
 
                                 <button
                                     className={`w-full py-3 rounded-xl font-semibold transition-all shadow-md ${plan.popular
-                                            ? 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg'
-                                            : 'bg-white text-purple-600 border-2 border-purple-600 hover:bg-purple-50'
+                                        ? 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg'
+                                        : 'bg-white text-purple-600 border-2 border-purple-600 hover:bg-purple-50'
                                         }`}
                                 >
                                     Get Started
