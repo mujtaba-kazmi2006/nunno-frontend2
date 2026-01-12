@@ -1,35 +1,10 @@
 import { useState, useEffect } from 'react'
 import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from 'recharts'
 import { TrendingUp, TrendingDown, Minus, Thermometer } from 'lucide-react'
+import { useMarketData } from '../contexts/MarketDataContext'
 
 export default function MarketTemperature() {
-    const [temperature, setTemperature] = useState(50)
-    const [sentiment, setSentiment] = useState('Neutral')
-    const [loading, setLoading] = useState(true)
-    const [lastUpdated, setLastUpdated] = useState(null)
-
-    useEffect(() => {
-        fetchMarketSentiment()
-        const interval = setInterval(fetchMarketSentiment, 30000)
-        return () => clearInterval(interval)
-    }, [])
-
-    const fetchMarketSentiment = async () => {
-        try {
-            const response = await fetch('/api/v1/news/BTCUSDT')
-            const data = await response.json()
-
-            if (data.fear_greed_index) {
-                setTemperature(data.fear_greed_index.value)
-                setSentiment(data.sentiment)
-                setLastUpdated(new Date())
-            }
-        } catch (error) {
-            console.error('Failed to fetch sentiment:', error)
-        } finally {
-            setLoading(false)
-        }
-    }
+    const { temperature, sentiment, loading, lastUpdated } = useMarketData()
 
     const getColor = (temp) => {
         if (temp <= 25) return '#ef4444' // Extreme Fear

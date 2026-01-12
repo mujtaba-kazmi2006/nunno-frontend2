@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { AreaChart, Area, ResponsiveContainer, YAxis } from 'recharts'
 import { TrendingUp, TrendingDown } from 'lucide-react'
-import useBinanceWebSocket from '../hooks/useBinanceWebSocket'
+import { useMarketData } from '../contexts/MarketDataContext'
 
 export default function CryptoPriceCard({ ticker, name, onClick }) {
-    const { prices, isConnected } = useBinanceWebSocket([ticker])
+    const { prices } = useMarketData()
     const [priceData, setPriceData] = useState(null)
     const [chartData, setChartData] = useState(null)
     const [loading, setLoading] = useState(true)

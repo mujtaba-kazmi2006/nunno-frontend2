@@ -1,24 +1,29 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send, Loader, Sparkles, TrendingUp, DollarSign, BookOpen } from 'lucide-react'
+import { Send, Loader, Sparkles, TrendingUp, DollarSign, BookOpen, Square } from 'lucide-react'
 import { sendMessage } from '../services/api'
 import EducationalCard from './EducationalCard'
 import TermDefinition from './TermDefinition'
 import { useAuth } from '../contexts/AuthContext'
+import { useChat } from '../contexts/ChatContext'
 
 export default function ChatInterface({ userAge }) {
     const { user } = useAuth()
+    const {
+        messages,
+        setMessages,
+        isLoading,
+        setIsLoading,
+        loadingStatus,
+        setLoadingStatus,
+        showSuggestions,
+        setShowSuggestions
+    } = useChat()
+
     const userName = user?.name || 'User'
-    const [messages, setMessages] = useState([
-        {
-            role: 'assistant',
-            content: `Hi ${userName}! 👋 I'm Nunno, your friendly AI financial educator. I'm here to help you understand trading and investing in the simplest way possible.\n\n**What would you like to learn about today?**\n\n💡 Try asking me:\n- "Is Bitcoin a good buy right now?"\n- "What is Ethereum and should I invest?"\n- "Explain RSI to me like I'm 15"\n- "Help me build a crypto portfolio with $1000"`
-        }
-    ])
+    // Input remains local
     const [input, setInput] = useState('')
-    const [isLoading, setIsLoading] = useState(false)
-    const [loadingStatus, setLoadingStatus] = useState('')
-    const [showSuggestions, setShowSuggestions] = useState(true)
     const messagesContainerRef = useRef(null)
+    const abortController = useRef(null)
 
     const suggestions = [
         { icon: <TrendingUp size={16} />, text: "Analyze Bitcoin price" },
@@ -40,6 +45,15 @@ export default function ChatInterface({ userAge }) {
         scrollToBottom()
     }, [messages, loadingStatus])
 
+    const handleStop = () => {
+        if (abortController.current) {
+            abortController.current.abort()
+            abortController.current = null
+        }
+        setIsLoading(false)
+        setLoadingStatus('Stopped manually.')
+    }
+
     const handleSend = async () => {
         if (!input.trim() || isLoading) return
 
@@ -53,6 +67,9 @@ export default function ChatInterface({ userAge }) {
         setIsLoading(true)
 
         // Create placeholder for AI response
+        if (abortController.current) abortController.current.abort()
+        abortController.current = new AbortController()
+
         setMessages(prev => [...prev, {
             role: 'assistant',
             content: '',
@@ -103,10 +120,9 @@ export default function ChatInterface({ userAge }) {
                     setMessages(prev => {
                         const newMessages = [...prev];
                         newMessages[newMessages.length - 1].content = fullContent;
-                        return newMessages;
                     });
                 }
-            });
+            }, abortController.current.signal);
 
         } catch (error) {
             setMessages(prev => {
@@ -202,13 +218,24 @@ export default function ChatInterface({ userAge }) {
                     placeholder="Ask me anything about finance..."
                     disabled={isLoading}
                 />
-                <button
-                    onClick={handleSend}
-                    disabled={!input.trim() || isLoading}
-                    className="send-button"
-                >
-                    <Send size={20} />
-                </button>
+
+                {isLoading ? (
+                    <button
+                        onClick={handleStop}
+                        className="send-button stop-button bg-red-500 hover:bg-red-600"
+                        title="Stop generating"
+                    >
+                        <Square size={20} fill="currentColor" />
+                    </button>
+                ) : (
+                    <button
+                        onClick={handleSend}
+                        disabled={!input.trim()}
+                        className="send-button"
+                    >
+                        <Send size={20} />
+                    </button>
+                )}
             </div>
         </div>
     )

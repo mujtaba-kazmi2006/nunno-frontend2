@@ -63,13 +63,15 @@ export const getNews = async (ticker) => {
 }
 
 // Stream message with callback for chunks
-export async function streamMessage(message, userName, userAge, history, onChunk) {
+// Stream message with callback for chunks
+export async function streamMessage(message, userName, userAge, history, onChunk, signal) {
     try {
         const response = await fetch(`${API_BASE_URL}/api/v1/chat/stream`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
+            signal, // Pass abort signal
             body: JSON.stringify({
                 message,
                 user_name: userName,

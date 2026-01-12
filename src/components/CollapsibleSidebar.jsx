@@ -136,12 +136,12 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
 
                         <div className="space-y-2">
                             {/* Market Temperature Widget */}
-                            <div className="scale-90 origin-top">
+                            <div className="scale-75 origin-top -mb-8">
                                 <MarketTemperature />
                             </div>
 
                             {/* Crypto Price Cards */}
-                            <div className="scale-90 origin-top">
+                            <div className="scale-75 origin-top -mb-8">
                                 <CryptoPriceCard
                                     ticker="BTCUSDT"
                                     name="Bitcoin"
@@ -149,7 +149,7 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                                 />
                             </div>
 
-                            <div className="scale-90 origin-top">
+                            <div className="scale-75 origin-top -mb-4">
                                 <CryptoPriceCard
                                     ticker="ETHUSDT"
                                     name="Ethereum"
@@ -213,16 +213,16 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                                 <>
                                     <button
                                         onClick={() => setShowLoginModal(true)}
-                                        className="w-full py-2.5 bg-indigo-600 text-white rounded-xl font-semibold shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                                        className={`w-full ${isMobile ? 'py-1.5 text-sm' : 'py-2.5'} bg-indigo-600 text-white rounded-xl font-semibold shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all flex items-center justify-center gap-2`}
                                     >
-                                        <LogIn size={18} />
+                                        <LogIn size={isMobile ? 16 : 18} />
                                         <span>Log In</span>
                                     </button>
                                     <button
                                         onClick={() => setShowLoginModal(true)}
-                                        className="w-full py-2.5 bg-white text-indigo-600 border border-indigo-200 rounded-xl font-semibold hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
+                                        className={`w-full ${isMobile ? 'py-1.5 text-sm' : 'py-2.5'} bg-white text-indigo-600 border border-indigo-200 rounded-xl font-semibold hover:bg-indigo-50 transition-all flex items-center justify-center gap-2`}
                                     >
-                                        <UserPlus size={18} />
+                                        <UserPlus size={isMobile ? 16 : 18} />
                                         <span>Sign Up</span>
                                     </button>
                                 </>

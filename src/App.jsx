@@ -6,6 +6,8 @@ import CryptoPriceCard from './components/CryptoPriceCard'
 import CollapsibleSidebar from './components/CollapsibleSidebar'
 import { Menu } from 'lucide-react'
 import CryptoDetailModal from './components/CryptoDetailModal'
+import { ChatProvider } from './contexts/ChatContext'
+import { MarketDataProvider } from './contexts/MarketDataContext'
 
 // Lazy load non-critical components
 const NunnoPricing = lazy(() => import('./components/NunnoPricing'))
@@ -60,7 +62,7 @@ function MainLayout({ children }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     return (
-        <div className="flex h-screen bg-gray-50 overflow-hidden relative">
+        <div className="flex h-screen bg-gradient-to-br from-gray-50 to-purple-50 overflow-hidden relative">
             <CollapsibleSidebar
                 isCollapsed={isCollapsed}
                 setIsCollapsed={setIsCollapsed}
@@ -90,17 +92,21 @@ function App() {
 
     return (
         <BrowserRouter>
-            <MainLayout>
-                <Suspense fallback={<LoadingFallback />}>
-                    <Routes>
-                        <Route path="/" element={<Dashboard userAge={userAge} />} />
-                        <Route path="/pricing" element={<NunnoPricing />} />
-                        <Route path="/settings" element={<AccountSettings />} />
-                        <Route path="/history" element={<ChatHistory />} />
-                        <Route path="/support" element={<HelpSupport />} />
-                    </Routes>
-                </Suspense>
-            </MainLayout>
+            <MarketDataProvider>
+                <ChatProvider>
+                    <MainLayout>
+                        <Suspense fallback={<LoadingFallback />}>
+                            <Routes>
+                                <Route path="/" element={<Dashboard userAge={userAge} />} />
+                                <Route path="/pricing" element={<NunnoPricing />} />
+                                <Route path="/settings" element={<AccountSettings />} />
+                                <Route path="/history" element={<ChatHistory />} />
+                                <Route path="/support" element={<HelpSupport />} />
+                            </Routes>
+                        </Suspense>
+                    </MainLayout>
+                </ChatProvider>
+            </MarketDataProvider>
         </BrowserRouter>
     )
 }
