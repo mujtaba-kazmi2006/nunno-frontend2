@@ -7,6 +7,22 @@ export default function EducationalCard({ data }) {
 
     if (!data) return null
 
+    // Handle error case (prevents crash)
+    if (data.error) {
+        return (
+            <div className="educational-card error">
+                <div className="card-header">
+                    <div className="card-icon"><AlertCircle size={24} color="#ef4444" /></div>
+                    <div className="card-title"><h3>Analysis Unavailable</h3></div>
+                </div>
+                <div className="card-body"><p>{data.message || data.error}</p></div>
+            </div>
+        )
+    }
+
+    // Safe access to bias to prevent crash
+    const bias = data.bias || 'neutral'
+
     const getConfidenceColor = (confidence) => {
         if (confidence >= 70) return 'high'
         if (confidence >= 50) return 'medium'
@@ -40,7 +56,7 @@ export default function EducationalCard({ data }) {
         <div className={`educational-card ${getBiasClass(data.bias)}`}>
             <div className="card-header">
                 <div className="card-icon">
-                    {getBiasIcon(data.bias)}
+                    {getBiasIcon(bias)}
                 </div>
                 <div className="card-title">
                     <h4>{data.ticker} Analysis</h4>
@@ -67,8 +83,8 @@ export default function EducationalCard({ data }) {
                     </div>
                     <div className="metric">
                         <span className="metric-label">Bias</span>
-                        <span className={`metric-value ${getBiasClass(data.bias)}`}>
-                            {data.bias.toUpperCase()}
+                        <span className={`metric-value ${getBiasClass(bias)}`}>
+                            {bias.toUpperCase()}
                         </span>
                     </div>
                 </div>
@@ -77,13 +93,13 @@ export default function EducationalCard({ data }) {
                     <div className="confidence-label">
                         <span>Confidence</span>
                         <span className={`confidence-value ${getConfidenceColor(data.confidence)}`}>
-                            {data.confidence}%
+                            {data.confidence || 0}%
                         </span>
                     </div>
                     <div className="progress-bar">
                         <div
                             className={`progress-fill ${getConfidenceColor(data.confidence)}`}
-                            style={{ width: `${data.confidence}%` }}
+                            style={{ width: `${data.confidence || 0}%` }}
                         />
                     </div>
                 </div>

@@ -242,6 +242,7 @@ export default function ChatInterface({ userAge }) {
 }
 
 function formatMessage(content) {
+    if (!content) return null
     // Simple markdown-like formatting
     const lines = content.split('\n')
 
