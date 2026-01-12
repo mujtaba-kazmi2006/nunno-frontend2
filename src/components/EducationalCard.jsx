@@ -42,14 +42,18 @@ export default function EducationalCard({ data }) {
     }
 
     // Combine all signals from confluences
+    // Combine all signals from confluences
+    const safeSignals = (arr) => Array.isArray(arr) ? arr : []
+
     const allSignals = [
-        ...(data.confluences?.bullish_signals || []).map(s => ({ ...s, type: 'bullish' })),
-        ...(data.confluences?.bearish_signals || []).map(s => ({ ...s, type: 'bearish' })),
-        ...(data.confluences?.neutral_signals || []).map(s => ({ ...s, type: 'neutral' }))
+        ...safeSignals(data.confluences?.bullish_signals).map(s => ({ ...s, type: 'bullish' })),
+        ...safeSignals(data.confluences?.bearish_signals).map(s => ({ ...s, type: 'bearish' })),
+        ...safeSignals(data.confluences?.neutral_signals).map(s => ({ ...s, type: 'neutral' }))
     ]
 
-    // Fallback to old signals array if confluences not available
-    const displaySignals = allSignals.length > 0 ? allSignals : (data.signals || [])
+    // Fallback to old signals array only if safe
+    const oldSignals = safeSignals(data.signals)
+    const displaySignals = allSignals.length > 0 ? allSignals : oldSignals
     const signalsToShow = showAllIndicators ? displaySignals : displaySignals.slice(0, 6)
 
     return (

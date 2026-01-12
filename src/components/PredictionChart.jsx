@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 export default function PredictionChart({ data, support, resistance, currentPrice, bias }) {
-    if (!data || data.length === 0) return null
+    if (!data || !Array.isArray(data) || data.length === 0) return null
 
     // Determine chart color based on bias
     const chartColor = bias === 'bullish' ? '#22c55e' : bias === 'bearish' ? '#ef4444' : '#6366f1'

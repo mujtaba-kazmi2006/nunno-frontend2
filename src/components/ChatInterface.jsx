@@ -145,7 +145,7 @@ export default function ChatInterface({ userAge }) {
     return (
         <div className="chat-interface">
             <div className="messages-container" ref={messagesContainerRef}>
-                {messages.map((message, index) => (
+                {(Array.isArray(messages) ? messages : []).map((message, index) => (
                     <div key={index} className={`message ${message.role}`}>
                         <div className="message-avatar">
                             {message.role === 'assistant' ? (
