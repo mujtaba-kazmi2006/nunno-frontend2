@@ -7,23 +7,31 @@ export default function EducationalCard({ data }) {
 
     if (!data) return null
 
-    // Handle error case (prevents crash)
+    // Helper: Safely access bias
+    const safeBias = data.bias || 'neutral';
+
+    // Handle error case
     if (data.error) {
         return (
             <div className="educational-card error">
                 <div className="card-header">
-                    <div className="card-icon"><AlertCircle size={24} color="#ef4444" /></div>
-                    <div className="card-title"><h3>Analysis Unavailable</h3></div>
+                    <div className="card-icon text-red-500">
+                        <AlertCircle size={24} />
+                    </div>
+                    <div className="card-title">
+                        <h4>Analysis Error</h4>
+                        <span className="card-subtitle">{data.ticker}</span>
+                    </div>
                 </div>
-                <div className="card-body"><p>{data.message || data.error}</p></div>
+                <div className="card-body">
+                    <p className="text-red-400 p-4">{data.message || data.error}</p>
+                </div>
             </div>
         )
     }
 
-    // Safe access to bias to prevent crash
-    const bias = data.bias || 'neutral'
-
     const getConfidenceColor = (confidence) => {
+        if (typeof confidence !== 'number') return 'low'
         if (confidence >= 70) return 'high'
         if (confidence >= 50) return 'medium'
         return 'low'
@@ -42,25 +50,22 @@ export default function EducationalCard({ data }) {
     }
 
     // Combine all signals from confluences
-    // Combine all signals from confluences
-    const safeSignals = (arr) => Array.isArray(arr) ? arr : []
-
+    const safeConfluences = data.confluences || {}
     const allSignals = [
-        ...safeSignals(data.confluences?.bullish_signals).map(s => ({ ...s, type: 'bullish' })),
-        ...safeSignals(data.confluences?.bearish_signals).map(s => ({ ...s, type: 'bearish' })),
-        ...safeSignals(data.confluences?.neutral_signals).map(s => ({ ...s, type: 'neutral' }))
+        ...(Array.isArray(safeConfluences.bullish_signals) ? safeConfluences.bullish_signals : []).map(s => ({ ...s, type: 'bullish' })),
+        ...(Array.isArray(safeConfluences.bearish_signals) ? safeConfluences.bearish_signals : []).map(s => ({ ...s, type: 'bearish' })),
+        ...(Array.isArray(safeConfluences.neutral_signals) ? safeConfluences.neutral_signals : []).map(s => ({ ...s, type: 'neutral' }))
     ]
 
-    // Fallback to old signals array only if safe
-    const oldSignals = safeSignals(data.signals)
-    const displaySignals = allSignals.length > 0 ? allSignals : oldSignals
+    // Fallback to old signals array if confluences not available
+    const displaySignals = allSignals.length > 0 ? allSignals : (data.signals || [])
     const signalsToShow = showAllIndicators ? displaySignals : displaySignals.slice(0, 6)
 
     return (
-        <div className={`educational-card ${getBiasClass(data.bias)}`}>
+        <div className={`educational-card ${getBiasClass(safeBias)}`}>
             <div className="card-header">
                 <div className="card-icon">
-                    {getBiasIcon(bias)}
+                    {getBiasIcon(safeBias)}
                 </div>
                 <div className="card-title">
                     <h4>{data.ticker} Analysis</h4>
@@ -70,13 +75,14 @@ export default function EducationalCard({ data }) {
 
             <div className="card-body">
                 {/* Price Chart */}
-                {data.price_history && data.price_history.length > 0 && (
+                {Array.isArray(data.price_history) && data.price_history.length > 0 && (
                     <PredictionChart
                         data={data.price_history}
                         support={data.key_levels?.support}
                         resistance={data.key_levels?.resistance}
                         currentPrice={data.current_price}
-                        bias={data.bias}
+                        bias={safeBias}
+                        supportResistance={data.support_resistance || []}
                     />
                 )}
 
@@ -87,8 +93,8 @@ export default function EducationalCard({ data }) {
                     </div>
                     <div className="metric">
                         <span className="metric-label">Bias</span>
-                        <span className={`metric-value ${getBiasClass(bias)}`}>
-                            {bias.toUpperCase()}
+                        <span className={`metric-value ${getBiasClass(safeBias)}`}>
+                            {safeBias.toUpperCase()}
                         </span>
                     </div>
                 </div>
@@ -97,13 +103,13 @@ export default function EducationalCard({ data }) {
                     <div className="confidence-label">
                         <span>Confidence</span>
                         <span className={`confidence-value ${getConfidenceColor(data.confidence)}`}>
-                            {data.confidence || 0}%
+                            {data.confidence}%
                         </span>
                     </div>
                     <div className="progress-bar">
                         <div
                             className={`progress-fill ${getConfidenceColor(data.confidence)}`}
-                            style={{ width: `${data.confidence || 0}%` }}
+                            style={{ width: `${data.confidence}%` }}
                         />
                     </div>
                 </div>
@@ -168,6 +174,27 @@ export default function EducationalCard({ data }) {
                                 <span className="level-label">Resistance</span>
                                 <span className="level-value resistance">${data.key_levels.resistance?.toFixed(2)}</span>
                             </div>
+                        </div>
+                    </div>
+                )}
+                
+                {/* Display additional support/resistance levels */}
+                {data.support_resistance && data.support_resistance.length > 0 && (
+                    <div className="additional-levels-section">
+                        <h5>🔍 Detailed Support & Resistance Levels:</h5>
+                        <div className="levels-list">
+                            {data.support_resistance.map((level, index) => (
+                                <div key={index} className="level-item">
+                                    <span className={`level-type ${level.type}`}>
+                                        {level.type.toUpperCase()}:
+                                    </span>
+                                    <span className="level-price">${Number(level.price).toFixed(2)}</span>
+                                    <span className="level-strength">({level.strength})</span>
+                                    {level.touches && (
+                                        <span className="level-touches">Touches: {level.touches}</span>
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     </div>
                 )}

@@ -22,12 +22,12 @@ export function ChatProvider({ children }) {
     const [showSuggestions, setShowSuggestions] = useState(true);
 
     const addMessage = useCallback((message) => {
-        setMessages(prev => [...(Array.isArray(prev) ? prev : []), message]);
+        setMessages(prev => [...prev, message]);
     }, []);
 
     const updateLastMessage = useCallback((updater) => {
         setMessages(prev => {
-            const newMessages = [...(Array.isArray(prev) ? prev : [])];
+            const newMessages = [...prev];
             const lastMsg = newMessages[newMessages.length - 1];
             if (lastMsg) {
                 // If updater is a function, call it with previous content

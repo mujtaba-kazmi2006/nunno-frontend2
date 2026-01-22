@@ -76,7 +76,7 @@ export default function CryptoPriceCard({ ticker, name, onClick }) {
                         {Math.abs(priceData.percent_change).toFixed(2)}%
                     </div>
                 </div>
-                <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-indigo-50 transition-colors">
+                <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-purple-50 transition-colors">
                     <img
                         src={`https://cryptologos.cc/logos/${name.toLowerCase()}-${ticker === 'BTCUSDT' ? 'btc' : 'eth'}-logo.png?v=026`}
                         alt={name}

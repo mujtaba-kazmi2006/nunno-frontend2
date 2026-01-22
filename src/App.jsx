@@ -1,11 +1,13 @@
 import { useState, lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import ChatInterface from './components/ChatInterface'
 import MarketTemperature from './components/MarketTemperature'
 import CryptoPriceCard from './components/CryptoPriceCard'
 import CollapsibleSidebar from './components/CollapsibleSidebar'
 import { Menu } from 'lucide-react'
 import CryptoDetailModal from './components/CryptoDetailModal'
+import LandingPage from './components/LandingPage'
+import CryptoChartWebSocket from './components/CryptoChartWebSocket'  // Added new component
 import { ChatProvider } from './contexts/ChatContext'
 import { MarketDataProvider } from './contexts/MarketDataContext'
 
@@ -19,7 +21,7 @@ const HelpSupport = lazy(() => import('./components/HelpSupport'))
 function LoadingFallback() {
     return (
         <div className="flex items-center justify-center h-full">
-            <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
         </div>
     )
 }
@@ -73,7 +75,7 @@ function MainLayout({ children }) {
                 <div className="md:hidden p-3 absolute top-0 left-0 z-10">
                     <button
                         onClick={() => setIsCollapsed(false)}
-                        className="p-2.5 bg-white rounded-xl shadow-lg text-gray-600 hover:text-indigo-600 hover:shadow-xl transition-all"
+                        className="p-2.5 bg-white rounded-xl shadow-lg text-gray-600 hover:text-purple-600 hover:shadow-xl transition-all"
                     >
                         <Menu size={22} />
                     </button>
@@ -97,7 +99,9 @@ function App() {
                     <MainLayout>
                         <Suspense fallback={<LoadingFallback />}>
                             <Routes>
-                                <Route path="/" element={<Dashboard userAge={userAge} />} />
+                                <Route path="/" element={<LandingPage />} />
+                                <Route path="/dashboard" element={<Dashboard userAge={userAge} />} />
+                                <Route path="/crypto-chart" element={<CryptoChartWebSocket />} />
                                 <Route path="/pricing" element={<NunnoPricing />} />
                                 <Route path="/settings" element={<AccountSettings />} />
                                 <Route path="/history" element={<ChatHistory />} />

@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 
-export default function PredictionChart({ data, support, resistance, currentPrice, bias }) {
-    if (!data || !Array.isArray(data) || data.length === 0) return null
+export default function PredictionChart({ data, support, resistance, currentPrice, bias, supportResistance = [] }) {
+    if (!data || data.length === 0) return null
 
     // Determine chart color based on bias
     const chartColor = bias === 'bullish' ? '#22c55e' : bias === 'bearish' ? '#ef4444' : '#6366f1'
@@ -22,6 +22,36 @@ export default function PredictionChart({ data, support, resistance, currentPric
             <div className="chart-header">
                 <h5>📈 Price Chart (Last {data.length} Periods)</h5>
             </div>
+            
+            {/* Display Support and Resistance Levels */}
+            {supportResistance && supportResistance.length > 0 && (
+                <div className="s-r-levels" style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
+                    <h6 style={{ margin: '0 0 8px 0', color: '#334155', fontSize: '14px' }}>Key Support & Resistance Levels:</h6>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {supportResistance.map((level, index) => (
+                            <div 
+                                key={index}
+                                style={{
+                                    padding: '6px 12px',
+                                    borderRadius: '20px',
+                                    backgroundColor: level.type === 'support' ? '#dcfce7' : '#fee2e2',
+                                    border: level.type === 'support' ? '1px solid #4ade80' : '1px solid #f87171',
+                                    fontSize: '12px',
+                                    fontWeight: '500'
+                                }}
+                            >
+                                <span style={{ color: level.type === 'support' ? '#166534' : '#991b1b' }}>
+                                    {level.type.toUpperCase()}: ${Number(level.price).toFixed(2)}
+                                </span>
+                                <span style={{ marginLeft: '6px', color: '#64748b' }}>
+                                    ({level.strength})
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+            
             <ResponsiveContainer width="100%" height={220}>
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <defs>

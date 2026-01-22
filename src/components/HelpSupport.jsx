@@ -78,7 +78,7 @@ export default function HelpSupport() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 py-8 px-4">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 py-8 px-4">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12">
@@ -88,15 +88,15 @@ export default function HelpSupport() {
 
                 {/* Quick Links */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition-all cursor-pointer">
-                        <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mb-4">
-                            <Book className="text-indigo-600" size={24} />
+                    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer">
+                        <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                            <Book className="text-purple-600" size={24} />
                         </div>
                         <h3 className="text-lg font-bold text-gray-800 mb-2">Documentation</h3>
                         <p className="text-gray-600 text-sm">Comprehensive guides and tutorials</p>
                     </div>
 
-                    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition-all cursor-pointer">
+                    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer">
                         <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
                             <MessageCircle className="text-green-600" size={24} />
                         </div>
@@ -104,7 +104,7 @@ export default function HelpSupport() {
                         <p className="text-gray-600 text-sm">Chat with our support team</p>
                     </div>
 
-                    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition-all cursor-pointer">
+                    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer">
                         <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
                             <Mail className="text-purple-600" size={24} />
                         </div>
@@ -126,7 +126,7 @@ export default function HelpSupport() {
                                     key={cat.id}
                                     onClick={() => setActiveCategory(cat.id)}
                                     className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${activeCategory === cat.id
-                                            ? 'bg-indigo-600 text-white shadow-md'
+                                            ? 'bg-purple-600 text-white shadow-md'
                                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                         }`}
                                 >
@@ -142,7 +142,7 @@ export default function HelpSupport() {
                         {filteredFaqs.map((faq, index) => (
                             <div
                                 key={index}
-                                className="border-2 border-gray-200 rounded-xl overflow-hidden hover:border-indigo-300 transition-all"
+                                className="border-2 border-gray-200 rounded-xl overflow-hidden hover:border-purple-300 transition-all"
                             >
                                 <button
                                     onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
@@ -150,7 +150,7 @@ export default function HelpSupport() {
                                 >
                                     <span className="font-semibold text-gray-800 pr-4">{faq.question}</span>
                                     {expandedFaq === index ? (
-                                        <ChevronUp className="text-indigo-600 flex-shrink-0" size={20} />
+                                        <ChevronUp className="text-purple-600 flex-shrink-0" size={20} />
                                     ) : (
                                         <ChevronDown className="text-gray-400 flex-shrink-0" size={20} />
                                     )}
@@ -182,7 +182,7 @@ export default function HelpSupport() {
                                     value={contactForm.name}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
                                     placeholder="John Doe"
                                 />
                             </div>
@@ -196,7 +196,7 @@ export default function HelpSupport() {
                                     value={contactForm.email}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
                                     placeholder="john@example.com"
                                 />
                             </div>
@@ -212,7 +212,7 @@ export default function HelpSupport() {
                                 value={contactForm.subject}
                                 onChange={handleInputChange}
                                 required
-                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
                                 placeholder="How can we help?"
                             />
                         </div>
@@ -227,14 +227,14 @@ export default function HelpSupport() {
                                 onChange={handleInputChange}
                                 required
                                 rows={6}
-                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none"
+                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all resize-none"
                                 placeholder="Tell us more about your question or issue..."
                             />
                         </div>
 
                         <button
                             type="submit"
-                            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
+                            className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-all shadow-md hover:shadow-lg"
                         >
                             <Send size={20} />
                             Send Message

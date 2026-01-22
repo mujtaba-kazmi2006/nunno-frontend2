@@ -35,10 +35,11 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
     }, [setIsCollapsed]);
 
     const menuItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+        { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
         { icon: CreditCard, label: 'Pricing', path: '/pricing' },
-        { icon: History, label: 'Prediction History', path: '/history' }, // Placeholder
-        { icon: HelpCircle, label: 'Help & Support', path: '/support' }, // Placeholder
+        { icon: History, label: 'Prediction History', path: '/history' },
+        { icon: HelpCircle, label: 'Help & Support', path: '/support' },
+        { icon: LayoutDashboard, label: 'Crypto Chart', path: '/crypto-chart' }, // Added new item
     ];
 
     const userItems = [
@@ -68,7 +69,7 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                 {/* Toggle Button */}
                 <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className={`absolute -right-3 top-9 bg-indigo-600 text-white p-1.5 rounded-full shadow-lg hover:bg-indigo-700 transition-colors z-50 ${isMobile && isCollapsed ? 'hidden' : ''
+                    className={`absolute -right-3 top-9 bg-purple-600 text-white p-1.5 rounded-full shadow-lg hover:bg-purple-700 transition-colors z-50 ${isMobile && isCollapsed ? 'hidden' : ''
                         }`}
                 >
                     {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -82,7 +83,7 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                     />
                     {!isCollapsed && (
                         <div className="flex flex-col overflow-hidden whitespace-nowrap">
-                            <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-indigo-400 bg-clip-text text-transparent">
+                            <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
                                 Nunno Finance
                             </h1>
                             <span className="text-xs text-gray-500 font-medium">AI Financial Educator</span>
@@ -98,12 +99,12 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                             to={item.path}
                             onClick={() => isMobile && setIsCollapsed(true)}
                             className={`flex items-center px-4 py-3 rounded-xl transition-all group relative overflow-hidden whitespace-nowrap ${isActive(item.path)
-                                ? 'bg-indigo-50 text-indigo-700 shadow-sm'
-                                : 'text-gray-600 hover:bg-gray-50 hover:text-indigo-600'
+                                ? 'bg-purple-50 text-purple-700 shadow-sm'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-purple-600'
                                 }`}
                         >
                             <item.icon
-                                className={`flex-shrink-0 transition-colors ${isActive(item.path) ? 'text-indigo-600' : 'text-gray-500 group-hover:text-indigo-600'
+                                className={`flex-shrink-0 transition-colors ${isActive(item.path) ? 'text-purple-600' : 'text-gray-500 group-hover:text-purple-600'
                                     }`}
                                 size={22}
                             />
@@ -123,7 +124,7 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                             )}
 
                             {isActive(item.path) && !isCollapsed && (
-                                <div className="absolute right-0 w-1 h-8 bg-indigo-600 rounded-l-full" />
+                                <div className="absolute right-0 w-1 h-8 bg-purple-600 rounded-l-full" />
                             )}
                         </Link>
                     ))}
@@ -168,9 +169,9 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                         <Link
                             to={item.path}
                             onClick={() => isMobile && setIsCollapsed(true)}
-                            className="flex items-center px-4 py-3 text-gray-600 rounded-xl hover:bg-gray-50 hover:text-indigo-600 transition-all group relative overflow-hidden whitespace-nowrap"
+                            className="flex items-center px-4 py-3 text-gray-600 rounded-xl hover:bg-gray-50 hover:text-purple-600 transition-all group relative overflow-hidden whitespace-nowrap"
                         >
-                            <item.icon className="flex-shrink-0 text-gray-500 group-hover:text-indigo-600" size={22} />
+                            <item.icon className="flex-shrink-0 text-gray-500 group-hover:text-purple-600" size={22} />
                             <span className={`ml-3 font-medium transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>
                                 {item.label}
                             </span>
@@ -187,7 +188,7 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                 <div className="p-4 border-t border-gray-100 bg-gray-50/50">
                     {isAuthenticated ? (
                         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold flex-shrink-0 shadow-md transform hover:scale-105 transition-transform cursor-pointer">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold flex-shrink-0 shadow-md transform hover:scale-105 transition-transform cursor-pointer">
                                 {user?.name?.charAt(0) || 'U'}
                             </div>
 
@@ -213,14 +214,14 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                                 <>
                                     <button
                                         onClick={() => setShowLoginModal(true)}
-                                        className={`w-full ${isMobile ? 'py-1.5 text-sm' : 'py-2.5'} bg-indigo-600 text-white rounded-xl font-semibold shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all flex items-center justify-center gap-2`}
+                                        className={`w-full ${isMobile ? 'py-1.5 text-sm' : 'py-2.5'} bg-purple-600 text-white rounded-xl font-semibold shadow-md hover:bg-purple-700 hover:shadow-lg transition-all flex items-center justify-center gap-2`}
                                     >
                                         <LogIn size={isMobile ? 16 : 18} />
                                         <span>Log In</span>
                                     </button>
                                     <button
                                         onClick={() => setShowLoginModal(true)}
-                                        className={`w-full ${isMobile ? 'py-1.5 text-sm' : 'py-2.5'} bg-white text-indigo-600 border border-indigo-200 rounded-xl font-semibold hover:bg-indigo-50 transition-all flex items-center justify-center gap-2`}
+                                        className={`w-full ${isMobile ? 'py-1.5 text-sm' : 'py-2.5'} bg-white text-purple-600 border border-purple-200 rounded-xl font-semibold hover:bg-purple-50 transition-all flex items-center justify-center gap-2`}
                                     >
                                         <UserPlus size={isMobile ? 16 : 18} />
                                         <span>Sign Up</span>
@@ -229,7 +230,7 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                             ) : (
                                 <button
                                     onClick={() => setShowLoginModal(true)}
-                                    className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-md hover:bg-indigo-700 transition-all"
+                                    className="w-10 h-10 bg-purple-600 text-white rounded-xl flex items-center justify-center shadow-md hover:bg-purple-700 transition-all"
                                 >
                                     <LogIn size={20} />
                                 </button>

@@ -86,7 +86,7 @@ export default function ChatHistory() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 py-8 px-4">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 py-8 px-4">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
@@ -102,8 +102,8 @@ export default function ChatHistory() {
                                 <p className="text-sm text-gray-600 font-medium">Total Predictions</p>
                                 <p className="text-3xl font-bold text-gray-800 mt-1">{stats.total}</p>
                             </div>
-                            <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
-                                <Clock className="text-indigo-600" size={24} />
+                            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                                <Clock className="text-purple-600" size={24} />
                             </div>
                         </div>
                     </div>
@@ -156,7 +156,7 @@ export default function ChatHistory() {
                                 placeholder="Search by coin name or ticker..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
                             />
                         </div>
 
@@ -165,7 +165,7 @@ export default function ChatHistory() {
                             <button
                                 onClick={() => setFilterType('all')}
                                 className={`px-4 py-3 rounded-xl font-semibold transition-all ${filterType === 'all'
-                                    ? 'bg-indigo-600 text-white shadow-md'
+                                    ? 'bg-purple-600 text-white shadow-md'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                             >
@@ -199,7 +199,7 @@ export default function ChatHistory() {
                         filteredPredictions.map((pred) => (
                             <div
                                 key={pred.id}
-                                className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200 hover:border-indigo-300 hover:shadow-lg transition-all cursor-pointer"
+                                className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer"
                             >
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <div className="flex items-center gap-4">
@@ -228,7 +228,7 @@ export default function ChatHistory() {
                                         </div>
                                         <div>
                                             <p className="text-xs text-gray-500 font-medium mb-1">Predicted Price</p>
-                                            <p className="text-lg font-bold text-indigo-600">{pred.predictedPrice}</p>
+                                            <p className="text-lg font-bold text-purple-600">{pred.predictedPrice}</p>
                                         </div>
                                         <div>
                                             <p className="text-xs text-gray-500 font-medium mb-1">Confidence</p>
