@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area, BarChart, Bar, ComposedChart, ReferenceLine } from 'recharts';
-import { TrendingUp, Settings, PlayCircle, StopCircle, Code, RefreshCw, BarChart3, Minus, Plus, Info, ChevronDown, Eye, EyeOff, Activity, Pause, RotateCcw, ChevronRight, ChevronLeft, Gauge, Volume2, VolumeX, LineChart as LineChartIcon, BarChart as BarChartIcon, Layers, X } from 'lucide-react';
+import { TrendingUp, Settings, PlayCircle, StopCircle, Code, RefreshCw, BarChart3, Minus, Plus, Info, ChevronDown, Eye, EyeOff, Activity, Pause, RotateCcw, ChevronRight, ChevronLeft, Gauge, Volume2, VolumeX, LineChart as LineChartIcon, BarChart as BarChartIcon, Layers, X, Sparkles } from 'lucide-react';
+import PatternChatPanel from './PatternChatPanel';
+import PatternInfoCard from './PatternInfoCard';
 import {
   calculateEMA,
   calculateRSI,
@@ -47,20 +49,25 @@ const CryptoChartWebSocket = () => {
   const [scenarioData, setScenarioData] = useState(null);
   const [simulationActive, setSimulationActive] = useState(false);
   const [activeTab, setActiveTab] = useState('indicators'); // 'indicators', 'simulator'
-  
+
   // Animation state for scenario playback
   const [animationStep, setAnimationStep] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationSpeed, setAnimationSpeed] = useState(300); // ms per step
   const animationIntervalRef = useRef(null);
-  
+
   // Layout & UI State
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1); // 1x, 2x, 5x, 10x
   const [currentSimulationTime, setCurrentSimulationTime] = useState(null);
   const [hoveredData, setHoveredData] = useState(null); // For OHLC display
   const [showVolume, setShowVolume] = useState(true);
-  
+
+  // Pattern Recognition State
+  const [patternData, setPatternData] = useState(null);
+  const [showPattern, setShowPattern] = useState(false);
+  const [showPatternInfo, setShowPatternInfo] = useState(false);
+
   const wsRef = useRef(null);
   const dataBufferRef = useRef([]);
   const reconnectTimeoutRef = useRef(null);
@@ -102,13 +109,13 @@ const CryptoChartWebSocket = () => {
     const { points, width, height, payload } = props || {};
     // Only show crosshair when hovering over actual data points/indicator lines
     if (!points || !points[0]) return null;
-    
+
     // Check if payload has valid indicator data
     if (payload && payload.length > 0) {
-      const hasValidData = payload.some(item => 
-        item && 
+      const hasValidData = payload.some(item =>
+        item &&
         item.payload &&
-        item.value !== undefined && 
+        item.value !== undefined &&
         item.value !== null &&
         !Number.isNaN(Number(item.value))
       );
@@ -117,7 +124,7 @@ const CryptoChartWebSocket = () => {
       // No payload means not hovering over data
       return null;
     }
-    
+
     const x = points[0].x;
     const y = points[0].y;
     return (
@@ -164,16 +171,16 @@ const CryptoChartWebSocket = () => {
       setHoveredData(null);
       return null;
     }
-    
+
     // Check if we have at least one valid payload item with actual data
-    const validPayload = payload.filter(item => 
-      item && 
-      item.payload && 
-      item.value !== undefined && 
+    const validPayload = payload.filter(item =>
+      item &&
+      item.payload &&
+      item.value !== undefined &&
       item.value !== null &&
       !Number.isNaN(Number(item.value))
     );
-    
+
     // Only show tooltip if we're hovering over an actual indicator line or data point
     if (validPayload.length === 0) {
       setHoveredData(null);
@@ -184,7 +191,7 @@ const CryptoChartWebSocket = () => {
     const ts = p0.timestamp || p0.t || p0.T;
     const timeLabel = ts ? new Date(Number(ts)).toLocaleString() : (p0.time || '');
     const price = p0.close;
-    
+
     // Update hovered data for OHLC display in top-left
     if (p0.open !== undefined && p0.high !== undefined && p0.low !== undefined && p0.close !== undefined) {
       setHoveredData({
@@ -384,9 +391,11 @@ const CryptoChartWebSocket = () => {
     try {
       // Determine WebSocket URL based on environment
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsHost = import.meta.env.VITE_API_URL
-        ? import.meta.env.VITE_API_URL.replace('http://', '').replace('https://', '')
-        : 'localhost:8000';
+      let apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      if (apiBaseUrl === 'your_key_here' || !apiBaseUrl.startsWith('http')) {
+        apiBaseUrl = 'http://localhost:8000';
+      }
+      const wsHost = apiBaseUrl.replace('http://', '').replace('https://', '');
       const wsUrl = `${wsProtocol}//${wsHost}/ws/prices`;
 
       console.log('Connecting to WebSocket:', wsUrl);
@@ -856,18 +865,18 @@ const CryptoChartWebSocket = () => {
   // Generate transition data: price moving from current to entry point
   const generateTransitionData = () => {
     if (!simulationActive || !scenarioData || chartData.length === 0) return [];
-    
+
     const lastCandle = chartDataWithIndicators[chartDataWithIndicators.length - 1];
     const currentPrice = lastCandle.close;
     const entryPrice = scenarioData.entryPrice;
     const transitionSteps = 8; // Steps to reach entry
     const transition = [];
-    
+
     for (let i = 0; i < transitionSteps; i++) {
       const progress = (i + 1) / transitionSteps;
       const price = currentPrice + (entryPrice - currentPrice) * progress;
       const timestamp = lastCandle.timestamp + (i + 1) * 60000;
-      
+
       transition.push({
         time: `→${i + 1}`,
         timestamp: timestamp,
@@ -880,7 +889,7 @@ const CryptoChartWebSocket = () => {
         isProjection: true
       });
     }
-    
+
     return transition;
   };
 
@@ -974,13 +983,50 @@ const CryptoChartWebSocket = () => {
 
   // Add scenario projection to chart data if active (with animation)
   const transitionData = generateTransitionData();
-  const fullChartData = simulationActive && scenarioData?.projection
+  const baseFullData = (simulationActive && scenarioData?.projection
     ? [
-        ...chartDataWithIndicators,
-        ...transitionData.slice(0, Math.max(0, animationStep)),
-        ...scenarioData.projection.slice(0, Math.max(0, animationStep - transitionData.length))
-      ]
-    : chartDataWithIndicators;
+      ...chartDataWithIndicators,
+      ...transitionData.slice(0, Math.max(0, animationStep)),
+      ...scenarioData.projection.slice(0, Math.max(0, animationStep - transitionData.length))
+    ]
+    : chartDataWithIndicators);
+
+  const fullChartData = baseFullData.map((item, idx, arr) => {
+    let newItem = { ...item };
+
+    if (showPattern && patternData?.data) {
+      const patternPoints = patternData.data;
+      const patternStartIdx = Math.max(0, arr.length - patternPoints.length);
+
+      if (idx >= patternStartIdx) {
+        const pIdx = idx - patternStartIdx;
+
+        if (pIdx >= 0 && pIdx < patternPoints.length) {
+          // Main pattern line
+          newItem.patternValue = patternPoints[pIdx].y;
+
+          // Pattern Trendlines (interpolate sloped lines)
+          patternData.trendlines?.forEach((tl, tlIdx) => {
+            if (pIdx >= tl.x1 && pIdx <= tl.x2) {
+              const progress = (pIdx - tl.x1) / (tl.x2 - tl.x1 || 1);
+              const y = tl.y1 + (tl.y2 - tl.y1) * progress;
+              newItem[`patternTrendline_${tlIdx}`] = y;
+            }
+          });
+
+          // Pattern Annotations
+          patternData.annotations?.forEach((ann, annIdx) => {
+            if (Math.round(pIdx) === Math.round(ann.x)) {
+              newItem[`patternAnnotation_${annIdx}`] = ann.y;
+              newItem[`patternAnnotationLabel_${annIdx}`] = ann.label;
+              newItem[`patternAnnotationType_${annIdx}`] = ann.type;
+            }
+          });
+        }
+      }
+    }
+    return newItem;
+  });
 
   // Render chart based on selected type
   const renderChart = () => {
@@ -1122,7 +1168,7 @@ const CryptoChartWebSocket = () => {
               style={{ filter: priceGlow }}
               connectNulls={false}
             />
-            
+
             {/* Projection Line - Animated scenario projection */}
             {simulationActive && scenarioData && (
               <Line
@@ -1154,6 +1200,80 @@ const CryptoChartWebSocket = () => {
                 isAnimationActive={false}
               />
             ))}
+
+            {/* Pattern Overlay - AI-generated pattern visualization */}
+            {showPattern && patternData && (
+              <>
+                {/* Main pattern connecting points */}
+                <Line
+                  yAxisId="price"
+                  type="monotone"
+                  dataKey="patternValue"
+                  stroke={patternData.direction === 'bullish' ? '#22c55e' : patternData.direction === 'bearish' ? '#ef4444' : '#8b5cf6'}
+                  strokeWidth={4}
+                  strokeDasharray="5 5"
+                  dot={false}
+                  name={patternData.pattern_name?.replace(/_/g, ' ').toUpperCase() || 'Pattern'}
+                  isAnimationActive={false}
+                  connectNulls={true}
+                  style={{
+                    opacity: 1,
+                    filter: `drop-shadow(0px 0px 8px ${patternData.direction === 'bullish' ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)'})`,
+                    zIndex: 100
+                  }}
+                />
+
+                {/* Pattern Trendlines */}
+                {patternData.trendlines?.map((tl, idx) => (
+                  <Line
+                    key={`tl-${idx}`}
+                    yAxisId="price"
+                    type="linear"
+                    dataKey={`patternTrendline_${idx}`}
+                    stroke={tl.color || '#f59e0b'}
+                    strokeWidth={3}
+                    dot={false}
+                    name={tl.label || 'Trendline'}
+                    isAnimationActive={false}
+                    connectNulls={true}
+                    style={{ opacity: 0.9, filter: 'drop-shadow(0px 0px 4px rgba(245, 158, 11, 0.5))' }}
+                  />
+                ))}
+
+                {/* Pattern Annotations */}
+                {patternData.annotations?.map((ann, idx) => (
+                  <Line
+                    key={`ann-${idx}`}
+                    yAxisId="price"
+                    type="monotone"
+                    dataKey={`patternAnnotation_${idx}`}
+                    stroke="transparent"
+                    dot={{
+                      r: 6,
+                      fill: ann.type === 'peak' ? '#ef4444' : ann.type === 'valley' ? '#22c55e' : '#f59e0b',
+                      stroke: '#ffffff',
+                      strokeWidth: 2
+                    }}
+                    name={ann.label}
+                    isAnimationActive={false}
+                    connectNulls={true}
+                    label={{
+                      value: ann.label,
+                      position: 'top',
+                      fill: '#334155',
+                      fontSize: 10,
+                      fontWeight: 800,
+                      offset: 10,
+                      background: 'rgba(255,255,255,0.8)',
+                      borderRadius: 4,
+                      padding: 2
+                    }}
+                  />
+                ))}
+              </>
+            )}
+
+
 
             <defs>
               <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
@@ -1255,6 +1375,68 @@ const CryptoChartWebSocket = () => {
               </>
             )}
 
+            {/* Pattern Overlay - AI-generated pattern visualization */}
+            {showPattern && patternData && (
+              <>
+                <Line
+                  type="monotone"
+                  dataKey="patternValue"
+                  stroke={patternData.direction === 'bullish' ? '#22c55e' : patternData.direction === 'bearish' ? '#ef4444' : '#8b5cf6'}
+                  strokeWidth={4}
+                  strokeDasharray="5 5"
+                  dot={false}
+                  name={patternData.pattern_name?.replace(/_/g, ' ').toUpperCase() || 'Pattern'}
+                  isAnimationActive={false}
+                  connectNulls={true}
+                  style={{
+                    opacity: 1,
+                    filter: `drop-shadow(0px 0px 8px ${patternData.direction === 'bullish' ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)'})`,
+                    zIndex: 100
+                  }}
+                />
+                {patternData.trendlines?.map((tl, idx) => (
+                  <Line
+                    key={`tl-area-${idx}`}
+                    type="linear"
+                    dataKey={`patternTrendline_${idx}`}
+                    stroke={tl.color || '#f59e0b'}
+                    strokeWidth={3}
+                    dot={false}
+                    name={tl.label || 'Trendline'}
+                    isAnimationActive={false}
+                    connectNulls={true}
+                    style={{ opacity: 0.9 }}
+                  />
+                ))}
+                {patternData.annotations?.map((ann, idx) => (
+                  <Line
+                    key={`ann-area-${idx}`}
+                    type="monotone"
+                    dataKey={`patternAnnotation_${idx}`}
+                    stroke="transparent"
+                    dot={{
+                      r: 6,
+                      fill: ann.type === 'peak' ? '#ef4444' : ann.type === 'valley' ? '#22c55e' : '#f59e0b',
+                      stroke: '#ffffff',
+                      strokeWidth: 2
+                    }}
+                    name={ann.label}
+                    label={{
+                      value: ann.label,
+                      position: 'top',
+                      fill: '#334155',
+                      fontSize: 10,
+                      fontWeight: 800,
+                      offset: 10
+                    }}
+                    isAnimationActive={false}
+                    connectNulls={true}
+                  />
+                ))}
+              </>
+            )}
+
+
             {/* Main Price Area */}
             <Area
               type="monotone"
@@ -1268,7 +1450,7 @@ const CryptoChartWebSocket = () => {
               style={{ filter: priceGlow }}
               connectNulls={false}
             />
-            
+
             {/* Projection Line - Animated scenario projection */}
             {simulationActive && scenarioData && (
               <Line
@@ -1298,6 +1480,24 @@ const CryptoChartWebSocket = () => {
                 isAnimationActive={false}
               />
             ))}
+
+            {/* Pattern Overlay */}
+            {showPattern && patternData && (
+              <Line
+                type="monotone"
+                dataKey="patternValue"
+                stroke="#10b981"
+                strokeWidth={3}
+                strokeDasharray="5 5"
+                dot={{ r: 3, fill: '#10b981', strokeWidth: 2, stroke: '#ffffff' }}
+                name={patternData.pattern_name?.replace(/_/g, ' ').toUpperCase() || 'Pattern'}
+                isAnimationActive={true}
+                animationDuration={1000}
+                connectNulls={true}
+                style={{ opacity: 0.85 }}
+              />
+            )}
+
 
             <defs>
               <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
@@ -1410,7 +1610,7 @@ const CryptoChartWebSocket = () => {
               style={{ filter: priceGlow }}
               connectNulls={false}
             />
-            
+
             {/* Projection Line - Animated scenario projection */}
             {simulationActive && scenarioData && (
               <Line
@@ -1426,6 +1626,70 @@ const CryptoChartWebSocket = () => {
                 style={{ opacity: 0.9 }}
               />
             )}
+
+            {/* Pattern Overlay - AI-generated pattern visualization */}
+            {showPattern && patternData && (
+              <>
+                <Line
+                  type="monotone"
+                  dataKey="patternValue"
+                  stroke={patternData.direction === 'bullish' ? '#22c55e' : patternData.direction === 'bearish' ? '#ef4444' : '#8b5cf6'}
+                  strokeWidth={4}
+                  strokeDasharray="5 5"
+                  dot={false}
+                  name={patternData.pattern_name?.replace(/_/g, ' ').toUpperCase() || 'Pattern'}
+                  isAnimationActive={false}
+                  connectNulls={true}
+                  style={{
+                    opacity: 1,
+                    filter: `drop-shadow(0px 0px 8px ${patternData.direction === 'bullish' ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)'})`,
+                    zIndex: 100
+                  }}
+                />
+                {patternData.trendlines?.map((tl, idx) => (
+                  <Line
+                    key={`tl-line-${idx}`}
+                    type="linear"
+                    dataKey={`patternTrendline_${idx}`}
+                    stroke={tl.color || '#f59e0b'}
+                    strokeWidth={3}
+                    dot={false}
+                    name={tl.label || 'Trendline'}
+                    isAnimationActive={false}
+                    connectNulls={true}
+                    style={{ opacity: 0.9 }}
+                  />
+                ))}
+                {patternData.annotations?.map((ann, idx) => (
+                  <Line
+                    key={`ann-line-${idx}`}
+                    type="monotone"
+                    dataKey={`patternAnnotation_${idx}`}
+                    stroke="transparent"
+                    dot={{
+                      r: 6,
+                      fill: ann.type === 'peak' ? '#ef4444' : ann.type === 'valley' ? '#22c55e' : '#f59e0b',
+                      stroke: '#ffffff',
+                      strokeWidth: 2
+                    }}
+                    name={ann.label}
+                    label={{
+                      value: ann.label,
+                      position: 'top',
+                      fill: '#334155',
+                      fontSize: 10,
+                      fontWeight: 800,
+                      offset: 10
+                    }}
+                    isAnimationActive={false}
+                    connectNulls={true}
+                  />
+                ))}
+              </>
+            )}
+
+
+
 
             {/* Custom Indicators */}
             {indicators.map(ind => (
@@ -1447,7 +1711,7 @@ const CryptoChartWebSocket = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex flex-col">
+    <div className="h-full bg-[#F8F9FA] flex flex-col overflow-hidden min-h-0">
       {/* Header Bar - Condensed Asset Info */}
       <div className="bg-white border-b border-slate-200 px-4 py-2 shadow-sm">
         <div className="max-w-[1800px] mx-auto flex items-center justify-between">
@@ -1458,7 +1722,7 @@ const CryptoChartWebSocket = () => {
               <span className={`text-xs font-semibold px-2 py-0.5 rounded ${priceChange >= 0
                 ? 'bg-green-100 text-green-700'
                 : 'bg-red-100 text-red-700'
-              }`}>
+                }`}>
                 {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
               </span>
             </div>
@@ -1475,9 +1739,9 @@ const CryptoChartWebSocket = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Chart Area - Dominates Screen */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 min-h-0">
           {/* Chart Controls Toolbar */}
           <div className="bg-white border-b border-slate-200 px-4 py-2 flex items-center gap-2 flex-wrap">
             {/* Timeframe Selector */}
@@ -1489,7 +1753,7 @@ const CryptoChartWebSocket = () => {
                   className={`px-2 py-1 text-xs font-medium rounded transition-all ${interval === tf
                     ? 'bg-white text-purple-600 shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   {tf}
                 </button>
@@ -1505,7 +1769,7 @@ const CryptoChartWebSocket = () => {
                 className={`p-1.5 rounded transition-all ${chartType === 'line'
                   ? 'bg-purple-100 text-purple-600'
                   : 'text-slate-600 hover:bg-slate-100'
-                }`}
+                  }`}
                 title="Line Chart"
               >
                 <LineChartIcon className="w-4 h-4" />
@@ -1515,7 +1779,7 @@ const CryptoChartWebSocket = () => {
                 className={`p-1.5 rounded transition-all ${chartType === 'area'
                   ? 'bg-purple-100 text-purple-600'
                   : 'text-slate-600 hover:bg-slate-100'
-                }`}
+                  }`}
                 title="Area Chart"
               >
                 <BarChartIcon className="w-4 h-4" />
@@ -1530,7 +1794,7 @@ const CryptoChartWebSocket = () => {
               className={`p-1.5 rounded transition-all ${showIndicatorPanel
                 ? 'bg-purple-100 text-purple-600'
                 : 'text-slate-600 hover:bg-slate-100'
-              }`}
+                }`}
               title="Indicators"
             >
               <Layers className="w-4 h-4" />
@@ -1542,7 +1806,7 @@ const CryptoChartWebSocket = () => {
               className={`p-1.5 rounded transition-all ${showVolume
                 ? 'bg-purple-100 text-purple-600'
                 : 'text-slate-600 hover:bg-slate-100'
-              }`}
+                }`}
               title="Volume"
             >
               {showVolume ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
@@ -1630,6 +1894,53 @@ const CryptoChartWebSocket = () => {
               </div>
             )}
 
+            {/* Pattern Info Panel - Top Right Overlay */}
+            {showPattern && patternData && (
+              <div className="absolute top-4 right-4 z-20 bg-white backdrop-blur-sm border-2 border-purple-300 rounded-xl p-3 shadow-2xl max-w-xs">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-purple-600 animate-pulse" />
+                    <div className="text-sm font-bold text-purple-900">
+                      {patternData.pattern_name?.replace(/_/g, ' ').toUpperCase() || 'Pattern'}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowPattern(false);
+                      setPatternData(null);
+                      setShowPatternInfo(false);
+                    }}
+                    className="p-1 hover:bg-purple-100 rounded transition-colors"
+                    title="Clear Pattern"
+                  >
+                    <X size={14} className="text-purple-700" />
+                  </button>
+                </div>
+                <div className="text-xs text-slate-700 mb-3 leading-relaxed">
+                  {patternData.description}
+                </div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className={`flex-1 px-2 py-1 rounded-lg text-xs font-semibold text-center ${patternData.direction === 'bullish' ? 'bg-green-100 text-green-700' :
+                    patternData.direction === 'bearish' ? 'bg-red-100 text-red-700' :
+                      'bg-orange-100 text-orange-700'
+                    }`}>
+                    {patternData.direction}
+                  </div>
+                  <div className="flex-1 px-2 py-1 rounded-lg bg-blue-100 text-blue-700 text-xs font-semibold text-center">
+                    {patternData.pattern_type}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowPatternInfo(true)}
+                  className="w-full px-3 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                >
+                  <Info className="w-3 h-3" />
+                  Learn More
+                </button>
+              </div>
+            )}
+
+
             {/* Active Scenario Overlay */}
             {simulationActive && scenarioData && (
               <div className="absolute top-4 right-4 z-20 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 shadow-lg">
@@ -1654,7 +1965,7 @@ const CryptoChartWebSocket = () => {
               <div className="h-full p-2">
                 <div className="h-full relative">
                   {renderChart()}
-                  
+
                   {/* Integrated Playback Controls - Bottom Right */}
                   {simulationActive && scenarioData && (
                     <div className="absolute bottom-4 right-4 z-20 bg-white/95 backdrop-blur-sm border border-slate-200 rounded-lg p-3 shadow-xl">
@@ -1687,7 +1998,7 @@ const CryptoChartWebSocket = () => {
                         >
                           <RotateCcw className="w-4 h-4" />
                         </button>
-                        
+
                         {/* Speed Controls */}
                         <div className="flex items-center gap-1 ml-2 pl-2 border-l border-slate-300">
                           {[1, 2, 5, 10].map(speed => (
@@ -1697,7 +2008,7 @@ const CryptoChartWebSocket = () => {
                               className={`px-2 py-1 text-xs font-medium rounded transition-all ${playbackSpeed === speed
                                 ? 'bg-purple-100 text-purple-600'
                                 : 'text-slate-600 hover:bg-slate-100'
-                              }`}
+                                }`}
                             >
                               {speed}x
                             </button>
@@ -1736,156 +2047,191 @@ const CryptoChartWebSocket = () => {
         </div>
 
         {/* Collapsible Right Sidebar for Scenarios */}
-        <div className={`bg-white border-l border-slate-200 transition-all duration-200 ${isSidebarCollapsed ? 'w-0' : 'w-80'} flex flex-col overflow-hidden`}>
+        <div className={`bg-white border-l border-slate-200 transition-all duration-200 ${isSidebarCollapsed ? 'w-0' : 'w-80'} flex flex-col overflow-hidden min-h-0`}>
           {!isSidebarCollapsed && (
             <>
-              {/* Sidebar Header */}
-              <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-slate-800">Scenarios</h3>
-                <button
-                  onClick={() => setIsSidebarCollapsed(true)}
-                  className="p-1 hover:bg-slate-100 rounded transition-colors"
-                >
-                  <ChevronRight className="w-4 h-4 text-slate-600" />
-                </button>
+              {/* Sidebar Header with Tabs */}
+              <div className="border-b border-slate-200">
+                <div className="px-4 py-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setActiveTab('scenarios')}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${activeTab === 'scenarios'
+                        ? 'bg-purple-600 text-white'
+                        : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                    >
+                      Scenarios
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('patterns')}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 ${activeTab === 'patterns'
+                        ? 'bg-purple-600 text-white'
+                        : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      Patterns
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => setIsSidebarCollapsed(true)}
+                    className="p-1 hover:bg-slate-100 rounded transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4 text-slate-600" />
+                  </button>
+                </div>
               </div>
 
               {/* Sidebar Content */}
-              <div className="flex-1 overflow-y-auto p-4">
-                {!selectedIndicators.supportResistance || !calculatedIndicators.support || !calculatedIndicators.resistance ? (
-                  <div className="text-center py-8">
-                    <p className="text-sm text-slate-600 mb-4">Enable Support & Resistance to use scenarios</p>
-                    <button
-                      onClick={() => setSelectedIndicators(prev => ({ ...prev, supportResistance: true }))}
-                      className="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded hover:bg-purple-700 transition-all"
-                    >
-                      Enable S/R
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {/* Support Scenarios */}
-                    <div>
-                      <h4 className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Support</h4>
-                      <div className="space-y-2">
-                        {calculatedIndicators.support.slice(0, 2).map((level, idx) => (
-                          <div key={idx} className="bg-green-50 border border-green-200 rounded-lg p-3">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-xs font-semibold text-green-700">{formatPrice(level.price)}</span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-1">
-                              <button
-                                onClick={() => {
-                                  const scenario = generateScenario('long-support', level);
-                                  setScenarioData(scenario);
-                                  setSimulationActive(true);
-                                }}
-                                className={`px-2 py-1.5 text-xs font-medium rounded transition-all ${scenarioData?.type === 'long-support' && scenarioData?.entryPrice === level.price
-                                  ? 'bg-green-600 text-white'
-                                  : 'bg-white text-green-700 border border-green-300 hover:bg-green-100'
-                                }`}
-                              >
-                                Long
-                              </button>
-                              <button
-                                onClick={() => {
-                                  const scenario = generateScenario('breakdown-support', level);
-                                  setScenarioData(scenario);
-                                  setSimulationActive(true);
-                                }}
-                                className={`px-2 py-1.5 text-xs font-medium rounded transition-all ${scenarioData?.type === 'breakdown-support' && scenarioData?.entryPrice === level.price
-                                  ? 'bg-red-600 text-white'
-                                  : 'bg-white text-red-700 border border-red-300 hover:bg-red-100'
-                                }`}
-                              >
-                                Breakdown
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+              {activeTab === 'scenarios' ? (
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+                  {!selectedIndicators.supportResistance || !calculatedIndicators.support || !calculatedIndicators.resistance ? (
+                    <div className="text-center py-8">
+                      <p className="text-sm text-slate-600 mb-4">Enable Support & Resistance to use scenarios</p>
+                      <button
+                        onClick={() => setSelectedIndicators(prev => ({ ...prev, supportResistance: true }))}
+                        className="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded hover:bg-purple-700 transition-all"
+                      >
+                        Enable S/R
+                      </button>
                     </div>
-
-                    {/* Resistance Scenarios */}
-                    <div>
-                      <h4 className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Resistance</h4>
-                      <div className="space-y-2">
-                        {calculatedIndicators.resistance.slice(0, 2).map((level, idx) => (
-                          <div key={idx} className="bg-red-50 border border-red-200 rounded-lg p-3">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-xs font-semibold text-red-700">{formatPrice(level.price)}</span>
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Support Scenarios */}
+                      <div>
+                        <h4 className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Support</h4>
+                        <div className="space-y-2">
+                          {calculatedIndicators.support.slice(0, 2).map((level, idx) => (
+                            <div key={idx} className="bg-green-50 border border-green-200 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs font-semibold text-green-700">{formatPrice(level.price)}</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-1">
+                                <button
+                                  onClick={() => {
+                                    const scenario = generateScenario('long-support', level);
+                                    setScenarioData(scenario);
+                                    setSimulationActive(true);
+                                  }}
+                                  className={`px-2 py-1.5 text-xs font-medium rounded transition-all ${scenarioData?.type === 'long-support' && scenarioData?.entryPrice === level.price
+                                    ? 'bg-green-600 text-white'
+                                    : 'bg-white text-green-700 border border-green-300 hover:bg-green-100'
+                                    }`}
+                                >
+                                  Long
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    const scenario = generateScenario('breakdown-support', level);
+                                    setScenarioData(scenario);
+                                    setSimulationActive(true);
+                                  }}
+                                  className={`px-2 py-1.5 text-xs font-medium rounded transition-all ${scenarioData?.type === 'breakdown-support' && scenarioData?.entryPrice === level.price
+                                    ? 'bg-red-600 text-white'
+                                    : 'bg-white text-red-700 border border-red-300 hover:bg-red-100'
+                                    }`}
+                                >
+                                  Breakdown
+                                </button>
+                              </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-1">
-                              <button
-                                onClick={() => {
-                                  const scenario = generateScenario('short-resistance', level);
-                                  setScenarioData(scenario);
-                                  setSimulationActive(true);
-                                }}
-                                className={`px-2 py-1.5 text-xs font-medium rounded transition-all ${scenarioData?.type === 'short-resistance' && scenarioData?.entryPrice === level.price
-                                  ? 'bg-red-600 text-white'
-                                  : 'bg-white text-red-700 border border-red-300 hover:bg-red-100'
-                                }`}
-                              >
-                                Short
-                              </button>
-                              <button
-                                onClick={() => {
-                                  const scenario = generateScenario('breakout-resistance', level);
-                                  setScenarioData(scenario);
-                                  setSimulationActive(true);
-                                }}
-                                className={`px-2 py-1.5 text-xs font-medium rounded transition-all ${scenarioData?.type === 'breakout-resistance' && scenarioData?.entryPrice === level.price
-                                  ? 'bg-green-600 text-white'
-                                  : 'bg-white text-green-700 border border-green-300 hover:bg-green-100'
-                                }`}
-                              >
-                                Breakout
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Active Scenario Details */}
-                    {simulationActive && scenarioData && (
-                      <div className="mt-4 bg-purple-50 border border-purple-200 rounded-lg p-3">
-                        <div className="text-xs font-semibold text-purple-700 mb-2">Active Scenario</div>
-                        <div className="space-y-1 text-xs">
-                          <div className="flex justify-between">
-                            <span className="text-slate-600">Entry:</span>
-                            <span className="font-mono font-semibold">{formatPrice(scenarioData.entryPrice)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-green-600">Target:</span>
-                            <span className="font-mono font-semibold text-green-600">{formatPrice(scenarioData.targetPrice)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-red-600">Stop:</span>
-                            <span className="font-mono font-semibold text-red-600">{formatPrice(scenarioData.stopLoss)}</span>
-                          </div>
-                          <div className="flex justify-between pt-1 border-t border-purple-200">
-                            <span className="text-slate-600">R:R:</span>
-                            <span className="font-mono font-semibold">{scenarioData.riskRewardRatio}:1</span>
-                          </div>
+                          ))}
                         </div>
-                        <button
-                          onClick={() => {
-                            setSimulationActive(false);
-                            setScenarioData(null);
-                            setAnimationStep(0);
-                            setIsAnimating(false);
-                          }}
-                          className="mt-2 w-full px-2 py-1 bg-white text-red-600 text-xs font-medium rounded border border-red-300 hover:bg-red-50 transition-all"
-                        >
-                          Clear
-                        </button>
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
+
+                      {/* Resistance Scenarios */}
+                      <div>
+                        <h4 className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Resistance</h4>
+                        <div className="space-y-2">
+                          {calculatedIndicators.resistance.slice(0, 2).map((level, idx) => (
+                            <div key={idx} className="bg-red-50 border border-red-200 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs font-semibold text-red-700">{formatPrice(level.price)}</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-1">
+                                <button
+                                  onClick={() => {
+                                    const scenario = generateScenario('short-resistance', level);
+                                    setScenarioData(scenario);
+                                    setSimulationActive(true);
+                                  }}
+                                  className={`px-2 py-1.5 text-xs font-medium rounded transition-all ${scenarioData?.type === 'short-resistance' && scenarioData?.entryPrice === level.price
+                                    ? 'bg-red-600 text-white'
+                                    : 'bg-white text-red-700 border border-red-300 hover:bg-red-100'
+                                    }`}
+                                >
+                                  Short
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    const scenario = generateScenario('breakout-resistance', level);
+                                    setScenarioData(scenario);
+                                    setSimulationActive(true);
+                                  }}
+                                  className={`px-2 py-1.5 text-xs font-medium rounded transition-all ${scenarioData?.type === 'breakout-resistance' && scenarioData?.entryPrice === level.price
+                                    ? 'bg-green-600 text-white'
+                                    : 'bg-white text-green-700 border border-green-300 hover:bg-green-100'
+                                    }`}
+                                >
+                                  Breakout
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Active Scenario Details */}
+                      {simulationActive && scenarioData && (
+                        <div className="mt-4 bg-purple-50 border border-purple-200 rounded-lg p-3">
+                          <div className="text-xs font-semibold text-purple-700 mb-2">Active Scenario</div>
+                          <div className="space-y-1 text-xs">
+                            <div className="flex justify-between">
+                              <span className="text-slate-600">Entry:</span>
+                              <span className="font-mono font-semibold">{formatPrice(scenarioData.entryPrice)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-green-600">Target:</span>
+                              <span className="font-mono font-semibold text-green-600">{formatPrice(scenarioData.targetPrice)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-red-600">Stop:</span>
+                              <span className="font-mono font-semibold text-red-600">{formatPrice(scenarioData.stopLoss)}</span>
+                            </div>
+                            <div className="flex justify-between pt-1 border-t border-purple-200">
+                              <span className="text-slate-600">R:R:</span>
+                              <span className="font-mono font-semibold">{scenarioData.riskRewardRatio}:1</span>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setSimulationActive(false);
+                              setScenarioData(null);
+                              setAnimationStep(0);
+                              setIsAnimating(false);
+                            }}
+                            className="mt-2 w-full px-2 py-1 bg-white text-red-600 text-xs font-medium rounded border border-red-300 hover:bg-red-50 transition-all"
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex-1 overflow-hidden min-h-0">
+                  <PatternChatPanel
+                    onPatternGenerated={(pattern) => {
+                      setPatternData(pattern);
+                      setShowPattern(true);
+                      setShowPatternInfo(false);
+                    }}
+                    currentPrice={currentPrice}
+                  />
+                </div>
+              )}
             </>
           )}
         </div>
@@ -1916,7 +2262,7 @@ const CryptoChartWebSocket = () => {
                     className={`px-3 py-1.5 text-xs font-medium rounded transition-all ${value
                       ? 'bg-purple-600 text-white'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
+                      }`}
                   >
                     {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
                   </button>
@@ -2057,6 +2403,14 @@ const CryptoChartWebSocket = () => {
             )}
           </div>
         </div>
+      )}
+
+      {/* Pattern Info Card Overlay */}
+      {showPatternInfo && patternData && (
+        <PatternInfoCard
+          pattern={patternData}
+          onClose={() => setShowPatternInfo(false)}
+        />
       )}
     </div>
   );

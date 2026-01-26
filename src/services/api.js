@@ -1,6 +1,11 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+let API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
+// Handle placeholder values in .env
+if (API_BASE_URL === 'your_key_here' || !API_BASE_URL.startsWith('http')) {
+    API_BASE_URL = 'http://localhost:8000'
+}
 
 const api = axios.create({
     baseURL: API_BASE_URL,

@@ -26,9 +26,11 @@ export default function useBinanceWebSocket(symbols = []) {
         try {
             // Determine WebSocket URL based on environment
             const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-            const wsHost = import.meta.env.VITE_API_URL
-                ? import.meta.env.VITE_API_URL.replace('http://', '').replace('https://', '')
-                : 'localhost:8000'
+            let apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+            if (apiBaseUrl === 'your_key_here' || !apiBaseUrl.startsWith('http')) {
+                apiBaseUrl = 'http://localhost:8000'
+            }
+            const wsHost = apiBaseUrl.replace('http://', '').replace('https://', '')
             const wsUrl = `${wsProtocol}//${wsHost}/ws/prices`
 
             console.log('Connecting to WebSocket:', wsUrl)

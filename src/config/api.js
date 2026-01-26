@@ -1,5 +1,9 @@
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+let API_BASE_URL_RAW = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+if (API_BASE_URL_RAW === 'your_key_here' || !API_BASE_URL_RAW.startsWith('http')) {
+    API_BASE_URL_RAW = 'http://localhost:8000'
+}
+const API_BASE_URL = API_BASE_URL_RAW
 
 export const API_ENDPOINTS = {
     BASE: API_BASE_URL,
