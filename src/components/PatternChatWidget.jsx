@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Loader2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { API_ENDPOINTS } from '../config/api';
 
 const PatternChatWidget = ({ onPatternGenerated, currentPrice = 50000 }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -41,12 +42,7 @@ const PatternChatWidget = ({ onPatternGenerated, currentPrice = 50000 }) => {
 
         try {
             // Call pattern recognition API
-            let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-
-            // Handle placeholder values in .env
-            if (API_URL === 'your_key_here' || !API_URL.startsWith('http')) {
-                API_URL = 'http://localhost:8000';
-            }
+            const API_URL = API_ENDPOINTS.BASE;
 
             const response = await fetch(`${API_URL}/api/v1/pattern/recognize`, {
                 method: 'POST',
@@ -105,7 +101,7 @@ const PatternChatWidget = ({ onPatternGenerated, currentPrice = 50000 }) => {
 
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: errorMessage
+                content: `${errorMessage}\n\n*Connection Details: Trying to reach ${API_URL}*`
             }]);
         } finally {
             setIsLoading(false);

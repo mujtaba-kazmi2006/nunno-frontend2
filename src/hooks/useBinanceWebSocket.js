@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { API_ENDPOINTS } from '../config/api'
 
 /**
  * Custom hook for Binance WebSocket price streaming
@@ -25,11 +26,8 @@ export default function useBinanceWebSocket(symbols = []) {
 
         try {
             // Determine WebSocket URL based on environment
-            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-            let apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-            if (apiBaseUrl === 'your_key_here' || !apiBaseUrl.startsWith('http')) {
-                apiBaseUrl = 'http://localhost:8000'
-            }
+            const apiBaseUrl = API_ENDPOINTS.BASE;
+            const wsProtocol = apiBaseUrl.startsWith('https') ? 'wss:' : 'ws:';
             const wsHost = apiBaseUrl.replace('http://', '').replace('https://', '')
             const wsUrl = `${wsProtocol}//${wsHost}/ws/prices`
 

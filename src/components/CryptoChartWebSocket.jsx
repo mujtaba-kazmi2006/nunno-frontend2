@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { TrendingUp, Settings, PlayCircle, StopCircle, Code, RefreshCw, BarChart3, Minus, Plus, Info, ChevronDown, Eye, EyeOff, Activity, Pause, RotateCcw, ChevronRight, ChevronLeft, Gauge, Volume2, VolumeX, LineChart as LineChartIcon, BarChart as BarChartIcon, Layers, X, Sparkles } from 'lucide-react';
 import PatternChatPanel from './PatternChatPanel';
 import PatternInfoCard from './PatternInfoCard';
+import { API_ENDPOINTS } from '../config/api';
 import {
   calculateEMA,
   calculateRSI,
@@ -390,11 +391,8 @@ const CryptoChartWebSocket = () => {
 
     try {
       // Determine WebSocket URL based on environment
-      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      let apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      if (apiBaseUrl === 'your_key_here' || !apiBaseUrl.startsWith('http')) {
-        apiBaseUrl = 'http://localhost:8000';
-      }
+      const apiBaseUrl = API_ENDPOINTS.BASE;
+      const wsProtocol = apiBaseUrl.startsWith('https') ? 'wss:' : 'ws:';
       const wsHost = apiBaseUrl.replace('http://', '').replace('https://', '');
       const wsUrl = `${wsProtocol}//${wsHost}/ws/prices`;
 
@@ -753,10 +751,11 @@ const CryptoChartWebSocket = () => {
         projection.push({
           time: `+${i + 1}`,
           timestamp: lastCandle.timestamp + (i + 1) * 60000,
-          close: currentProjectedPrice,
+          close: null,
+          projectionClose: currentProjectedPrice,
           high: currentProjectedPrice + avgVolatility * 0.3,
           low: currentProjectedPrice - avgVolatility * 0.2,
-          open: i === 0 ? lastPrice : projection[i - 1].close,
+          open: i === 0 ? lastPrice : (projection[i - 1]?.projectionClose || lastPrice),
           isProjection: true
         });
       }
@@ -794,10 +793,11 @@ const CryptoChartWebSocket = () => {
         projection.push({
           time: `+${i + 1}`,
           timestamp: lastCandle.timestamp + (i + 1) * 60000,
-          close: currentProjectedPrice,
+          close: null,
+          projectionClose: currentProjectedPrice,
           high: currentProjectedPrice + avgVolatility * 0.2,
           low: currentProjectedPrice - avgVolatility * 0.3,
-          open: i === 0 ? lastPrice : projection[i - 1].close,
+          open: i === 0 ? lastPrice : (projection[i - 1]?.projectionClose || lastPrice),
           isProjection: true
         });
       }
@@ -1481,22 +1481,6 @@ const CryptoChartWebSocket = () => {
               />
             ))}
 
-            {/* Pattern Overlay */}
-            {showPattern && patternData && (
-              <Line
-                type="monotone"
-                dataKey="patternValue"
-                stroke="#10b981"
-                strokeWidth={3}
-                strokeDasharray="5 5"
-                dot={{ r: 3, fill: '#10b981', strokeWidth: 2, stroke: '#ffffff' }}
-                name={patternData.pattern_name?.replace(/_/g, ' ').toUpperCase() || 'Pattern'}
-                isAnimationActive={true}
-                animationDuration={1000}
-                connectNulls={true}
-                style={{ opacity: 0.85 }}
-              />
-            )}
 
 
             <defs>
