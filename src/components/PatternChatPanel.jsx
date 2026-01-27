@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Sparkles, TrendingUp, TrendingDown, Layers, Square, User, Bot } from 'lucide-react';
 import { streamMessage } from '../services/api';
-import { API_ENDPOINTS } from '../config/api';
 
 const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000 }) => {
     const [messages, setMessages] = useState([
@@ -45,7 +44,10 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000 }) => {
         setLoadingStatus('Checking patterns...');
 
         try {
-            const API_URL = API_ENDPOINTS.BASE;
+            let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            if (API_URL === 'your_key_here' || !API_URL.startsWith('http')) {
+                API_URL = 'http://localhost:8000';
+            }
 
             // 1. Try pattern recognition first for the visual layer
             let patternFound = null;
@@ -117,10 +119,9 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000 }) => {
         } catch (error) {
             if (error.name === 'AbortError') return;
             console.error('Chat error:', error);
-            const API_URL = API_ENDPOINTS.BASE;
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: `❌ Sorry, I encountered an error. Please check your connection.\n\n*Connection Details: Trying to reach ${API_URL}*`
+                content: '❌ Sorry, I encountered an error. Please check your connection.'
             }]);
         } finally {
             setIsLoading(false);

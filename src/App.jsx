@@ -30,33 +30,36 @@ function Dashboard({ userAge }) {
     const [selectedTicker, setSelectedTicker] = useState(null);
 
     return (
-        <div className="main-container">
-            {/* Desktop Sidebar - Hidden on mobile */}
-            <div className="sidebar desktop-only">
-                <MarketTemperature />
-                <CryptoPriceCard
-                    ticker="BTCUSDT"
-                    name="Bitcoin"
-                    onClick={() => setSelectedTicker("BTCUSDT")}
-                />
-                <CryptoPriceCard
-                    ticker="ETHUSDT"
-                    name="Ethereum"
-                    onClick={() => setSelectedTicker("ETHUSDT")}
-                />
+        <>
+            <div className="main-container">
+                {/* Desktop Sidebar - Hidden on mobile */}
+                <div className="sidebar desktop-only">
+                    <MarketTemperature />
+                    <CryptoPriceCard
+                        ticker="BTCUSDT"
+                        name="Bitcoin"
+                        onClick={() => setSelectedTicker("BTCUSDT")}
+                    />
+                    <CryptoPriceCard
+                        ticker="ETHUSDT"
+                        name="Ethereum"
+                        onClick={() => setSelectedTicker("ETHUSDT")}
+                    />
+                </div>
+
+                {/* Chat Container - Full screen on mobile, normal on desktop */}
+                <div className="chat-container">
+                    <ChatInterface userAge={userAge} />
+                </div>
             </div>
 
-            {/* Chat Container - Full screen on mobile, normal on desktop */}
-            <div className="chat-container">
-                <ChatInterface userAge={userAge} />
-            </div>
-
+            {/* Modal rendered outside main-container to avoid overflow: hidden clipping */}
             <CryptoDetailModal
                 isOpen={!!selectedTicker}
                 initialTicker={selectedTicker}
                 onClose={() => setSelectedTicker(null)}
             />
-        </div>
+        </>
     )
 }
 
