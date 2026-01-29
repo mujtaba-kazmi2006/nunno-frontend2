@@ -183,13 +183,13 @@ export function calculateSupportResistance(data, lookback = 20) {
         return { support: [], resistance: [] };
     }
 
-    const supportLevels = [];
-    const resistanceLevels = [];
+    const currentPrice = data[data.length - 1].close;
+    const allPivots = [];
 
-    // Find local minima (support) and maxima (resistance)
+    // Find local minima (troughs) and maxima (peaks)
     for (let i = lookback; i < data.length - lookback; i++) {
-        let isSupport = true;
-        let isResistance = true;
+        let isTrough = true;
+        let isPeak = true;
 
         const currentLow = data[i].low;
         const currentHigh = data[i].high;
@@ -197,7 +197,7 @@ export function calculateSupportResistance(data, lookback = 20) {
         // Check if current point is a local minimum
         for (let j = i - lookback; j <= i + lookback; j++) {
             if (j !== i && data[j].low < currentLow) {
-                isSupport = false;
+                isTrough = false;
                 break;
             }
         }
@@ -205,26 +205,66 @@ export function calculateSupportResistance(data, lookback = 20) {
         // Check if current point is a local maximum
         for (let j = i - lookback; j <= i + lookback; j++) {
             if (j !== i && data[j].high > currentHigh) {
-                isResistance = false;
+                isPeak = false;
                 break;
             }
         }
 
-        if (isSupport) {
-            supportLevels.push({ price: currentLow, index: i });
+        if (isTrough) {
+            allPivots.push({ price: currentLow, index: i, originalType: 'support' });
         }
-        if (isResistance) {
-            resistanceLevels.push({ price: currentHigh, index: i });
+        if (isPeak) {
+            allPivots.push({ price: currentHigh, index: i, originalType: 'resistance' });
         }
     }
 
-    // Get the most recent and significant levels
-    const recentSupport = supportLevels.slice(-3);
-    const recentResistance = resistanceLevels.slice(-3);
+    // Sort by index descending (most recent first)
+    allPivots.sort((a, b) => b.index - a.index);
+
+    // Merge levels that are very close (within 0.3%)
+    const uniqueLevels = [];
+    const threshold = 0.003; // 0.3%
+
+    for (const pivot of allPivots) {
+        let isDuplicate = false;
+        for (const existing of uniqueLevels) {
+            const diff = Math.abs(existing.price - pivot.price) / existing.price;
+            if (diff < threshold) {
+                isDuplicate = true;
+                // Keep the most recent one or maybe calculate average?
+                // For now just keep the first one found (most recent)
+                break;
+            }
+        }
+        if (!isDuplicate) {
+            uniqueLevels.push(pivot);
+        }
+    }
+
+    // Classify based on current price
+    const support = [];
+    const resistance = [];
+
+    uniqueLevels.forEach(level => {
+        const isFlipped = (level.originalType === 'resistance' && level.price < currentPrice) ||
+            (level.originalType === 'support' && level.price > currentPrice);
+
+        const finalLevel = {
+            ...level,
+            isFlipped,
+            label: level.price < currentPrice ? (isFlipped ? 'SR-Flip' : 'Support') : (isFlipped ? 'RS-Flip' : 'Resistance')
+        };
+
+        if (level.price < currentPrice) {
+            support.push(finalLevel);
+        } else {
+            resistance.push(finalLevel);
+        }
+    });
 
     return {
-        support: recentSupport,
-        resistance: recentResistance
+        support: support.slice(0, 3), // Return 3 strongest support
+        resistance: resistance.slice(0, 3) // Return 3 strongest resistance
     };
 }
 

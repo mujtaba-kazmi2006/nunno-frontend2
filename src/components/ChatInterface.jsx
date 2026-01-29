@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, memo } from 'react'
-import { Send, Loader, Sparkles, TrendingUp, DollarSign, BookOpen, Square } from 'lucide-react'
+import { Send, Loader, Sparkles, TrendingUp, DollarSign, BookOpen, Square, Zap, Plus, PieChart, Info } from 'lucide-react'
 import EducationalCard from './EducationalCard'
 import WelcomeAnimation from './WelcomeAnimation'
 import { useAuth } from '../contexts/AuthContext'
@@ -97,7 +97,9 @@ export default function ChatInterface({ userAge }) {
 
     const userName = user?.name || 'User'
     const [input, setInput] = useState('')
+    const [isActionMenuOpen, setIsActionMenuOpen] = useState(false)
     const messagesContainerRef = useRef(null)
+    const actionMenuRef = useRef(null)
     const abortController = useRef(null)
 
     const suggestions = [
@@ -119,6 +121,17 @@ export default function ChatInterface({ userAge }) {
     useEffect(() => {
         scrollToBottom()
     }, [messages, loadingStatus])
+
+    // Close action menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (actionMenuRef.current && !actionMenuRef.current.contains(event.target)) {
+                setIsActionMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const handleStop = () => {
         if (abortController.current) {
@@ -262,6 +275,137 @@ export default function ChatInterface({ userAge }) {
         }
     }
 
+    const handleFeedNunno = async () => {
+        if (isLoading) return
+
+        setShowSuggestions(false)
+        setLoadingStatus('Feeding Nunno...')
+
+        // Add a system message indicating Feed Nunno was triggered
+        const systemMessage = {
+            role: 'user',
+            content: '🔥 Feed Nunno - Market Briefing Request'
+        };
+        setMessages(prev => [...prev, systemMessage])
+        setIsLoading(true)
+
+        // Create placeholder for AI response
+        if (abortController.current) abortController.current.abort()
+        abortController.current = new AbortController()
+
+        const assistantPlaceholder = {
+            role: 'assistant',
+            content: '',
+            toolCalls: [],
+            dataUsed: {}
+        };
+
+        setMessages(prev => [...prev, assistantPlaceholder])
+
+        try {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+            const response = await fetch(`${API_URL}/api/v1/analyze/feed-nunno`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    symbol: 'BTCUSDT',
+                    timeframe: '15m',
+                    user_name: userName
+                }),
+                signal: abortController.current.signal
+            })
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`)
+            }
+
+            const reader = response.body.getReader()
+            const decoder = new TextDecoder()
+            let fullContent = ''
+            let lastUpdateTime = 0
+
+            while (true) {
+                const { done, value } = await reader.read()
+                if (done) break
+
+                const chunk = decoder.decode(value, { stream: true })
+                const lines = chunk.split('\n')
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const data = line.slice(6).trim()
+
+                        if (!data) continue
+
+                        try {
+                            const parsed = JSON.parse(data)
+
+                            if (parsed.type === 'status') {
+                                setLoadingStatus(parsed.message)
+                            } else if (parsed.type === 'done') {
+                                setLoadingStatus('')
+                            } else if (parsed.type === 'text') {
+                                // This is the actual AI response text
+                                fullContent += parsed.content
+
+                                // Throttle updates for smooth streaming
+                                const now = Date.now()
+                                if (now - lastUpdateTime > 33) {
+                                    setMessages(prev => {
+                                        const newMessages = [...prev]
+                                        const lastMsgIndex = newMessages.length - 1
+                                        newMessages[lastMsgIndex] = {
+                                            ...newMessages[lastMsgIndex],
+                                            content: fullContent
+                                        }
+                                        return newMessages
+                                    })
+                                    lastUpdateTime = now
+                                }
+                            }
+                        } catch (e) {
+                            // If JSON parsing fails, it might be plain text
+                            console.log('Parse error for line:', data, e)
+                        }
+                    }
+                }
+            }
+
+            // Final update
+            setMessages(prev => {
+                const newMessages = [...prev]
+                const lastMsgIndex = newMessages.length - 1
+                if (newMessages[lastMsgIndex].content !== fullContent) {
+                    newMessages[lastMsgIndex] = {
+                        ...newMessages[lastMsgIndex],
+                        content: fullContent
+                    }
+                }
+                return newMessages
+            })
+
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                console.log('Feed Nunno request aborted')
+            } else {
+                setMessages(prev => {
+                    const newMessages = [...prev]
+                    const lastMsgIndex = newMessages.length - 1
+                    newMessages[lastMsgIndex] = {
+                        ...newMessages[lastMsgIndex],
+                        content: `⚠️ Error generating market briefing: ${error.message}`
+                    }
+                    return newMessages
+                })
+            }
+        } finally {
+            setIsLoading(false)
+            setLoadingStatus('')
+        }
+    }
+
     const handleSuggestionClick = (suggestion) => {
         setInput(suggestion)
         setShowSuggestions(false)
@@ -305,6 +449,54 @@ export default function ChatInterface({ userAge }) {
             )}
 
             <div className="input-container">
+                {/* Action Menu (Replaces prominent Feed Nunno button) */}
+                <div className="action-menu-container" ref={actionMenuRef}>
+                    <button
+                        onClick={() => setIsActionMenuOpen(!isActionMenuOpen)}
+                        disabled={isLoading}
+                        className={`action-toggle-button ${isActionMenuOpen ? 'active' : ''}`}
+                        title="More actions"
+                    >
+                        <Plus size={20} className={isActionMenuOpen ? 'rotate-45 transition-transform' : 'transition-transform'} />
+                    </button>
+
+                    {isActionMenuOpen && (
+                        <div className="action-dropdown-menu">
+                            <button
+                                onClick={() => {
+                                    handleFeedNunno();
+                                    setIsActionMenuOpen(false);
+                                }}
+                                className="action-menu-item"
+                            >
+                                <Zap size={16} className="text-amber-500" />
+                                <span>Feed Nunno Briefing</span>
+                            </button>
+                            <button
+                                onClick={() => {
+                                    handleSuggestionClick("Show me my portfolio breakdown");
+                                    setIsActionMenuOpen(false);
+                                }}
+                                className="action-menu-item"
+                            >
+                                <PieChart size={16} className="text-purple-500" />
+                                <span>Portfolio Analysis</span>
+                            </button>
+                            <div className="action-menu-divider"></div>
+                            <button
+                                onClick={() => {
+                                    handleSuggestionClick("How can Nunno help me?");
+                                    setIsActionMenuOpen(false);
+                                }}
+                                className="action-menu-item"
+                            >
+                                <Info size={16} className="text-slate-400" />
+                                <span>Learn More</span>
+                            </button>
+                        </div>
+                    )}
+                </div>
+
                 <input
                     type="text"
                     value={input}

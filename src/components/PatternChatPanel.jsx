@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Sparkles, TrendingUp, TrendingDown, Layers, Square, User, Bot } from 'lucide-react';
 import { streamMessage } from '../services/api';
+import { useTheme } from '../contexts/ThemeContext';
 
-const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000 }) => {
+const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000, interval = '1d' }) => {
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
@@ -15,6 +16,7 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000 }) => {
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
     const abortController = useRef(null);
+    const { theme } = useTheme();
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -58,7 +60,8 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000 }) => {
                     body: JSON.stringify({
                         query: userMessage,
                         base_price: currentPrice || 50000,
-                        num_points: 50
+                        num_points: 50,
+                        interval: interval
                     })
                 });
 
@@ -144,7 +147,7 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000 }) => {
     ];
 
     return (
-        <div className="flex flex-col h-full bg-white min-h-0 overflow-hidden">
+        <div className={`flex flex-col h-full min-h-0 overflow-hidden transition-colors duration-500 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-white'}`}>
             {/* Header Removed as requested */}
 
             {/* Messages */}
@@ -154,14 +157,16 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000 }) => {
                         key={index}
                         className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
                     >
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${message.role === 'user' ? 'bg-purple-100 text-purple-600' : 'bg-indigo-100 text-indigo-600'
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${message.role === 'user'
+                            ? (theme === 'dark' ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-600')
+                            : (theme === 'dark' ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-600')
                             }`}>
                             {message.role === 'user' ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5 shadow-sm" />}
                         </div>
                         <div
-                            className={`max-w-[85%] px-4 py-3 rounded-2xl shadow-sm border ${message.role === 'user'
+                            className={`max-w-[85%] px-4 py-3 rounded-2xl shadow-sm border transition-colors ${message.role === 'user'
                                 ? 'bg-purple-600 text-white border-purple-500 rounded-tr-sm'
-                                : 'bg-slate-50 border-slate-200 text-slate-800 rounded-tl-sm'
+                                : (theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-100 rounded-tl-sm' : 'bg-slate-50 border-slate-200 text-slate-800 rounded-tl-sm')
                                 }`}
                         >
                             <div className="text-sm whitespace-pre-line leading-relaxed">
@@ -170,15 +175,17 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000 }) => {
                                 )}
                             </div>
                             {message.pattern && (
-                                <div className={`mt-3 pt-2 border-t flex items-center gap-3 text-xs ${message.role === 'user' ? 'border-purple-400' : 'border-slate-200'
+                                <div className={`mt-3 pt-2 border-t flex items-center gap-3 text-xs ${message.role === 'user'
+                                    ? 'border-purple-400'
+                                    : (theme === 'dark' ? 'border-slate-700' : 'border-slate-200')
                                     }`}>
-                                    <span className={`px-2 py-0.5 rounded-full font-bold uppercase transition-all ${message.pattern.direction === 'bullish' ? 'bg-green-100 text-green-700' :
-                                        message.pattern.direction === 'bearish' ? 'bg-red-100 text-red-700' :
-                                            'bg-orange-100 text-orange-700'
+                                    <span className={`px-2 py-0.5 rounded-full font-bold uppercase transition-all ${message.pattern.direction === 'bullish' ? (theme === 'dark' ? 'bg-emerald-900/40 text-emerald-400' : 'bg-green-100 text-green-700') :
+                                        message.pattern.direction === 'bearish' ? (theme === 'dark' ? 'bg-rose-900/40 text-rose-400' : 'bg-red-100 text-red-700') :
+                                            (theme === 'dark' ? 'bg-orange-900/40 text-orange-400' : 'bg-orange-100 text-orange-700')
                                         }`}>
                                         {message.pattern.direction}
                                     </span>
-                                    <span className={message.role === 'user' ? 'text-purple-100' : 'text-slate-500'}>
+                                    <span className={message.role === 'user' ? 'text-purple-100' : (theme === 'dark' ? 'text-slate-500' : 'text-slate-500')}>
                                         {(message.pattern.success_rate * 100).toFixed(0)}% accuracy
                                     </span>
                                 </div>
@@ -189,12 +196,12 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000 }) => {
 
                 {isLoading && loadingStatus && (
                     <div className="flex justify-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${theme === 'dark' ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-600'}`}>
                             <Bot className="w-5 h-5 animate-pulse" />
                         </div>
-                        <div className="bg-slate-50 border border-slate-200 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm">
-                            <div className="flex items-center gap-2 text-slate-600">
-                                <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+                        <div className={`px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm border ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-100' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
+                            <div className="flex items-center gap-2">
+                                <Loader2 className={`w-4 h-4 animate-spin ${theme === 'dark' ? 'text-purple-400' : 'text-purple-500'}`} />
                                 <span className="text-sm font-medium">{loadingStatus}</span>
                             </div>
                         </div>
@@ -206,8 +213,8 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000 }) => {
 
             {/* Quick Patterns */}
             {messages.length <= 1 && (
-                <div className="px-4 py-3 border-t border-slate-100 bg-slate-50/50">
-                    <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wider">Suggested Patterns</div>
+                <div className={`px-4 py-3 border-t transition-colors ${theme === 'dark' ? 'bg-[#16161e]/80 border-slate-800/50' : 'bg-slate-50/50 border-slate-100'}`}>
+                    <div className={`text-[10px] font-bold mb-2 uppercase tracking-wider ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>Suggested Patterns</div>
                     <div className="flex flex-wrap gap-2">
                         {quickPatterns.map((pattern, index) => (
                             <button
@@ -216,7 +223,10 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000 }) => {
                                     setInputValue(pattern.name);
                                     setTimeout(() => handleSendMessage(), 100);
                                 }}
-                                className="px-3 py-1.5 text-xs bg-white border border-slate-200 text-slate-700 rounded-full hover:border-purple-300 hover:text-purple-600 hover:bg-purple-50 transition-all shadow-sm flex items-center gap-1.5"
+                                className={`px-3 py-1.5 text-xs rounded-full transition-all shadow-sm flex items-center gap-1.5 border ${theme === 'dark'
+                                    ? 'bg-[#1e2030] border-slate-700/50 text-slate-300 hover:border-purple-500 hover:text-white'
+                                    : 'bg-white border-slate-200 text-slate-700 hover:border-purple-300 hover:text-purple-600 hover:bg-purple-50'
+                                    }`}
                             >
                                 {pattern.icon}
                                 {pattern.name}
@@ -227,7 +237,7 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000 }) => {
             )}
 
             {/* Input Overlay with Stop Button */}
-            <div className="p-4 border-t border-slate-200 bg-white">
+            <div className={`p-4 border-t transition-colors ${theme === 'dark' ? 'bg-[#16161e] border-slate-800/50' : 'bg-white border-slate-200'}`}>
                 <div className="flex items-center gap-2">
                     <div className="flex-1 relative">
                         <input
@@ -238,7 +248,10 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000 }) => {
                             onKeyPress={handleKeyPress}
                             placeholder="Ask me anything..."
                             disabled={isLoading}
-                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm disabled:opacity-50"
+                            className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm disabled:opacity-50 ${theme === 'dark'
+                                ? 'bg-[#1e2030] border-slate-700/50 text-slate-100 focus:bg-[#1e2030]'
+                                : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white'
+                                }`}
                         />
                     </div>
                     {isLoading ? (
@@ -252,7 +265,7 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000 }) => {
                         <button
                             onClick={handleSendMessage}
                             disabled={!inputValue.trim()}
-                            className="p-3 bg-gradient-to-tr from-purple-600 to-indigo-600 text-white rounded-xl hover:shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-40 flex-shrink-0"
+                            className="p-3 bg-gradient-to-tr from-purple-600 to-purple-400 text-white rounded-xl hover:shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-40 flex-shrink-0"
                         >
                             <Send className="w-5 h-5" />
                         </button>

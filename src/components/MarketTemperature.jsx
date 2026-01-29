@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react'
 import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from 'recharts'
 import { TrendingUp, TrendingDown, Minus, Thermometer } from 'lucide-react'
 import { useMarketData } from '../contexts/MarketDataContext'
+import { useTheme } from '../contexts/ThemeContext'
 
 export default function MarketTemperature() {
     const { temperature, sentiment, loading, lastUpdated } = useMarketData()
+    const { theme } = useTheme()
 
     const getColor = (temp) => {
         if (temp <= 25) return '#ef4444' // Extreme Fear
@@ -42,8 +44,8 @@ export default function MarketTemperature() {
         <div className="market-temperature group">
             <div className="flex justify-between items-center mb-1">
                 <div className="flex items-center gap-2">
-                    <Thermometer size={18} className="text-gray-500" />
-                    <h3 className="font-bold text-gray-700">Market Temp</h3>
+                    <Thermometer size={18} className={theme === 'dark' ? 'text-slate-400' : 'text-gray-500'} />
+                    <h3 className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-gray-700'}`}>Market Temp</h3>
                 </div>
                 {lastUpdated && (
                     <span className="text-xs text-gray-400 flex items-center gap-1">
@@ -78,7 +80,7 @@ export default function MarketTemperature() {
                     <span className="block text-3xl font-extrabold transition-colors duration-300" style={{ color: getColor(temperature) }}>
                         {temperature}
                     </span>
-                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <span className={`text-xs font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>
                         {getLabel(temperature)}
                     </span>
                 </div>

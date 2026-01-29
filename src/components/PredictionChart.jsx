@@ -1,7 +1,9 @@
-import { useMemo } from 'react'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
+import { useMemo } from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function PredictionChart({ data, support, resistance, currentPrice, bias, supportResistance = [] }) {
+    const { theme } = useTheme();
     if (!data || data.length === 0) return null
 
     // Determine chart color based on bias
@@ -22,14 +24,20 @@ export default function PredictionChart({ data, support, resistance, currentPric
             <div className="chart-header">
                 <h5>📈 Price Chart (Last {data.length} Periods)</h5>
             </div>
-            
+
             {/* Display Support and Resistance Levels */}
             {supportResistance && supportResistance.length > 0 && (
-                <div className="s-r-levels" style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
-                    <h6 style={{ margin: '0 0 8px 0', color: '#334155', fontSize: '14px' }}>Key Support & Resistance Levels:</h6>
+                <div className="s-r-levels" style={{
+                    marginBottom: '16px',
+                    padding: '12px',
+                    backgroundColor: theme === 'dark' ? '#16161e' : '#f8fafc',
+                    borderRadius: '8px',
+                    border: theme === 'dark' ? '1px solid #1e293b' : 'none'
+                }}>
+                    <h6 style={{ margin: '0 0 8px 0', color: theme === 'dark' ? '#cbd5e1' : '#334155', fontSize: '14px' }}>Key Support & Resistance Levels:</h6>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                         {supportResistance.map((level, index) => (
-                            <div 
+                            <div
                                 key={index}
                                 style={{
                                     padding: '6px 12px',
@@ -51,7 +59,7 @@ export default function PredictionChart({ data, support, resistance, currentPric
                     </div>
                 </div>
             )}
-            
+
             <ResponsiveContainer width="100%" height={220}>
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <defs>
@@ -60,27 +68,30 @@ export default function PredictionChart({ data, support, resistance, currentPric
                             <stop offset="95%" stopColor={chartColor} stopOpacity={0} />
                         </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#1e293b' : '#e2e8f0'} opacity={0.5} />
                     <XAxis
                         dataKey="displayTime"
-                        tick={{ fontSize: 10, fill: '#94a3b8' }}
+                        tick={{ fontSize: 10, fill: theme === 'dark' ? '#64748b' : '#94a3b8' }}
                         tickLine={false}
-                        axisLine={{ stroke: '#e2e8f0' }}
+                        axisLine={{ stroke: theme === 'dark' ? '#1e293b' : '#e2e8f0' }}
                     />
                     <YAxis
                         domain={['auto', 'auto']}
-                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        tick={{ fontSize: 11, fill: theme === 'dark' ? '#64748b' : '#94a3b8' }}
                         tickLine={false}
-                        axisLine={{ stroke: '#e2e8f0' }}
+                        axisLine={{ stroke: theme === 'dark' ? '#1e293b' : '#e2e8f0' }}
                         tickFormatter={(value) => `$${value.toLocaleString()}`}
                     />
                     <Tooltip
                         contentStyle={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                            border: '1px solid #e2e8f0',
+                            backgroundColor: theme === 'dark' ? '#1e2030' : 'rgba(255, 255, 255, 0.95)',
+                            border: theme === 'dark' ? '1px solid #334155' : '1px solid #e2e8f0',
                             borderRadius: '8px',
-                            fontSize: '12px'
+                            fontSize: '12px',
+                            color: theme === 'dark' ? '#cbd5e1' : '#1e293b'
                         }}
+                        itemStyle={{ color: theme === 'dark' ? '#cbd5e1' : '#1e293b' }}
+                        labelStyle={{ color: theme === 'dark' ? '#94a3b8' : '#64748b' }}
                         labelFormatter={(label, payload) => {
                             if (payload && payload[0]) {
                                 return payload[0].payload.timestamp

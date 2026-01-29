@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { HelpCircle, MessageCircle, Book, Mail, Send, Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function HelpSupport() {
+    const { theme } = useTheme();
     const [activeCategory, setActiveCategory] = useState('all');
     const [expandedFaq, setExpandedFaq] = useState(null);
     const [contactForm, setContactForm] = useState({
@@ -78,44 +80,44 @@ export default function HelpSupport() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 py-8 px-4">
+        <div className={`min-h-screen py-8 px-4 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-purple-50'}`}>
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12">
-                    <h1 className="text-4xl font-bold text-gray-800 mb-4">Help & Support</h1>
-                    <p className="text-xl text-gray-600">We're here to help you succeed</p>
+                    <h1 className={`text-4xl font-bold mb-4 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>Help & Support</h1>
+                    <p className={`text-xl ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>We're here to help you succeed</p>
                 </div>
 
                 {/* Quick Links */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer">
-                        <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-                            <Book className="text-purple-600" size={24} />
+                    <div className={`rounded-xl p-6 shadow-md border hover:shadow-lg transition-all cursor-pointer ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 hover:border-purple-500/50' : 'bg-white border-gray-200 hover:border-purple-300'}`}>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${theme === 'dark' ? 'bg-purple-500/10' : 'bg-purple-100'}`}>
+                            <Book className={theme === 'dark' ? 'text-purple-400' : 'text-purple-600'} size={24} />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-800 mb-2">Documentation</h3>
-                        <p className="text-gray-600 text-sm">Comprehensive guides and tutorials</p>
+                        <h3 className={`text-lg font-bold mb-2 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>Documentation</h3>
+                        <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Comprehensive guides and tutorials</p>
                     </div>
 
-                    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer">
-                        <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
-                            <MessageCircle className="text-green-600" size={24} />
+                    <div className={`rounded-xl p-6 shadow-md border hover:shadow-lg transition-all cursor-pointer ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 hover:border-purple-500/50' : 'bg-white border-gray-200 hover:border-purple-300'}`}>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${theme === 'dark' ? 'bg-green-500/10' : 'bg-green-100'}`}>
+                            <MessageCircle className="text-green-500" size={24} />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-800 mb-2">Live Chat</h3>
-                        <p className="text-gray-600 text-sm">Chat with our support team</p>
+                        <h3 className={`text-lg font-bold mb-2 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>Live Chat</h3>
+                        <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Chat with our support team</p>
                     </div>
 
-                    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer">
-                        <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-                            <Mail className="text-purple-600" size={24} />
+                    <div className={`rounded-xl p-6 shadow-md border hover:shadow-lg transition-all cursor-pointer ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 hover:border-purple-500/50' : 'bg-white border-gray-200 hover:border-purple-300'}`}>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${theme === 'dark' ? 'bg-purple-500/10' : 'bg-purple-100'}`}>
+                            <Mail className={theme === 'dark' ? 'text-purple-400' : 'text-purple-600'} size={24} />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-800 mb-2">Email Support</h3>
-                        <p className="text-gray-600 text-sm">support@nunnofinance.com</p>
+                        <h3 className={`text-lg font-bold mb-2 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>Email Support</h3>
+                        <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>support@nunnofinance.com</p>
                     </div>
                 </div>
 
                 {/* FAQ Section */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
+                <div className={`rounded-2xl shadow-lg border p-8 mb-8 ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-100' : 'bg-white border-gray-200'}`}>
+                    <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>Frequently Asked Questions</h2>
 
                     {/* Category Filter */}
                     <div className="flex flex-wrap gap-3 mb-8">
@@ -126,8 +128,8 @@ export default function HelpSupport() {
                                     key={cat.id}
                                     onClick={() => setActiveCategory(cat.id)}
                                     className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${activeCategory === cat.id
-                                            ? 'bg-purple-600 text-white shadow-md'
-                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                        ? (theme === 'dark' ? 'bg-purple-600 text-white' : 'bg-purple-600 text-white shadow-md')
+                                        : (theme === 'dark' ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
                                         }`}
                                 >
                                     <Icon size={18} />
@@ -142,22 +144,22 @@ export default function HelpSupport() {
                         {filteredFaqs.map((faq, index) => (
                             <div
                                 key={index}
-                                className="border-2 border-gray-200 rounded-xl overflow-hidden hover:border-purple-300 transition-all"
+                                className={`border-2 rounded-xl overflow-hidden transition-all ${theme === 'dark' ? (expandedFaq === index ? 'border-purple-500/50' : 'border-slate-800 hover:border-slate-700') : (expandedFaq === index ? 'border-purple-300' : 'border-gray-200 hover:border-purple-300')}`}
                             >
                                 <button
                                     onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
-                                    className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-all"
+                                    className={`w-full flex items-center justify-between p-4 text-left transition-all ${theme === 'dark' ? 'hover:bg-slate-800/50' : 'hover:bg-gray-50'}`}
                                 >
-                                    <span className="font-semibold text-gray-800 pr-4">{faq.question}</span>
+                                    <span className={`font-semibold pr-4 ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>{faq.question}</span>
                                     {expandedFaq === index ? (
-                                        <ChevronUp className="text-purple-600 flex-shrink-0" size={20} />
+                                        <ChevronUp className={theme === 'dark' ? 'text-purple-400' : 'text-purple-600'} size={20} />
                                     ) : (
-                                        <ChevronDown className="text-gray-400 flex-shrink-0" size={20} />
+                                        <ChevronDown className="text-slate-500" size={20} />
                                     )}
                                 </button>
                                 {expandedFaq === index && (
-                                    <div className="px-4 pb-4 pt-2 bg-gray-50 border-t border-gray-200">
-                                        <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
+                                    <div className={`px-4 pb-4 pt-2 border-t ${theme === 'dark' ? 'bg-slate-900/30 border-slate-700/50 text-slate-400' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
+                                        <p className="leading-relaxed">{faq.answer}</p>
                                     </div>
                                 )}
                             </div>
@@ -166,14 +168,14 @@ export default function HelpSupport() {
                 </div>
 
                 {/* Contact Form */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Still need help?</h2>
-                    <p className="text-gray-600 mb-6">Send us a message and we'll get back to you as soon as possible</p>
+                <div className={`rounded-2xl shadow-lg border p-8 ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-100' : 'bg-white border-gray-200'}`}>
+                    <h2 className={`text-2xl font-bold mb-2 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>Still need help?</h2>
+                    <p className={`mb-6 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Send us a message and we'll get back to you as soon as possible</p>
 
                     <form onSubmit={handleContactSubmit} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                <label className={`block text-sm font-semibold mb-2 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
                                     Your Name
                                 </label>
                                 <input
@@ -182,12 +184,12 @@ export default function HelpSupport() {
                                     value={contactForm.name}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
+                                    className={`w-full px-4 py-3 border-2 rounded-xl outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-200 focus:border-purple-500' : 'bg-white border-gray-200 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200'}`}
                                     placeholder="John Doe"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                <label className={`block text-sm font-semibold mb-2 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
                                     Email Address
                                 </label>
                                 <input
@@ -196,14 +198,14 @@ export default function HelpSupport() {
                                     value={contactForm.email}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
+                                    className={`w-full px-4 py-3 border-2 rounded-xl outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-200 focus:border-purple-500' : 'bg-white border-gray-200 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200'}`}
                                     placeholder="john@example.com"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label className={`block text-sm font-semibold mb-2 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
                                 Subject
                             </label>
                             <input
@@ -212,13 +214,13 @@ export default function HelpSupport() {
                                 value={contactForm.subject}
                                 onChange={handleInputChange}
                                 required
-                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
+                                className={`w-full px-4 py-3 border-2 rounded-xl outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-200 focus:border-purple-500' : 'bg-white border-gray-200 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200'}`}
                                 placeholder="How can we help?"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label className={`block text-sm font-semibold mb-2 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
                                 Message
                             </label>
                             <textarea
@@ -227,14 +229,14 @@ export default function HelpSupport() {
                                 onChange={handleInputChange}
                                 required
                                 rows={6}
-                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all resize-none"
+                                className={`w-full px-4 py-3 border-2 rounded-xl outline-none transition-all resize-none ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-200 focus:border-purple-500' : 'bg-white border-gray-200 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200'}`}
                                 placeholder="Tell us more about your question or issue..."
                             />
                         </div>
 
                         <button
                             type="submit"
-                            className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-all shadow-md hover:shadow-lg"
+                            className={`flex items-center gap-2 px-6 py-3 text-white rounded-xl font-semibold transition-all shadow-md hover:shadow-lg ${theme === 'dark' ? 'bg-purple-600 hover:bg-purple-700' : 'bg-purple-600 hover:bg-purple-700'}`}
                         >
                             <Send size={20} />
                             Send Message

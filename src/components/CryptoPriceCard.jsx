@@ -2,9 +2,11 @@ import { useState, useEffect, useRef } from 'react'
 import { AreaChart, Area, ResponsiveContainer, YAxis } from 'recharts'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { useMarketData } from '../contexts/MarketDataContext'
+import { useTheme } from '../contexts/ThemeContext'
 
 export default function CryptoPriceCard({ ticker, name, onClick }) {
     const { prices } = useMarketData()
+    const { theme } = useTheme()
     const [priceData, setPriceData] = useState(null)
     const [chartData, setChartData] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -32,15 +34,15 @@ export default function CryptoPriceCard({ ticker, name, onClick }) {
 
     if (loading) {
         return (
-            <div className="crypto-price-card p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+            <div className={`crypto-price-card p-4 rounded-xl border shadow-sm transition-colors duration-300 ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-gray-100'}`}>
                 <div className="flex justify-between items-start mb-4">
                     <div className="space-y-2">
-                        <div className="h-4 w-20 bg-gray-100 rounded animate-pulse" />
-                        <div className="h-6 w-32 bg-gray-200 rounded animate-pulse" />
+                        <div className={`h-4 w-20 rounded animate-pulse ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gray-100'}`} />
+                        <div className={`h-6 w-32 rounded animate-pulse ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gray-200'}`} />
                     </div>
-                    <div className="h-8 w-8 bg-gray-100 rounded-full animate-pulse" />
+                    <div className={`h-8 w-8 rounded-full animate-pulse ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gray-100'}`} />
                 </div>
-                <div className="h-16 w-full bg-gray-50 rounded-lg animate-pulse" />
+                <div className={`h-16 w-full rounded-lg animate-pulse ${theme === 'dark' ? 'bg-[#16161e]/50' : 'bg-gray-50'}`} />
             </div>
         )
     }
@@ -61,22 +63,25 @@ export default function CryptoPriceCard({ ticker, name, onClick }) {
             }}
             role="button"
             tabIndex={0}
-            className="crypto-price-card group hover:shadow-lg transition-transform hover:-translate-y-1 duration-300 bg-white rounded-xl border border-gray-100 p-4 cursor-pointer"
+            className={`crypto-price-card group hover:shadow-xl transition-all hover:-translate-y-1 duration-300 rounded-xl border p-4 cursor-pointer ${theme === 'dark'
+                ? 'bg-[#1e2030] border-slate-700/50 hover:border-purple-500 shadow-purple-500/5'
+                : 'bg-white border-gray-100 shadow-sm'
+                }`}
         >
             <div className="flex justify-between items-start mb-2">
                 <div>
-                    <h4 className="text-gray-500 text-sm font-medium">{name}</h4>
+                    <h4 className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>{name}</h4>
                     <div className="flex items-baseline gap-2">
-                        <span className="text-xl font-bold text-gray-900">
+                        <span className={`text-xl font-bold ${theme === 'dark' ? 'text-slate-100' : 'text-gray-900'}`}>
                             ${priceData.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     </div>
-                    <div className={`flex items-center gap-1 text-xs font-semibold mt-1 ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                    <div className={`flex items-center gap-1 text-xs font-semibold mt-1 ${isPositive ? (theme === 'dark' ? 'text-emerald-400' : 'text-green-500') : (theme === 'dark' ? 'text-rose-400' : 'text-red-500')}`}>
                         {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                         {Math.abs(priceData.percent_change).toFixed(2)}%
                     </div>
                 </div>
-                <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-purple-50 transition-colors">
+                <div className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'bg-[#16161e] group-hover:bg-purple-500/10' : 'bg-gray-50 group-hover:bg-purple-50'}`}>
                     <img
                         src={`https://cryptologos.cc/logos/${name.toLowerCase()}-${ticker === 'BTCUSDT' ? 'btc' : 'eth'}-logo.png?v=026`}
                         alt={name}

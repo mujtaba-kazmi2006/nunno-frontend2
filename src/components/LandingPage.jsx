@@ -75,28 +75,27 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Navigation */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-slate-900/95 backdrop-blur-sm border-b border-slate-700' : 'bg-transparent'
-      }`}>
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-slate-900/95 backdrop-blur-sm border-b border-slate-700' : 'bg-transparent'
+        }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
               <NunnoLogo size="sm" />
               <span className="text-white text-xl font-bold">Nunno</span>
             </div>
-            
+
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
               <a href="#about" className="text-gray-300 hover:text-white transition-colors">About</a>
               <a href="#testimonials" className="text-gray-300 hover:text-white transition-colors">Reviews</a>
-              <a href="/crypto-chart" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-full hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105">
+              <a href="/elite-chart" className="bg-gradient-to-r from-purple-600 to-purple-400 text-white px-6 py-2 rounded-full hover:from-purple-700 hover:to-purple-500 transition-all duration-300 transform hover:scale-105">
                 Live Charts
               </a>
               <a href="/dashboard" className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-full hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105">
                 Try Now
               </a>
             </div>
-            
+
             <button className="md:hidden text-white">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -111,35 +110,35 @@ const LandingPage = () => {
         <div className="absolute inset-0 opacity-50" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
         }}></div>
-        
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center">
             <div className="inline-flex items-center px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-300 text-sm mb-8">
               <Star className="w-4 h-4 mr-2" />
               Your Empathetic AI Financial Educator
             </div>
-            
+
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
               Learn Finance
               <span className="block bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                 Like You're 15
               </span>
             </h1>
-            
+
             <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Nunno Finance transforms complex financial concepts into simple, digestible lessons. 
+              Nunno Finance transforms complex financial concepts into simple, digestible lessons.
               Powered by advanced AI, we make crypto trading and investing accessible for everyone.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <a 
-                href="/dashboard" 
+              <a
+                href="/dashboard"
                 className="group bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2"
               >
                 <span>Try Nunno Now</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </a>
-              
+
               <button className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
                 <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
                   <Play className="w-5 h-5 ml-1" />
@@ -153,7 +152,7 @@ const LandingPage = () => {
         {/* Floating Elements */}
         <div className="absolute top-20 left-10 w-20 h-20 bg-purple-500/10 rounded-full blur-xl animate-pulse"></div>
         <div className="absolute bottom-20 right-10 w-32 h-32 bg-pink-500/10 rounded-full blur-xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-20 w-16 h-16 bg-blue-500/10 rounded-full blur-xl animate-pulse delay-500"></div>
+        <div className="absolute top-1/2 left-20 w-16 h-16 bg-purple-500/10 rounded-full blur-xl animate-pulse delay-500"></div>
       </section>
 
       {/* Stats Section */}
@@ -184,8 +183,8 @@ const LandingPage = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className="group bg-gradient-to-b from-slate-800/50 to-slate-900/50 p-6 rounded-2xl border border-slate-700/50 hover:border-purple-500/50 transition-all duration-300 hover:transform hover:scale-105"
               >
                 <div className="text-purple-400 mb-4 group-hover:scale-110 transition-transform">
@@ -279,9 +278,8 @@ const LandingPage = () => {
                 <button
                   key={index}
                   onClick={() => setActiveTestimonial(index)}
-                  className={`w-3 h-3 rounded-full transition-colors ${
-                    index === activeTestimonial ? 'bg-purple-500' : 'bg-gray-600'
-                  }`}
+                  className={`w-3 h-3 rounded-full transition-colors ${index === activeTestimonial ? 'bg-purple-500' : 'bg-gray-600'
+                    }`}
                 />
               ))}
             </div>
@@ -298,8 +296,8 @@ const LandingPage = () => {
           <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
             Join thousands of beginners who learned to invest and trade with confidence using Nunno
           </p>
-          <a 
-            href="/dashboard" 
+          <a
+            href="/dashboard"
             className="group bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 mx-auto"
           >
             <span>Start Learning Today</span>
@@ -316,7 +314,7 @@ const LandingPage = () => {
               <NunnoLogo size="sm" />
               <span className="text-white text-xl font-bold">Nunno</span>
             </div>
-            
+
             <div className="flex items-center space-x-6 text-gray-400">
               <a href="#" className="hover:text-white transition-colors">
                 <Github className="w-5 h-5" />
@@ -329,7 +327,7 @@ const LandingPage = () => {
               </a>
             </div>
           </div>
-          
+
           <div className="mt-8 pt-8 border-t border-slate-700/50 text-center text-gray-400">
             <p>&copy; 2024 Nunno Finance. Built with ❤️ to make finance accessible for everyone.</p>
           </div>

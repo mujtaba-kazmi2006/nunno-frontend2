@@ -58,7 +58,7 @@ export default function LoginSignup({ onClose }) {
 
                 {/* Logo */}
                 <div className="text-center mb-6 sm:mb-8">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-tr from-purple-500 to-purple-400 rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
                         <span className="text-white text-xl sm:text-2xl font-bold">N</span>
                     </div>
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
@@ -91,7 +91,7 @@ export default function LoginSignup({ onClose }) {
                                     value={formData.name}
                                     onChange={handleChange}
                                     required={!isLogin}
-                                    className="w-full pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
                                     placeholder="John Doe"
                                 />
                             </div>
@@ -110,7 +110,7 @@ export default function LoginSignup({ onClose }) {
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
-                                className="w-full pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                                className="w-full pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
                                 placeholder="you@example.com"
                             />
                         </div>
@@ -128,7 +128,7 @@ export default function LoginSignup({ onClose }) {
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
-                                className="w-full pl-10 pr-12 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                                className="w-full pl-10 pr-12 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
                                 placeholder="••••••••"
                             />
                             <button
@@ -154,7 +154,7 @@ export default function LoginSignup({ onClose }) {
                                     value={formData.confirmPassword}
                                     onChange={handleChange}
                                     required={!isLogin}
-                                    className="w-full pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
                                     placeholder="••••••••"
                                 />
                             </div>
@@ -164,7 +164,7 @@ export default function LoginSignup({ onClose }) {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-2.5 sm:py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base mt-4 sm:mt-6"
+                        className="w-full py-2.5 sm:py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base mt-4 sm:mt-6"
                     >
                         {loading ? (
                             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -187,7 +187,7 @@ export default function LoginSignup({ onClose }) {
                                 setError('');
                                 setFormData({ email: '', password: '', name: '', confirmPassword: '' });
                             }}
-                            className="ml-2 text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
+                            className="ml-2 text-purple-600 font-semibold hover:text-purple-700 transition-colors"
                         >
                             {isLogin ? 'Sign Up' : 'Sign In'}
                         </button>
@@ -196,9 +196,9 @@ export default function LoginSignup({ onClose }) {
 
                 {/* Free tier info */}
                 {!isLogin && (
-                    <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-indigo-50 rounded-xl border border-indigo-100">
-                        <p className="text-xs sm:text-sm text-indigo-700 font-semibold mb-1.5 sm:mb-2">🎉 Free Tier Includes:</p>
-                        <ul className="text-[10px] sm:text-xs text-indigo-600 space-y-0.5 sm:space-y-1">
+                    <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-purple-50 rounded-xl border border-purple-100">
+                        <p className="text-xs sm:text-sm text-purple-700 font-semibold mb-1.5 sm:mb-2">🎉 Free Tier Includes:</p>
+                        <ul className="text-[10px] sm:text-xs text-purple-600 space-y-0.5 sm:space-y-1">
                             <li>• 1,000 AI tokens per month</li>
                             <li>• 5 searches per day</li>
                             <li>• Basic financial analysis</li>

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Clock, TrendingUp, TrendingDown, Calendar, Filter, Search, ChevronRight } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function ChatHistory() {
+    const { theme } = useTheme();
     const [searchQuery, setSearchQuery] = useState('');
     const [filterType, setFilterType] = useState('all');
 
@@ -86,77 +88,77 @@ export default function ChatHistory() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 py-8 px-4">
+        <div className={`min-h-screen py-8 px-4 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-purple-50'}`}>
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-gray-800 mb-2">Prediction History</h1>
-                    <p className="text-gray-600">Track your AI-powered crypto predictions and their accuracy</p>
+                    <h1 className={`text-4xl font-bold mb-2 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>Prediction History</h1>
+                    <p className={theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}>Track your AI-powered crypto predictions and their accuracy</p>
                 </div>
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
+                    <div className={`rounded-xl p-6 shadow-md border transition-colors ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-gray-200'}`}>
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600 font-medium">Total Predictions</p>
-                                <p className="text-3xl font-bold text-gray-800 mt-1">{stats.total}</p>
+                                <p className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Total Predictions</p>
+                                <p className={`text-3xl font-bold mt-1 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>{stats.total}</p>
                             </div>
-                            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                                <Clock className="text-purple-600" size={24} />
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${theme === 'dark' ? 'bg-purple-500/10' : 'bg-purple-100'}`}>
+                                <Clock className={theme === 'dark' ? 'text-purple-400' : 'text-purple-600'} size={24} />
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
+                    <div className={`rounded-xl p-6 shadow-md border transition-colors ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-gray-200'}`}>
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600 font-medium">Correct</p>
-                                <p className="text-3xl font-bold text-green-600 mt-1">{stats.correct}</p>
+                                <p className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Correct</p>
+                                <p className="text-3xl font-bold text-green-500 mt-1">{stats.correct}</p>
                             </div>
-                            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                                <TrendingUp className="text-green-600" size={24} />
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${theme === 'dark' ? 'bg-green-500/10' : 'bg-green-100'}`}>
+                                <TrendingUp className="text-green-500" size={24} />
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
+                    <div className={`rounded-xl p-6 shadow-md border transition-colors ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-gray-200'}`}>
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600 font-medium">Pending</p>
-                                <p className="text-3xl font-bold text-orange-600 mt-1">{stats.pending}</p>
+                                <p className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Pending</p>
+                                <p className="text-3xl font-bold text-amber-500 mt-1">{stats.pending}</p>
                             </div>
-                            <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                                <Calendar className="text-orange-600" size={24} />
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${theme === 'dark' ? 'bg-amber-500/10' : 'bg-orange-100'}`}>
+                                <Calendar className="text-amber-500" size={24} />
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
+                    <div className={`rounded-xl p-6 shadow-md border transition-colors ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-gray-200'}`}>
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600 font-medium">Avg Confidence</p>
-                                <p className="text-3xl font-bold text-purple-600 mt-1">{stats.avgConfidence}%</p>
+                                <p className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Avg Confidence</p>
+                                <p className={`text-3xl font-bold mt-1 ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`}>{stats.avgConfidence}%</p>
                             </div>
-                            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                                <TrendingUp className="text-purple-600" size={24} />
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${theme === 'dark' ? 'bg-purple-500/10' : 'bg-purple-100'}`}>
+                                <TrendingUp className={theme === 'dark' ? 'text-purple-400' : 'text-purple-600'} size={24} />
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Filters and Search */}
-                <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 mb-6">
+                <div className={`rounded-xl p-6 shadow-md border mb-6 ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-gray-200'}`}>
                     <div className="flex flex-col md:flex-row gap-4">
                         {/* Search */}
                         <div className="flex-1 relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" size={20} />
                             <input
                                 type="text"
                                 placeholder="Search by coin name or ticker..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
+                                className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-200 focus:border-purple-500' : 'bg-white border-gray-200 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200'}`}
                             />
                         </div>
 
@@ -166,7 +168,7 @@ export default function ChatHistory() {
                                 onClick={() => setFilterType('all')}
                                 className={`px-4 py-3 rounded-xl font-semibold transition-all ${filterType === 'all'
                                     ? 'bg-purple-600 text-white shadow-md'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    : (theme === 'dark' ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
                                     }`}
                             >
                                 All
@@ -175,7 +177,7 @@ export default function ChatHistory() {
                                 onClick={() => setFilterType('bullish')}
                                 className={`px-4 py-3 rounded-xl font-semibold transition-all ${filterType === 'bullish'
                                     ? 'bg-green-600 text-white shadow-md'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    : (theme === 'dark' ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
                                     }`}
                             >
                                 Bullish
@@ -184,7 +186,7 @@ export default function ChatHistory() {
                                 onClick={() => setFilterType('bearish')}
                                 className={`px-4 py-3 rounded-xl font-semibold transition-all ${filterType === 'bearish'
                                     ? 'bg-red-600 text-white shadow-md'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    : (theme === 'dark' ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
                                     }`}
                             >
                                 Bearish
@@ -199,41 +201,40 @@ export default function ChatHistory() {
                         filteredPredictions.map((pred) => (
                             <div
                                 key={pred.id}
-                                className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer"
+                                className={`rounded-xl p-6 shadow-md border-2 transition-all cursor-pointer ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 hover:border-purple-500/50 hover:bg-slate-800/50' : 'bg-white border-gray-200 hover:border-purple-300 hover:shadow-lg'}`}
                             >
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <div className="flex items-center gap-4">
-                                        <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${pred.prediction === 'Bullish' ? 'bg-green-100' : 'bg-red-100'
-                                            }`}>
+                                        <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${pred.prediction === 'Bullish' ? (theme === 'dark' ? 'bg-green-500/10' : 'bg-green-100') : (theme === 'dark' ? 'bg-red-500/10' : 'bg-red-100')}`}>
                                             {pred.prediction === 'Bullish' ? (
-                                                <TrendingUp className="text-green-600" size={32} />
+                                                <TrendingUp className="text-green-500" size={32} />
                                             ) : (
-                                                <TrendingDown className="text-red-600" size={32} />
+                                                <TrendingDown className="text-red-500" size={32} />
                                             )}
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-bold text-gray-800">{pred.coin}</h3>
-                                            <p className="text-gray-600">{pred.ticker}</p>
+                                            <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>{pred.coin}</h3>
+                                            <p className={theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}>{pred.ticker}</p>
                                             <div className="flex items-center gap-2 mt-1">
-                                                <Clock size={14} className="text-gray-400" />
-                                                <span className="text-sm text-gray-500">{pred.date} at {pred.time}</span>
+                                                <Clock size={14} className="text-slate-500" />
+                                                <span className={`text-sm ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>{pred.date} at {pred.time}</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-1">
                                         <div>
-                                            <p className="text-xs text-gray-500 font-medium mb-1">Current Price</p>
-                                            <p className="text-lg font-bold text-gray-800">{pred.currentPrice}</p>
+                                            <p className={`text-xs font-medium mb-1 ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>Current Price</p>
+                                            <p className={`text-lg font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>{pred.currentPrice}</p>
                                         </div>
                                         <div>
-                                            <p className="text-xs text-gray-500 font-medium mb-1">Predicted Price</p>
-                                            <p className="text-lg font-bold text-purple-600">{pred.predictedPrice}</p>
+                                            <p className={`text-xs font-medium mb-1 ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>Predicted Price</p>
+                                            <p className="text-lg font-bold text-purple-400">{pred.predictedPrice}</p>
                                         </div>
                                         <div>
-                                            <p className="text-xs text-gray-500 font-medium mb-1">Confidence</p>
+                                            <p className={`text-xs font-medium mb-1 ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>Confidence</p>
                                             <div className="flex items-center gap-2">
-                                                <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                <div className={`flex-1 h-2 rounded-full overflow-hidden ${theme === 'dark' ? 'bg-slate-900' : 'bg-gray-200'}`}>
                                                     <div
                                                         className={`h-full ${pred.confidence >= 70 ? 'bg-green-500' :
                                                             pred.confidence >= 50 ? 'bg-yellow-500' : 'bg-red-500'
@@ -241,31 +242,31 @@ export default function ChatHistory() {
                                                         style={{ width: `${pred.confidence}%` }}
                                                     />
                                                 </div>
-                                                <span className="text-sm font-bold text-gray-700">{pred.confidence}%</span>
+                                                <span className={`text-sm font-bold ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>{pred.confidence}%</span>
                                             </div>
                                         </div>
                                         <div>
-                                            <p className="text-xs text-gray-500 font-medium mb-1">Accuracy</p>
-                                            <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${pred.accuracy === 'Correct' ? 'bg-green-100 text-green-700' :
-                                                pred.accuracy === 'Incorrect' ? 'bg-red-100 text-red-700' :
-                                                    'bg-orange-100 text-orange-700'
+                                            <p className={`text-xs font-medium mb-1 ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>Accuracy</p>
+                                            <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${pred.accuracy === 'Correct' ? (theme === 'dark' ? 'bg-green-500/10 text-green-400' : 'bg-green-100 text-green-700') :
+                                                pred.accuracy === 'Incorrect' ? (theme === 'dark' ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-700') :
+                                                    (theme === 'dark' ? 'bg-amber-500/10 text-amber-400' : 'bg-orange-100 text-orange-700')
                                                 }`}>
                                                 {pred.accuracy}
                                             </span>
                                         </div>
                                     </div>
 
-                                    <ChevronRight className="text-gray-400 hidden md:block" size={24} />
+                                    <ChevronRight className="text-slate-500 hidden md:block" size={24} />
                                 </div>
                             </div>
                         ))
                     ) : (
-                        <div className="bg-white rounded-xl p-12 text-center shadow-md border border-gray-200">
-                            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Search className="text-gray-400" size={40} />
+                        <div className={`rounded-xl p-12 text-center shadow-md border ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-gray-200'}`}>
+                            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${theme === 'dark' ? 'bg-slate-800' : 'bg-gray-100'}`}>
+                                <Search className="text-slate-500" size={40} />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-800 mb-2">No predictions found</h3>
-                            <p className="text-gray-600">Try adjusting your search or filters</p>
+                            <h3 className={`text-xl font-bold mb-2 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>No predictions found</h3>
+                            <p className={theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}>Try adjusting your search or filters</p>
                         </div>
                     )}
                 </div>

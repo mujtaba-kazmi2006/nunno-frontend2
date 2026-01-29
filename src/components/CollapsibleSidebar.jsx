@@ -10,16 +10,21 @@ import {
     History,
     HelpCircle,
     LogIn,
-    UserPlus
+    UserPlus,
+    TrendingUp,
+    Sun,
+    Moon
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import LoginSignup from './LoginSignup';
 import MarketTemperature from './MarketTemperature';
 import CryptoPriceCard from './CryptoPriceCard';
 
 export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
     const { user, logout, isAuthenticated } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const [showLoginModal, setShowLoginModal] = useState(false);
     const location = useLocation();
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -36,10 +41,10 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
 
     const menuItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+        { icon: TrendingUp, label: 'Elite Chart', path: '/elite-chart' },
         { icon: CreditCard, label: 'Pricing', path: '/pricing' },
         { icon: History, label: 'Prediction History', path: '/history' },
         { icon: HelpCircle, label: 'Help & Support', path: '/support' },
-        { icon: LayoutDashboard, label: 'Crypto Chart', path: '/crypto-chart' }, // Added new item
     ];
 
     const userItems = [
@@ -62,9 +67,9 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
         <>
             <MobileOverlay />
             <div
-                className={`flex flex-col h-screen bg-white shadow-xl transition-all duration-300 ease-in-out z-50 ${isMobile ? 'fixed inset-y-0 left-0' : 'relative'
+                className={`flex flex-col h-screen shadow-2xl transition-all duration-300 ease-in-out z-50 ${isMobile ? 'fixed inset-y-0 left-0' : 'relative'
                     } ${isCollapsed ? (isMobile ? '-translate-x-full' : 'w-20') : 'w-72'
-                    }`}
+                    } ${theme === 'dark' ? 'bg-[#1e2030] border-r border-slate-700/50' : 'bg-white'}`}
             >
                 {/* Toggle Button */}
                 <button
@@ -86,10 +91,12 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                             <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
                                 Nunno Finance
                             </h1>
-                            <span className="text-xs text-gray-500 font-medium">AI Financial Educator</span>
+                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>AI Financial Educator</span>
                         </div>
                     )}
                 </div>
+
+
 
                 {/* Navigation */}
                 <nav className="px-4 py-6 space-y-2 overflow-y-auto overflow-x-hidden">
@@ -99,12 +106,12 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                             to={item.path}
                             onClick={() => isMobile && setIsCollapsed(true)}
                             className={`flex items-center px-4 py-3 rounded-xl transition-all group relative overflow-hidden whitespace-nowrap ${isActive(item.path)
-                                ? 'bg-purple-50 text-purple-700 shadow-sm'
-                                : 'text-gray-600 hover:bg-gray-50 hover:text-purple-600'
+                                ? theme === 'dark' ? 'bg-purple-500/20 text-purple-300 shadow-sm' : 'bg-purple-50 text-purple-700 shadow-sm'
+                                : theme === 'dark' ? 'text-slate-400 hover:bg-[#16161e] hover:text-purple-400' : 'text-gray-600 hover:bg-gray-50 hover:text-purple-600'
                                 }`}
                         >
                             <item.icon
-                                className={`flex-shrink-0 transition-colors ${isActive(item.path) ? 'text-purple-600' : 'text-gray-500 group-hover:text-purple-600'
+                                className={`flex-shrink-0 transition-colors ${isActive(item.path) ? (theme === 'dark' ? 'text-purple-400' : 'text-purple-600') : (theme === 'dark' ? 'text-slate-500 group-hover:text-purple-400' : 'text-gray-500 group-hover:text-purple-600')
                                     }`}
                                 size={22}
                             />
@@ -132,8 +139,8 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
 
                 {/* Market Widgets Section - Shows ONLY on mobile when expanded */}
                 {!isCollapsed && isMobile && (
-                    <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-4 overflow-y-auto">
-                        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-2">Market Overview</h3>
+                    <div className={`px-4 pb-4 space-y-3 border-t pt-4 overflow-y-auto ${theme === 'dark' ? 'border-slate-800/50' : 'border-gray-100'}`}>
+                        <h3 className={`text-xs font-semibold uppercase tracking-wider px-2 ${theme === 'dark' ? 'text-slate-500/80' : 'text-gray-500'}`}>Market Overview</h3>
 
                         <div className="space-y-2">
                             {/* Market Temperature Widget */}
@@ -169,9 +176,12 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                         <Link
                             to={item.path}
                             onClick={() => isMobile && setIsCollapsed(true)}
-                            className="flex items-center px-4 py-3 text-gray-600 rounded-xl hover:bg-gray-50 hover:text-purple-600 transition-all group relative overflow-hidden whitespace-nowrap"
+                            className={`flex items-center px-4 py-3 rounded-xl transition-all group relative overflow-hidden whitespace-nowrap ${isActive(item.path)
+                                ? theme === 'dark' ? 'bg-purple-500/20 text-purple-300 shadow-sm' : 'bg-purple-50 text-purple-700 shadow-sm'
+                                : theme === 'dark' ? 'text-slate-400 hover:bg-[#16161e] hover:text-purple-400' : 'text-gray-600 hover:bg-gray-50 hover:text-purple-600'
+                                }`}
                         >
-                            <item.icon className="flex-shrink-0 text-gray-500 group-hover:text-purple-600" size={22} />
+                            <item.icon className="flex-shrink-0 transition-colors" size={22} />
                             <span className={`ml-3 font-medium transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>
                                 {item.label}
                             </span>
@@ -185,7 +195,7 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                 ))}
 
                 {/* Footer / User Profile */}
-                <div className="p-4 border-t border-gray-100 bg-gray-50/50">
+                <div className={`p-4 border-t transition-colors ${theme === 'dark' ? 'border-slate-800/50 bg-[#16161e]/50' : 'border-gray-100 bg-gray-50/50'}`}>
                     {isAuthenticated ? (
                         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
                             <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold flex-shrink-0 shadow-md transform hover:scale-105 transition-transform cursor-pointer">
@@ -194,15 +204,15 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
 
                             {!isCollapsed && (
                                 <div className="flex-1 overflow-hidden">
-                                    <h4 className="text-sm font-bold text-gray-800 truncate">{user?.name || 'User'}</h4>
-                                    <p className="text-xs text-gray-500 truncate capitalize">{user?.tier} Plan</p>
+                                    <h4 className={`text-sm font-bold truncate ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>{user?.name || 'User'}</h4>
+                                    <p className={`text-xs truncate capitalize ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>{user?.tier} Plan</p>
                                 </div>
                             )}
 
                             {!isCollapsed && (
                                 <button
                                     onClick={logout}
-                                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                    className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'text-slate-500 hover:text-rose-400 hover:bg-rose-500/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}
                                 >
                                     <LogOut size={18} />
                                 </button>
