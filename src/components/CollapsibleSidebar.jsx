@@ -57,7 +57,7 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
     const MobileOverlay = () => (
         isMobile && !isCollapsed && (
             <div
-                className="fixed inset-0 bg-black/50 z-40"
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[190]"
                 onClick={() => setIsCollapsed(true)}
             />
         )
@@ -67,32 +67,45 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
         <>
             <MobileOverlay />
             <div
-                className={`flex flex-col h-screen shadow-2xl transition-all duration-300 ease-in-out z-50 ${isMobile ? 'fixed inset-y-0 left-0' : 'relative'
-                    } ${isCollapsed ? (isMobile ? '-translate-x-full' : 'w-20') : 'w-72'
+                className={`flex flex-col h-screen shadow-2xl transition-all duration-300 ease-in-out z-[200] ${isMobile ? 'fixed inset-y-0 left-0' : 'relative'
+                    } ${isCollapsed ? (isMobile ? '-translate-x-full' : 'w-20') : 'w-[280px]'
                     } ${theme === 'dark' ? 'bg-[#1e2030] border-r border-slate-700/50' : 'bg-white'}`}
             >
-                {/* Toggle Button */}
-                <button
-                    onClick={() => setIsCollapsed(!isCollapsed)}
-                    className={`absolute -right-3 top-9 bg-purple-600 text-white p-1.5 rounded-full shadow-lg hover:bg-purple-700 transition-colors z-50 ${isMobile && isCollapsed ? 'hidden' : ''
-                        }`}
-                >
-                    {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-                </button>
+                {/* Toggle Button - Only visible on Desktop or when mobile sidebar is open */}
+                {!isMobile && (
+                    <button
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        className={`absolute -right-3 top-9 bg-purple-600 text-white p-1.5 rounded-full shadow-lg hover:bg-purple-700 transition-colors z-50`}
+                    >
+                        {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+                    </button>
+                )}
 
-                <div className={`flex items-center p-6 ${isCollapsed ? 'justify-center' : 'gap-4'}`}>
-                    <img
-                        src="/logo.png"
-                        alt="Nunno Finance"
-                        className={`transition-all duration-300 ${isCollapsed ? 'w-8 h-8' : 'w-10 h-10'} object-contain`}
-                    />
-                    {!isCollapsed && (
-                        <div className="flex flex-col overflow-hidden whitespace-nowrap">
-                            <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
-                                Nunno Finance
-                            </h1>
-                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>AI Financial Educator</span>
-                        </div>
+                <div className={`flex items-center p-6 ${isCollapsed ? 'justify-center' : 'justify-between gap-4'}`}>
+                    <div className="flex items-center gap-3">
+                        <img
+                            src="/logo.png"
+                            alt="Nunno Finance"
+                            className={`transition-all duration-300 ${isCollapsed ? 'w-8 h-8' : 'w-10 h-10'} object-contain`}
+                        />
+                        {!isCollapsed && (
+                            <div className="flex flex-col overflow-hidden whitespace-nowrap">
+                                <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
+                                    Nunno Finance
+                                </h1>
+                                <span className={`text-xs font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>AI Financial Educator</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Mobile Close Button */}
+                    {isMobile && !isCollapsed && (
+                        <button
+                            onClick={() => setIsCollapsed(true)}
+                            className={`p-2 rounded-xl transition-colors ${theme === 'dark' ? 'text-slate-400 hover:bg-slate-800' : 'text-gray-400 hover:bg-gray-100'}`}
+                        >
+                            <ChevronLeft size={24} />
+                        </button>
                     )}
                 </div>
 
@@ -137,31 +150,37 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                     ))}
                 </nav>
 
-                {/* Market Widgets Section - Shows ONLY on mobile when expanded */}
+                {/* Market Overview Section - Redesigned Utility Grid for Mobile */}
                 {!isCollapsed && isMobile && (
-                    <div className={`px-4 pb-4 space-y-3 border-t pt-4 overflow-y-auto ${theme === 'dark' ? 'border-slate-800/50' : 'border-gray-100'}`}>
-                        <h3 className={`text-xs font-semibold uppercase tracking-wider px-2 ${theme === 'dark' ? 'text-slate-500/80' : 'text-gray-500'}`}>Market Overview</h3>
+                    <div className={`px-4 pb-8 border-t mt-4 pt-6 ${theme === 'dark' ? 'border-slate-800/50' : 'border-gray-100'}`}>
+                        <div className="flex items-center justify-between px-2 mb-4">
+                            <h3 className={`text-[11px] font-bold uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>
+                                Market Pulse
+                            </h3>
+                            <div className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-[10px] font-bold text-emerald-500/80 uppercase">Live</span>
+                            </div>
+                        </div>
 
-                        <div className="space-y-2">
-                            {/* Market Temperature Widget */}
-                            <div className="scale-75 origin-top -mb-8">
-                                <MarketTemperature />
+                        <div className="space-y-3">
+                            {/* Temperature - Horizontal "Speedometer" Style */}
+                            <div className={`rounded-2xl p-4 border shadow-sm transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-800/50' : 'bg-slate-50 border-gray-100'
+                                }`}>
+                                <MarketTemperature variant="minimal" />
                             </div>
 
-                            {/* Crypto Price Cards */}
-                            <div className="scale-75 origin-top -mb-8">
+                            {/* BTC & ETH - Side-by-Side Integrated Tiles */}
+                            <div className="grid grid-cols-2 gap-3">
                                 <CryptoPriceCard
                                     ticker="BTCUSDT"
                                     name="Bitcoin"
-                                    compact={true}
+                                    variant="compact"
                                 />
-                            </div>
-
-                            <div className="scale-75 origin-top -mb-4">
                                 <CryptoPriceCard
                                     ticker="ETHUSDT"
                                     name="Ethereum"
-                                    compact={true}
+                                    variant="compact"
                                 />
                             </div>
                         </div>

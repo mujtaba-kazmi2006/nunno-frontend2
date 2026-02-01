@@ -16,7 +16,7 @@ export function AuthProvider({ children }) {
             if (token) {
                 try {
                     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-                    const response = await axios.get('/api/auth/me');
+                    const response = await axios.get('/api/v1/me');
                     setUser(response.data);
                 } catch (error) {
                     console.error('Failed to load user:', error);
@@ -72,7 +72,7 @@ export function AuthProvider({ children }) {
     const refreshUser = async () => {
         if (token) {
             try {
-                const response = await axios.get('/api/auth/me');
+                const response = await axios.get('/api/v1/me');
                 setUser(response.data);
             } catch (error) {
                 console.error('Failed to refresh user:', error);

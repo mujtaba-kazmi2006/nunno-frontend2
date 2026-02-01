@@ -69,27 +69,30 @@ export const getNews = async (ticker) => {
 
 // Stream message with callback for chunks
 // Stream message with callback for chunks
-export async function streamMessage(message, userName, userAge, history, onChunk, signal) {
+export async function streamMessage({ message, conversationId, userAge, onChunk, signal }) {
+    const token = localStorage.getItem('token');
     try {
         const response = await fetch(`${API_BASE_URL}/api/v1/chat/stream`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
             signal, // Pass abort signal
             body: JSON.stringify({
                 message,
-                user_name: userName,
-                user_age: userAge,
-                conversation_history: history.map(msg => ({
-                    role: msg.role,
-                    content: msg.content || "" // Ensure content is a string
-                }))
+                conversation_id: conversationId,
+                user_age: userAge
             })
         });
 
+        if (response.status === 401) {
+            throw new Error('Unauthorized: Please sign in to use the AI chat');
+        }
+
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
         }
 
         const reader = response.body.getReader();
@@ -119,6 +122,10 @@ export async function streamMessage(message, userName, userAge, history, onChunk
             }
         }
     } catch (error) {
+        if (error.name === 'AbortError') {
+            console.log('Stream request aborted');
+            return;
+        }
         console.error('Streaming error:', error);
         throw error;
     }

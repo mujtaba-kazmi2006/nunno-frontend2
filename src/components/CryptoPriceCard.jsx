@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown } from 'lucide-react'
 import { useMarketData } from '../contexts/MarketDataContext'
 import { useTheme } from '../contexts/ThemeContext'
 
-export default function CryptoPriceCard({ ticker, name, onClick }) {
+export default function CryptoPriceCard({ ticker, name, onClick, variant = 'default' }) {
     const { prices } = useMarketData()
     const { theme } = useTheme()
     const [priceData, setPriceData] = useState(null)
@@ -34,15 +34,9 @@ export default function CryptoPriceCard({ ticker, name, onClick }) {
 
     if (loading) {
         return (
-            <div className={`crypto-price-card p-4 rounded-xl border shadow-sm transition-colors duration-300 ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-gray-100'}`}>
-                <div className="flex justify-between items-start mb-4">
-                    <div className="space-y-2">
-                        <div className={`h-4 w-20 rounded animate-pulse ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gray-100'}`} />
-                        <div className={`h-6 w-32 rounded animate-pulse ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gray-200'}`} />
-                    </div>
-                    <div className={`h-8 w-8 rounded-full animate-pulse ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gray-100'}`} />
-                </div>
-                <div className={`h-16 w-full rounded-lg animate-pulse ${theme === 'dark' ? 'bg-[#16161e]/50' : 'bg-gray-50'}`} />
+            <div className={`p-4 rounded-xl border animate-pulse ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-gray-100'}`}>
+                <div className="h-4 w-12 bg-gray-200 rounded mb-2"></div>
+                <div className="h-6 w-20 bg-gray-300 rounded"></div>
             </div>
         )
     }
@@ -51,7 +45,49 @@ export default function CryptoPriceCard({ ticker, name, onClick }) {
 
     const isPositive = priceData.percent_change >= 0
     const color = isPositive ? '#22c55e' : '#ef4444'
-    const gradientId = `colorPrice${ticker}`
+    const gradientId = `colorPrice${ticker}${variant}`
+
+    if (variant === 'compact') {
+        return (
+            <div
+                onClick={onClick}
+                className={`flex flex-col p-3 rounded-2xl border transition-all cursor-pointer group ${theme === 'dark'
+                        ? 'bg-[#16161e] border-slate-800/50 hover:border-purple-500/50 hover:bg-purple-500/5'
+                        : 'bg-white border-gray-100 hover:border-purple-200 hover:bg-purple-50/30 shadow-sm hover:shadow-md'
+                    }`}
+            >
+                <div className="flex justify-between items-center mb-1">
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>
+                        {name === 'Bitcoin' ? 'BTC' : 'ETH'}
+                    </span>
+                    <span className={`text-[10px] font-bold ${isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
+                        {isPositive ? '+' : ''}{priceData.percent_change.toFixed(1)}%
+                    </span>
+                </div>
+
+                <div className={`text-sm font-black mb-2 ${theme === 'dark' ? 'text-slate-200' : 'text-slate-800'}`}>
+                    ${priceData.current_price.toLocaleString(undefined, { minimumFractionDigits: ticker === 'ETHUSDT' ? 2 : 0, maximumFractionDigits: 2 })}
+                </div>
+
+                <div className="h-8 w-full mt-auto">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={chartData}>
+                            <Area
+                                type="monotone"
+                                dataKey="price"
+                                stroke={color}
+                                strokeWidth={1.5}
+                                fill={color}
+                                fillOpacity={0.1}
+                                isAnimationActive={false}
+                            />
+                            <YAxis domain={['auto', 'auto']} hide />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div

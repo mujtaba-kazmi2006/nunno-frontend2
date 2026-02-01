@@ -11,6 +11,10 @@ export function ChatProvider({ children }) {
     const { user } = useAuth();
     const userName = user?.name || 'User';
 
+    const [currentConversationId, setCurrentConversationId] = useState(() => {
+        // Simple UUID generation for the conversation
+        return crypto.randomUUID();
+    });
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
@@ -52,7 +56,9 @@ export function ChatProvider({ children }) {
         showSuggestions,
         setShowSuggestions,
         addMessage,
-        updateLastMessage
+        updateLastMessage,
+        currentConversationId,
+        setCurrentConversationId
     };
 
     return (

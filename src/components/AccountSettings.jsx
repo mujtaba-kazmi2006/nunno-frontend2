@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
-import { User, Mail, Lock, Bell, CreditCard, Shield, Save, Camera } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, Mail, Lock, Bell, CreditCard, Shield, Save, Camera, Zap, Info } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function AccountSettings() {
     const { theme } = useTheme();
+    const { user, refreshUser } = useAuth();
+
+    useEffect(() => {
+        refreshUser();
+    }, []);
+
     const [formData, setFormData] = useState({
-        name: 'User',
-        email: 'user@example.com',
+        name: user?.name || 'User',
+        email: user?.email || 'user@example.com',
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
@@ -33,6 +40,7 @@ export default function AccountSettings() {
 
     const tabs = [
         { id: 'profile', label: 'Profile', icon: User },
+        { id: 'usage', label: 'Usage & Quota', icon: Zap },
         { id: 'security', label: 'Security', icon: Shield },
         { id: 'notifications', label: 'Notifications', icon: Bell },
         { id: 'billing', label: 'Billing', icon: CreditCard },
@@ -82,11 +90,14 @@ export default function AccountSettings() {
                                         </button>
                                     </div>
                                     <div className="text-center md:text-left">
-                                        <h3 className={`text-2xl font-bold ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>{formData.name}</h3>
-                                        <p className={theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}>{formData.email}</p>
-                                        <span className={`inline-block mt-2 px-3 py-1 rounded-full text-sm font-semibold ${theme === 'dark' ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-100 text-purple-700'}`}>
-                                            Pro Member
-                                        </span>
+                                        <h3 className={`text-2xl font-bold ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>{user?.name}</h3>
+                                        <p className={theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}>{user?.email}</p>
+                                        <div className="flex gap-2 items-center mt-2">
+                                            <span className={`px-3 py-1 rounded-full text-sm font-semibold capitalize ${theme === 'dark' ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-100 text-purple-700'}`}>
+                                                {user?.tier || 'Free'} Member
+                                            </span>
+                                            {user?.tier === 'whale' && <Zap size={16} className="text-amber-400 fill-amber-400" />}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -197,7 +208,71 @@ export default function AccountSettings() {
                             </div>
                         )}
 
-                        {/* Notifications Tab */}
+                        {/* Usage Tab */}
+                        {activeTab === 'usage' && (
+                            <div className="space-y-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className={`p-6 rounded-2xl border transition-all ${theme === 'dark' ? 'bg-slate-800/50 border-slate-700/50' : 'bg-gray-50 border-gray-200 shadow-sm'}`}>
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="bg-blue-500/10 p-2 rounded-lg text-blue-500"><Zap size={20} /></div>
+                                            <h4 className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>Daily Token Limit</h4>
+                                        </div>
+                                        <div className="relative pt-1">
+                                            <div className="flex mb-2 items-center justify-between">
+                                                <div>
+                                                    <span className={`text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full ${theme === 'dark' ? 'text-blue-400 bg-blue-200/10' : 'text-blue-600 bg-blue-100'}`}>
+                                                        {((user?.tokens_used_today || 0) / (user?.limits?.daily_token_limit || 1)).toLocaleString(undefined, { style: 'percent' })} Used
+                                                    </span>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className={`text-xs font-semibold inline-block ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>
+                                                        {user?.tokens_used_today || 0} / {user?.limits?.daily_token_limit || 15000}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className={`overflow-hidden h-2 mb-4 text-xs flex rounded ${theme === 'dark' ? 'bg-slate-700' : 'bg-gray-200'}`}>
+                                                <div style={{ width: `${Math.min(100, ((user?.tokens_used_today || 0) / (user?.limits?.daily_token_limit || 15000)) * 100)}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500 transition-all duration-500"></div>
+                                            </div>
+                                        </div>
+                                        <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Tokens are used by the AI to process and generate chat responses. Limits reset daily.</p>
+                                    </div>
+
+                                    <div className={`p-6 rounded-2xl border transition-all ${theme === 'dark' ? 'bg-slate-800/50 border-slate-700/50' : 'bg-gray-50 border-gray-200 shadow-sm'}`}>
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="bg-purple-500/10 p-2 rounded-lg text-purple-500"><Shield size={20} /></div>
+                                            <h4 className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>Daily Intelligence Quota</h4>
+                                        </div>
+                                        <div className="relative pt-1">
+                                            <div className="flex mb-2 items-center justify-between">
+                                                <div>
+                                                    <span className={`text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full ${theme === 'dark' ? 'text-purple-400 bg-purple-200/10' : 'text-purple-600 bg-purple-100'}`}>
+                                                        {((user?.searches_today || 0) / (user?.limits?.daily_searches || 1)).toLocaleString(undefined, { style: 'percent' })} Used
+                                                    </span>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className={`text-xs font-semibold inline-block ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>
+                                                        {user?.searches_today || 0} / {user?.limits?.daily_searches || 10}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className={`overflow-hidden h-2 mb-4 text-xs flex rounded ${theme === 'dark' ? 'bg-slate-700' : 'bg-gray-200'}`}>
+                                                <div style={{ width: `${Math.min(100, ((user?.searches_today || 0) / (user?.limits?.daily_searches || 10)) * 100)}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-purple-500 transition-all duration-500"></div>
+                                            </div>
+                                        </div>
+                                        <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Used for deep market analysis and "Feed Nunno" operations. Limits reset daily.</p>
+                                    </div>
+                                </div>
+
+                                <div className={`p-6 rounded-2xl border ${theme === 'dark' ? 'bg-amber-500/5 border-amber-500/20' : 'bg-amber-50 border-amber-200'}`}>
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <Info className="text-amber-500" size={20} />
+                                        <h4 className={`font-bold ${theme === 'dark' ? 'text-amber-400' : 'text-amber-900'}`}>Total Credit Balance</h4>
+                                    </div>
+                                    <p className={`text-2xl font-bold mb-1 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-900'}`}>{user?.tokens_remaining?.toLocaleString() || 0} Tokens</p>
+                                    <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>This is your permanent credit balance. It does not reset over time.</p>
+                                </div>
+                            </div>
+                        )}
                         {activeTab === 'notifications' && (
                             <div className="space-y-6">
                                 <div className="space-y-4">

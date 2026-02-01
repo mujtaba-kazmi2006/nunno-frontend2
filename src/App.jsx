@@ -69,7 +69,7 @@ function MainLayout({ children }) {
     const { theme, toggleTheme } = useTheme();
 
     return (
-        <div className={`flex h-screen overflow-hidden relative transition-colors duration-500 ${theme === 'dark'
+        <div className={`flex h-screen overflow-hidden relative ${theme === 'dark'
             ? 'bg-gradient-to-br from-[#16161e] via-[#1a1b26] to-[#16161e]'
             : 'bg-gradient-to-br from-gray-50 to-purple-50'
             }`}>
@@ -93,20 +93,23 @@ function MainLayout({ children }) {
                     </button>
                 </div>
 
-                {/* Mobile Menu Trigger */}
-                <div className="md:hidden p-3 absolute top-0 left-0 z-10">
+                {/* Mobile Menu Trigger - Raised z-index to stay above page content and elite chart panels */}
+                <div className="md:hidden p-3 absolute top-0 left-0 z-[100]">
                     <button
                         onClick={() => setIsCollapsed(false)}
-                        className={`p-2.5 rounded-xl shadow-lg transition-all ${theme === 'dark'
-                            ? 'bg-slate-800 text-purple-400'
-                            : 'bg-white text-gray-600 hover:text-purple-600'
+                        className={`p-2.5 rounded-xl shadow-lg transition-all active:scale-95 ${theme === 'dark'
+                            ? 'bg-slate-800/90 backdrop-blur-md text-purple-400 border border-slate-700/50'
+                            : 'bg-white/90 backdrop-blur-md text-gray-600 hover:text-purple-600 border border-purple-100'
                             }`}
                     >
                         <Menu size={22} />
                     </button>
                 </div>
 
-                <main className={`flex-1 overflow-auto transition-colors duration-500 ${theme === 'dark' ? 'bg-black/20' : 'bg-gray-50/50'}`}>
+                {/* Content Area */}
+                <main className={`flex-1 overflow-auto ${theme === 'dark' ? 'bg-black/20' : 'bg-gray-50/50'}`}>
+                    {/* Mobile Header Spacer - Provides padding for the absolute positioned triggers */}
+                    <div className="md:hidden h-16" />
                     {children}
                 </main>
             </div>

@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown, Minus, Thermometer } from 'lucide-react'
 import { useMarketData } from '../contexts/MarketDataContext'
 import { useTheme } from '../contexts/ThemeContext'
 
-export default function MarketTemperature() {
+export default function MarketTemperature({ variant = 'default' }) {
     const { temperature, sentiment, loading, lastUpdated } = useMarketData()
     const { theme } = useTheme()
 
@@ -36,6 +36,31 @@ export default function MarketTemperature() {
                 </div>
             </div>
         )
+    }
+
+    if (variant === 'minimal') {
+        const color = getColor(temperature);
+        return (
+            <div className="market-temperature-minimal">
+                <div className="flex justify-between items-end mb-2">
+                    <div className="flex flex-col">
+                        <span className={`text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>Sentiment</span>
+                        <span className="text-sm font-black" style={{ color }}>{getLabel(temperature)}</span>
+                    </div>
+                    <span className="text-2xl font-black" style={{ color }}>{temperature}</span>
+                </div>
+                <div className={`h-1.5 w-full rounded-full overflow-hidden ${theme === 'dark' ? 'bg-slate-800' : 'bg-gray-200'}`}>
+                    <div
+                        className="h-full transition-all duration-1000 ease-out rounded-full"
+                        style={{
+                            width: `${temperature}%`,
+                            backgroundColor: color,
+                            boxShadow: `0 0 10px ${color}40`
+                        }}
+                    />
+                </div>
+            </div>
+        );
     }
 
     const chartData = [{ name: 'Sentiment', value: temperature, fill: getColor(temperature) }]

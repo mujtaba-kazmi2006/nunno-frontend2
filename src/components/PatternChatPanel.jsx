@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Sparkles, TrendingUp, TrendingDown, Layers, Square, User, Bot } from 'lucide-react';
+import { Send, Loader2, Sparkles, TrendingUp, TrendingDown, Layers, Square, User, Bot, Plus, PieChart, Info, Zap } from 'lucide-react';
 import { streamMessage } from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
 
-const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000, interval = '1d' }) => {
+const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000, interval = '1d', getTechnicalContext }) => {
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
@@ -13,8 +13,10 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000, interval =
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [loadingStatus, setLoadingStatus] = useState('');
+    const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
+    const actionMenuRef = useRef(null);
     const abortController = useRef(null);
     const { theme } = useTheme();
 
@@ -26,6 +28,17 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000, interval =
         scrollToBottom();
     }, [messages, loadingStatus]);
 
+    // Close action menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (actionMenuRef.current && !actionMenuRef.current.contains(event.target)) {
+                setIsActionMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     const handleStop = () => {
         if (abortController.current) {
             abortController.current.abort();
@@ -33,6 +46,90 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000, interval =
         }
         setIsLoading(false);
         setLoadingStatus('');
+    };
+
+    const handleAnalyzeChart = async () => {
+        if (!getTechnicalContext || isLoading) return;
+        setIsActionMenuOpen(false);
+
+        const context = getTechnicalContext();
+        if (!context) return;
+
+        const analysisPrompt = `[INTEL_FEED] Perform an elite-tier technical deep dive for ${context.symbol} on the ${context.interval} timeframe.
+        
+CURRENT MARKET SNAPSHOT:
+- Spot Price: $${context.currentPrice.toLocaleString()}
+- Current Candle OHLC: O:$${context.open.toLocaleString()} H:$${context.high.toLocaleString()} L:$${context.low.toLocaleString()} C:$${context.currentPrice.toLocaleString()}
+- Volume: ${context.volume.toLocaleString()}
+
+RECENT OHLCV HISTORY (Last 5 periods):
+${context.recentHistory.map(d => `- T:${d.t}: O:${d.o}, H:${d.h}, L:${d.l}, C:${d.c}, V:${d.v}`).join('\n')}
+
+ACTIVE TECHNICAL INDICATORS:
+${Object.entries(context.indicatorValues).map(([name, val]) => {
+            if (typeof val === 'object') {
+                return `- ${name.toUpperCase()}: ${JSON.stringify(val, null, 1)}`;
+            }
+            return `- ${name.toUpperCase()}: ${val}`;
+        }).join('\n')}
+
+INSTRUCTION: You are given direct "live feed" access to the user's chart technicals. Create a comprehensive, premium market intelligence report. Analyze price action momentum across the recent history, identify indicator confluence, and break down support/resistance dynamics. Provide a high-confidence verdict on the imminent chart bias.`;
+
+        // Add user notification message
+        setMessages(prev => [...prev, {
+            role: 'user',
+            content: `🔍 [SYSTEM_FEED] Deep Analysis: ${context.symbol} (${context.interval})`
+        }]);
+
+        setIsLoading(true);
+        setLoadingStatus('Feeding AI Data Matrix...');
+
+        try {
+            if (abortController.current) abortController.current.abort();
+            abortController.current = new AbortController();
+
+            const assistantPlaceholder = {
+                role: 'assistant',
+                content: ''
+            };
+
+            setMessages(prev => [...prev, assistantPlaceholder]);
+            let fullContent = '';
+
+            await streamMessage({
+                message: analysisPrompt,
+                conversationId: `chart-analysis-${context.symbol}-${Date.now()}`,
+                userAge: 18,
+                onChunk: (chunk) => {
+                    if (chunk.type === 'text') {
+                        setLoadingStatus('');
+                        fullContent += chunk.content;
+                        setMessages(prev => {
+                            const newMsgs = [...prev];
+                            newMsgs[newMsgs.length - 1] = {
+                                ...newMsgs[newMsgs.length - 1],
+                                content: fullContent
+                            };
+                            return newMsgs;
+                        });
+                    } else if (chunk.type === 'status') {
+                        setLoadingStatus(chunk.content);
+                    }
+                },
+                signal: abortController.current.signal
+            });
+
+        } catch (error) {
+            if (error.name === 'AbortError') return;
+            console.error('Analysis error:', error);
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                content: '❌ Analysis failed. Please check your connection.'
+            }]);
+        } finally {
+            setIsLoading(false);
+            setLoadingStatus('');
+        }
     };
 
     const handleSendMessage = async () => {
@@ -95,12 +192,11 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000, interval =
 
             let fullContent = assistantPlaceholder.content;
 
-            await streamMessage(
-                userMessage,
-                'User',
-                18,
-                messages, // History
-                (chunk) => {
+            await streamMessage({
+                message: userMessage,
+                conversationId: `chat-${Date.now()}`,
+                userAge: 18,
+                onChunk: (chunk) => {
                     if (chunk.type === 'text') {
                         setLoadingStatus('');
                         fullContent += chunk.content;
@@ -116,8 +212,8 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000, interval =
                         setLoadingStatus(chunk.content);
                     }
                 },
-                abortController.current.signal
-            );
+                signal: abortController.current.signal
+            });
 
         } catch (error) {
             if (error.name === 'AbortError') return;
@@ -236,9 +332,75 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000, interval =
                 </div>
             )}
 
-            {/* Input Overlay with Stop Button */}
+            {/* Input Overlay with Action Menu */}
             <div className={`p-4 border-t transition-colors ${theme === 'dark' ? 'bg-[#16161e] border-slate-800/50' : 'bg-white border-slate-200'}`}>
                 <div className="flex items-center gap-2">
+                    {/* Plus Icon Action Menu */}
+                    <div className="relative" ref={actionMenuRef}>
+                        <button
+                            onClick={() => setIsActionMenuOpen(!isActionMenuOpen)}
+                            disabled={isLoading}
+                            className={`p-3 rounded-xl transition-all shadow-sm border flex items-center justify-center ${isActionMenuOpen
+                                    ? (theme === 'dark' ? 'bg-purple-600 border-purple-500 text-white' : 'bg-purple-600 border-purple-500 text-white')
+                                    : (theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-purple-400' : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-purple-600')
+                                }`}
+                        >
+                            <Plus size={20} className={`transition-transform duration-300 ${isActionMenuOpen ? 'rotate-45' : ''}`} />
+                        </button>
+
+                        {isActionMenuOpen && (
+                            <div className={`absolute bottom-full left-0 mb-3 w-64 rounded-2xl shadow-2xl border backdrop-blur-xl animate-in fade-in slide-in-from-bottom-2 duration-200 z-[100] ${theme === 'dark' ? 'bg-[#1e2030]/95 border-slate-700' : 'bg-white/95 border-slate-200'
+                                }`}>
+                                <div className="p-2 space-y-1">
+                                    <button
+                                        onClick={handleAnalyzeChart}
+                                        className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors text-left ${theme === 'dark' ? 'hover:bg-purple-500/10 text-slate-200 hover:text-purple-400' : 'hover:bg-purple-50 text-slate-700 hover:text-purple-600'
+                                            }`}
+                                    >
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${theme === 'dark' ? 'bg-purple-500/10' : 'bg-purple-100'}`}>
+                                            <Sparkles size={18} className={theme === 'dark' ? 'text-purple-400' : 'text-purple-600'} />
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-bold">Deep Scan Chart</div>
+                                            <div className={`text-[10px] ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>AI Analysis of live chart data</div>
+                                        </div>
+                                    </button>
+
+                                    <button
+                                        onClick={() => {
+                                            setInputValue("Explain the current pattern setup");
+                                            setIsActionMenuOpen(false);
+                                            setTimeout(() => handleSendMessage(), 100);
+                                        }}
+                                        className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors text-left ${theme === 'dark' ? 'hover:bg-blue-500/10 text-slate-200 hover:text-blue-400' : 'hover:bg-blue-50 text-slate-700 hover:text-blue-600'
+                                            }`}
+                                    >
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${theme === 'dark' ? 'bg-blue-500/10' : 'bg-blue-100'}`}>
+                                            <Layers size={18} className={theme === 'dark' ? 'text-blue-400' : 'text-blue-600'} />
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-bold">Pattern Briefing</div>
+                                            <div className={`text-[10px] ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Get details on active setup</div>
+                                        </div>
+                                    </button>
+
+                                    <div className={`my-1 h-px ${theme === 'dark' ? 'bg-slate-700/50' : 'bg-slate-100'}`} />
+
+                                    <button
+                                        onClick={() => setIsActionMenuOpen(false)}
+                                        className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors text-left ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-100 text-slate-500'
+                                            }`}
+                                    >
+                                        <div className="w-8 h-8 flex items-center justify-center">
+                                            <Info size={18} />
+                                        </div>
+                                        <div className="text-sm font-medium">Help & Tips</div>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     <div className="flex-1 relative">
                         <input
                             ref={inputRef}

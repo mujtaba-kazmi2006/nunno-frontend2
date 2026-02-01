@@ -10,6 +10,37 @@
 @tailwind components;
 @tailwind utilities;
 
+/* View Transitions API - Premium Circular Wipe */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+/* Brightness/Blur layer for the transition */
+.theme-transitioning * {
+    transition: none !important;
+}
+
+::view-transition-new(root) {
+    z-index: 10000;
+    animation: 800ms cubic-bezier(0.4, 0, 0.2, 1) both circular-wipe-in;
+}
+
+::view-transition-old(root) {
+    z-index: 1;
+}
+
+@keyframes circular-wipe-in {
+    from {
+        clip-path: circle(0% at 90% 5%);
+    }
+
+    to {
+        clip-path: circle(150% at 90% 5%);
+    }
+}
+
 :root {
     /* Color Palette */
     --primary: #8b5cf6;

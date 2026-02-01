@@ -83,7 +83,7 @@ const MessageItem = memo(({ message }) => {
 });
 
 export default function ChatInterface({ userAge }) {
-    const { user } = useAuth()
+    const { user, refreshUser } = useAuth()
     const {
         messages,
         setMessages,
@@ -92,7 +92,8 @@ export default function ChatInterface({ userAge }) {
         loadingStatus,
         setLoadingStatus,
         showSuggestions,
-        setShowSuggestions
+        setShowSuggestions,
+        currentConversationId
     } = useChat()
 
     const userName = user?.name || 'User'
@@ -177,18 +178,43 @@ export default function ChatInterface({ userAge }) {
             let currentDataUsed = {};
             let lastUpdateTime = 0;
 
-            // Pass history excluding the placeholder we just added
-            // Since setState is async/batched, 'messages' here might not have the placeholder yet.
-            const historyForApi = [...messages, userMsgObj];
+            // The backend now looks up history by conversationId, so we don't need to pass history locally
+            await streamMessage({
+                message: userMessage,
+                conversationId: currentConversationId,
+                userAge,
+                onChunk: (chunk) => {
+                    if (chunk.type === 'text') {
+                        setLoadingStatus(''); // Clear status when text starts
+                        fullContent += chunk.content;
 
-            await streamMessage(userMessage, userName, userAge, historyForApi, (chunk) => {
-                if (chunk.type === 'text') {
-                    setLoadingStatus(''); // Clear status when text starts
-                    fullContent += chunk.content;
+                        // Throttle updates to ~30fps (33ms) for smoother streaming
+                        const now = Date.now();
+                        if (now - lastUpdateTime > 33) {
+                            setMessages(prev => {
+                                const newMessages = [...prev];
+                                const lastMsgIndex = newMessages.length - 1;
+                                const lastMsg = newMessages[lastMsgIndex];
 
-                    // Throttle updates to ~30fps (33ms) for smoother streaming
-                    const now = Date.now();
-                    if (now - lastUpdateTime > 33) {
+                                newMessages[lastMsgIndex] = {
+                                    ...lastMsg,
+                                    content: fullContent,
+                                    toolCalls: lastMsg.toolCalls || currentToolCalls,
+                                    dataUsed: lastMsg.dataUsed || currentDataUsed
+                                };
+                                return newMessages;
+                            });
+                            lastUpdateTime = now;
+                        }
+                    }
+                    else if (chunk.type === 'status') {
+                        setLoadingStatus(chunk.content);
+                    }
+                    else if (chunk.type === 'data') {
+                        currentToolCalls = chunk.tool_calls;
+                        currentDataUsed = chunk.data_used;
+
+                        // Always update on data/tool usage (these are rare/one-off events)
                         setMessages(prev => {
                             const newMessages = [...prev];
                             const lastMsgIndex = newMessages.length - 1;
@@ -196,50 +222,28 @@ export default function ChatInterface({ userAge }) {
 
                             newMessages[lastMsgIndex] = {
                                 ...lastMsg,
-                                content: fullContent,
-                                toolCalls: lastMsg.toolCalls || currentToolCalls,
-                                dataUsed: lastMsg.dataUsed || currentDataUsed
+                                toolCalls: currentToolCalls,
+                                dataUsed: currentDataUsed
                             };
                             return newMessages;
                         });
-                        lastUpdateTime = now;
                     }
-                }
-                else if (chunk.type === 'status') {
-                    setLoadingStatus(chunk.content);
-                }
-                else if (chunk.type === 'data') {
-                    currentToolCalls = chunk.tool_calls;
-                    currentDataUsed = chunk.data_used;
-
-                    // Always update on data/tool usage (these are rare/one-off events)
-                    setMessages(prev => {
-                        const newMessages = [...prev];
-                        const lastMsgIndex = newMessages.length - 1;
-                        const lastMsg = newMessages[lastMsgIndex];
-
-                        newMessages[lastMsgIndex] = {
-                            ...lastMsg,
-                            toolCalls: currentToolCalls,
-                            dataUsed: currentDataUsed
-                        };
-                        return newMessages;
-                    });
-                }
-                else if (chunk.type === 'error') {
-                    fullContent += `\n\n⚠️ Error: ${chunk.content}`;
-                    // Always update on error
-                    setMessages(prev => {
-                        const newMessages = [...prev];
-                        const lastMsgIndex = newMessages.length - 1;
-                        newMessages[lastMsgIndex] = {
-                            ...newMessages[lastMsgIndex],
-                            content: fullContent
-                        };
-                        return newMessages;
-                    });
-                }
-            }, abortController.current.signal);
+                    else if (chunk.type === 'error') {
+                        fullContent += `\n\n⚠️ Error: ${chunk.content}`;
+                        // Always update on error
+                        setMessages(prev => {
+                            const newMessages = [...prev];
+                            const lastMsgIndex = newMessages.length - 1;
+                            newMessages[lastMsgIndex] = {
+                                ...newMessages[lastMsgIndex],
+                                content: fullContent
+                            };
+                            return newMessages;
+                        });
+                    }
+                },
+                signal: abortController.current?.signal // Use optional chaining for safety
+            });
 
             // Ensure final update with complete content is rendered
             setMessages(prev => {
@@ -272,6 +276,7 @@ export default function ChatInterface({ userAge }) {
         } finally {
             setIsLoading(false)
             setLoadingStatus('')
+            refreshUser()
         }
     }
 
@@ -304,15 +309,17 @@ export default function ChatInterface({ userAge }) {
 
         try {
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+            const token = localStorage.getItem('token')
             const response = await fetch(`${API_URL}/api/v1/analyze/feed-nunno`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     symbol: 'BTCUSDT',
                     timeframe: '15m',
-                    user_name: userName
+                    conversation_id: currentConversationId
                 }),
                 signal: abortController.current.signal
             })
@@ -403,6 +410,7 @@ export default function ChatInterface({ userAge }) {
         } finally {
             setIsLoading(false)
             setLoadingStatus('')
+            refreshUser()
         }
     }
 

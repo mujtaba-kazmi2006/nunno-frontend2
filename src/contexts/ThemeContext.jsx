@@ -17,8 +17,20 @@ export const ThemeProvider = ({ children }) => {
         }
     }, [theme]);
 
-    const toggleTheme = () => {
-        setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    const toggleTheme = (e) => {
+        if (!document.startViewTransition) {
+            setTheme(prev => prev === 'light' ? 'dark' : 'light');
+            return;
+        }
+
+        // Add a class to indicate a theme transition is in progress
+        document.documentElement.classList.add('theme-transitioning');
+
+        document.startViewTransition(() => {
+            setTheme(prev => prev === 'light' ? 'dark' : 'light');
+        }).finished.finally(() => {
+            document.documentElement.classList.remove('theme-transitioning');
+        });
     };
 
     return (

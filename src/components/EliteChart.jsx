@@ -959,7 +959,7 @@ const EliteChart = () => {
         <div className={`h-full w-full flex flex-col overflow-hidden transition-colors duration-500 ${theme === 'dark' ? 'bg-[#16161e] text-slate-100' : 'bg-white text-slate-900'}`}>
             {/* Top Toolbar */}
             <div className={`border-b z-50 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#1e2030]/80 border-slate-700/50 backdrop-blur-xl' : 'bg-white/80 border-slate-200/50 shadow-sm'}`}>
-                <div className="flex flex-col md:flex-row md:items-center justify-between px-4 md:px-6 py-2 md:py-3 gap-3">
+                <div className="flex flex-col md:flex-row md:items-center justify-between pl-16 pr-4 md:px-6 py-2 md:py-3 gap-3">
                     {/* Left: Symbol & Price */}
                     <div className="flex flex-wrap items-center gap-3 md:gap-6">
                         <div className="flex items-center gap-3">
@@ -1291,7 +1291,7 @@ const EliteChart = () => {
                 {/* Chart Area */}
                 <div className={`flex-1 relative min-h-0 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-slate-50'}`}>
                     {/* OHLC HUD - Compact on Mobile */}
-                    <div className={`absolute top-2 md:top-4 left-2 md:left-4 z-10 backdrop-blur-xl rounded-lg md:rounded-xl shadow-lg border p-2 md:p-4 max-w-[calc(100%-1rem)] overflow-x-auto no-scrollbar transition-colors duration-500 ${theme === 'dark' ? 'bg-[#1e2030]/90 border-slate-700/50' : 'bg-white/90 border-slate-200/50'}`}>
+                    <div className={`absolute top-2 md:top-4 left-16 md:left-4 z-10 backdrop-blur-xl rounded-lg md:rounded-xl shadow-lg border p-2 md:p-4 max-w-[calc(100%-1rem)] overflow-x-auto no-scrollbar transition-colors duration-500 ${theme === 'dark' ? 'bg-[#1e2030]/90 border-slate-700/50' : 'bg-white/90 border-slate-200/50'}`}>
                         <div className="flex gap-3 md:gap-6 text-[10px] md:text-sm whitespace-nowrap">
                             <div>
                                 <div className={`text-[8px] md:text-xs mb-0.5 md:mb-1 uppercase tracking-tight ${theme === 'dark' ? 'text-slate-500' : 'text-slate-500'}`}>Open</div>
@@ -1377,6 +1377,68 @@ const EliteChart = () => {
                                     onPatternGenerated={handleAIPattern}
                                     currentPrice={currentPrice}
                                     interval={interval}
+                                    getTechnicalContext={() => {
+                                        const lastCandle = chartData[chartData.length - 1];
+                                        if (!lastCandle) return null;
+
+                                        const activeIndicators = Object.keys(selectedIndicators)
+                                            .filter(key => selectedIndicators[key]);
+
+                                        const indicatorValues = {};
+
+                                        // Standard indicators
+                                        ['ema9', 'ema21', 'ema50', 'ema100', 'ema200', 'rsi', 'atr'].forEach(key => {
+                                            if (selectedIndicators[key] && calculatedIndicators[key]) {
+                                                indicatorValues[key] = getCurrentValue(calculatedIndicators[key]);
+                                            }
+                                        });
+
+                                        // Multi-value indicators
+                                        if (selectedIndicators.bollingerBands && calculatedIndicators.bbUpper) {
+                                            indicatorValues.bollingerBands = {
+                                                upper: getCurrentValue(calculatedIndicators.bbUpper),
+                                                middle: getCurrentValue(calculatedIndicators.bbMiddle),
+                                                lower: getCurrentValue(calculatedIndicators.bbLower)
+                                            };
+                                        }
+
+                                        if (selectedIndicators.supportResistance && calculatedIndicators.support) {
+                                            indicatorValues.levels = {
+                                                support: calculatedIndicators.support.map(l => l.price),
+                                                resistance: calculatedIndicators.resistance.map(l => l.price)
+                                            };
+                                        }
+
+                                        if (selectedIndicators.macd && calculatedIndicators.macd) {
+                                            indicatorValues.macd = {
+                                                macd: getCurrentValue(calculatedIndicators.macd),
+                                                signal: getCurrentValue(calculatedIndicators.macdSignal),
+                                                histogram: getCurrentValue(calculatedIndicators.macdHistogram)
+                                            };
+                                        }
+
+                                        return {
+                                            symbol,
+                                            interval,
+                                            currentPrice: lastCandle.close,
+                                            high: lastCandle.high,
+                                            low: lastCandle.low,
+                                            open: lastCandle.open,
+                                            volume: lastCandle.volume,
+                                            recentHistory: chartData.slice(-5).map(d => ({
+                                                t: d.time,
+                                                o: d.open,
+                                                h: d.high,
+                                                l: d.low,
+                                                c: d.close,
+                                                v: d.volume
+                                            })),
+                                            indicatorValues,
+                                            activeIndicators,
+                                            dataPointsCount: chartData.length,
+                                            timestamp: new Date().toISOString()
+                                        };
+                                    }}
                                 />
                             </div>
                         </div>
