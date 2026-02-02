@@ -21,7 +21,11 @@ import {
     Sparkles,
     Maximize2,
     Minimize2,
-    FastForward
+    FastForward,
+    Minus,
+    Plus,
+    Zap,
+    Brain
 } from 'lucide-react';
 import {
     calculateEMA,
@@ -55,7 +59,7 @@ const EliteChart = () => {
     // UI state
     const [chartType, setChartType] = useState('candlestick');
     const { theme } = useTheme();
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(window.innerWidth < 1280);
     const [showIndicatorsDropdown, setShowIndicatorsDropdown] = useState(false);
     const [showAIChat, setShowAIChat] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -63,14 +67,28 @@ const EliteChart = () => {
     // Watch for window resize to handle responsiveness
     useEffect(() => {
         const handleResize = () => {
-            const mobile = window.innerWidth < 1024;
-            setIsMobile(mobile);
-            if (mobile) {
+            const width = window.innerWidth;
+            setIsMobile(width < 1024);
+            // Auto-collapse on smaller desktop screens
+            if (width < 1280 && width >= 1024) {
                 setIsSidebarCollapsed(true);
+            } else if (width >= 1280) {
+                setIsSidebarCollapsed(false);
             }
         };
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+
+        const handleClickOutside = (event) => {
+            if (tickerMenuRef.current && !tickerMenuRef.current.contains(event.target)) {
+                setIsTickerMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
     }, []);
 
     // Indicators state
@@ -98,6 +116,8 @@ const EliteChart = () => {
     // UI Enhancement state
     const [focusMode, setFocusMode] = useState(false);
     const [indicatorCategory, setIndicatorCategory] = useState('all'); // 'all', 'trend', 'momentum', 'volatility'
+    const [isTickerMenuOpen, setIsTickerMenuOpen] = useState(false);
+    const tickerMenuRef = useRef(null);
 
     // WebSocket ref
     const wsRef = useRef(null);
@@ -442,11 +462,14 @@ const EliteChart = () => {
     // Disconnect WebSocket
     const disconnectWebSocket = () => {
         if (wsRef.current) {
-            wsRef.current.send(JSON.stringify({
-                type: 'unsubscribe_kline',
-                symbol: symbol.toLowerCase(),
-                interval: interval
-            }));
+            // Only send unsubscribe if the connection is actually open
+            if (wsRef.current.readyState === WebSocket.OPEN) {
+                wsRef.current.send(JSON.stringify({
+                    type: 'unsubscribe_kline',
+                    symbol: symbol.toLowerCase(),
+                    interval: interval
+                }));
+            }
             wsRef.current.close();
             wsRef.current = null;
         }
@@ -956,41 +979,85 @@ const EliteChart = () => {
     }, []);
 
     return (
-        <div className={`h-full w-full flex flex-col overflow-hidden transition-colors duration-500 ${theme === 'dark' ? 'bg-[#16161e] text-slate-100' : 'bg-white text-slate-900'}`}>
-            {/* Top Toolbar */}
-            <div className={`border-b z-50 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#1e2030]/80 border-slate-700/50 backdrop-blur-xl' : 'bg-white/80 border-slate-200/50 shadow-sm'}`}>
-                <div className="flex flex-col md:flex-row md:items-center justify-between pl-16 pr-4 md:px-6 py-2 md:py-3 gap-3">
-                    {/* Left: Symbol & Price */}
-                    <div className="flex flex-wrap items-center gap-3 md:gap-6">
+        <div className={`h-full w-full flex flex-col overflow-hidden transition-colors duration-500 ${theme === 'dark' ? 'bg-[#16161e] text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+            {/* --- Premium Top Header --- */}
+            <header className={`z-[70] transition-all duration-500 relative border-b ${theme === 'dark' ? 'bg-[#1e2030]/80 border-slate-700/50' : 'bg-white/80 border-slate-200'} backdrop-blur-md`}>
+                <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between px-4 md:px-8 py-3 md:py-4 gap-4">
+                    {/* Left: Ticker & Timeframe */}
+                    <div className="flex items-center gap-4 md:gap-8">
                         <div className="flex items-center gap-3">
-                            <select
-                                value={symbol}
-                                onChange={(e) => setSymbol(e.target.value)}
-                                className={`px-3 py-1.5 md:px-4 md:py-2 border rounded-xl font-semibold text-sm md:text-base focus:outline-none transition-all disabled:opacity-50 ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-100 hover:border-purple-500' : 'bg-white/90 border-slate-200 text-slate-800 hover:border-purple-300'}`}
-                            >
-                                {tokenOptions.map(token => (
-                                    <option key={token.symbol} value={token.symbol}>{token.name}</option>
-                                ))}
-                            </select>
+                            <div className={`p-2 rounded-2xl shadow-inner ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-slate-100'}`}>
+                                <TrendingUp className="text-purple-500" size={28} />
+                            </div>
                             <div className="flex flex-col">
-                                <div className={`text-xl md:text-2xl font-bold leading-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                                    ${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                <div className="flex items-center gap-2 relative" ref={tickerMenuRef}>
+                                    <button
+                                        onClick={() => setIsTickerMenuOpen(!isTickerMenuOpen)}
+                                        className={`flex items-center gap-2 group transition-all rounded-xl px-2 py-1 -ml-2 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}
+                                    >
+                                        <span className={`transition-all ${theme === 'dark' ? 'text-white group-hover:text-purple-400' : 'text-slate-900 group-hover:text-purple-600'}`}
+                                            style={{ fontWeight: 800, fontSize: isMobile ? '1.25rem' : '1.5rem', letterSpacing: '-0.02em', fontFamily: "'Inter', system-ui, sans-serif" }}>
+                                            {symbol.replace('USDT', '')}
+                                        </span>
+                                        <ChevronDown size={isMobile ? 18 : 22} className={`transition-transform duration-300 ${isTickerMenuOpen ? 'rotate-180' : ''} ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`} />
+                                    </button>
+
+                                    {/* Premium Custom Dropdown */}
+                                    {isTickerMenuOpen && (
+                                        <div className={`absolute top-full left-0 mt-2 w-64 rounded-2xl shadow-2xl border backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-300 z-[100] ${theme === 'dark' ? 'bg-[#1e2030]/95 border-slate-700/50' : 'bg-white/95 border-slate-200 shadow-slate-200/50'}`}>
+                                            <div className="p-2 grid grid-cols-1 gap-1">
+                                                {tokenOptions.map(token => (
+                                                    <button
+                                                        key={token.symbol}
+                                                        onClick={() => {
+                                                            setSymbol(token.symbol);
+                                                            setIsTickerMenuOpen(false);
+                                                        }}
+                                                        className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all ${symbol === token.symbol
+                                                            ? (theme === 'dark' ? 'bg-purple-600/20 text-purple-400 border border-purple-500/30' : 'bg-purple-50 text-purple-600 border border-purple-100')
+                                                            : (theme === 'dark' ? 'text-slate-300 hover:bg-white/5' : 'text-slate-600 hover:bg-slate-50')
+                                                            }`}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-[10px] ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                                                                {token.symbol.substring(0, 1)}
+                                                            </div>
+                                                            <div className="flex flex-col items-start">
+                                                                <span className="text-sm font-bold">{token.symbol.replace('USDT', '')}</span>
+                                                                <span className={`text-[10px] opacity-60 font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>{token.name}</span>
+                                                            </div>
+                                                        </div>
+                                                        {symbol === token.symbol && <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]" />}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'bg-purple-500/20 text-purple-400' : 'bg-purple-100 text-purple-600'}`}>
+                                        {interval}
+                                    </span>
                                 </div>
-                                <div className={`text-xs md:text-sm font-semibold ${priceChange >= 0 ? (theme === 'dark' ? 'text-emerald-400' : 'text-green-600') : (theme === 'dark' ? 'text-rose-400' : 'text-red-600')}`}>
-                                    {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-lg font-mono font-bold ${priceChange >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                        ${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </span>
+                                    <span className={`text-xs font-black ${priceChange >= 0 ? 'text-emerald-500/80' : 'text-rose-500/80'}`}>
+                                        {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Timeframe selector */}
-                        <div className={`flex gap-1 rounded-lg p-1 overflow-x-auto no-scrollbar ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-slate-100'}`}>
+                        {/* Quick Timeframe Switcher */}
+                        <div className={`hidden sm:flex gap-1 rounded-xl p-1 ${theme === 'dark' ? 'bg-[#16161e]/50' : 'bg-slate-100'}`}>
                             {['1m', '5m', '15m', '1h', '4h', '1d'].map(tf => (
                                 <button
                                     key={tf}
                                     onClick={() => setInterval(tf)}
-                                    className={`px-2.5 py-1.5 rounded-md text-xs md:text-sm font-medium transition-all ${interval === tf
-                                        ? (theme === 'dark' ? 'bg-purple-600 text-white shadow-lg' : 'bg-white text-purple-600 shadow-sm')
-                                        : (theme === 'dark' ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-600 hover:text-slate-900')
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${interval === tf
+                                        ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+                                        : 'text-slate-500 hover:text-purple-500'
                                         }`}
                                 >
                                     {tf}
@@ -999,379 +1066,309 @@ const EliteChart = () => {
                         </div>
                     </div>
 
-                    {/* Right: Controls */}
-                    <div className="flex items-center justify-between md:justify-end gap-1.5 md:gap-2">
-                        <div className={`flex gap-1 rounded-lg p-1 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-slate-100'}`}>
+                    {/* Right: Actions */}
+                    <div className="flex items-center justify-between md:justify-end gap-2">
+                        {/* Reset Chart Layout */}
+                        <button
+                            onClick={handleResetChart}
+                            className={`hidden sm:flex p-2.5 rounded-xl border transition-all ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-amber-500' : 'bg-white border-slate-200 text-slate-600 hover:text-amber-600'
+                                }`}
+                            title="Reset Chart Layout"
+                        >
+                            <RotateCcw size={20} />
+                        </button>
+                        {/* Chart Type Toggle */}
+                        <div className={`flex gap-1 rounded-xl p-1 ${theme === 'dark' ? 'bg-[#16161e]/50' : 'bg-slate-100'}`}>
                             {[
-                                { type: 'candlestick', icon: BarChart3, label: 'Candles' },
-                                { type: 'line', icon: Activity, label: 'Line' },
-                                { type: 'area', icon: Layers, label: 'Area' }
-                            ].map(({ type, icon: Icon, label }) => (
+                                { type: 'candlestick', icon: BarChart3 },
+                                { type: 'line', icon: Activity },
+                                { type: 'area', icon: Layers }
+                            ].map(({ type, icon: Icon }) => (
                                 <button
                                     key={type}
                                     onClick={() => setChartType(type)}
-                                    className={`p-1.5 md:px-3 md:py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all ${chartType === type
-                                        ? (theme === 'dark' ? 'bg-purple-600 text-white shadow-lg' : 'bg-white text-purple-600 shadow-sm')
-                                        : (theme === 'dark' ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-600 hover:text-slate-900 shadow-sm')
+                                    className={`p-2 rounded-lg transition-all ${chartType === type
+                                        ? 'bg-purple-600 text-white shadow-md'
+                                        : 'text-slate-500 hover:text-purple-500'
                                         }`}
                                 >
-                                    <Icon size={isMobile ? 14 : 16} />
-                                    <span className="hidden lg:inline">{label}</span>
+                                    <Icon size={18} />
                                 </button>
                             ))}
                         </div>
 
-                        <button
-                            onClick={() => setFocusMode(!focusMode)}
-                            className={`p-1.5 md:p-2 rounded-xl transition-all ${focusMode
-                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                                : theme === 'dark' ? 'bg-[#1e2030] text-slate-300 hover:bg-slate-700/50' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                                }`}
-                            title="Focus Mode"
-                        >
-                            {focusMode ? <Minimize2 size={isMobile ? 14 : 18} /> : <Maximize2 size={isMobile ? 14 : 18} />}
-                        </button>
+                        <div className="h-8 w-[1px] bg-slate-700/30 mx-1 hidden md:block" />
 
-                        <button
-                            onClick={() => setShowAIChat(!showAIChat)}
-                            className={`px-2 py-1.5 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-1.5 transition-all ${showAIChat
-                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                                : theme === 'dark' ? 'bg-[#1e2030] text-slate-300 hover:bg-slate-700/50' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                                }`}
-                        >
-                            <MessageSquare size={isMobile ? 14 : 18} />
-                            <span className="hidden md:inline">AI</span>
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setFocusMode(!focusMode)}
+                                className={`p-2.5 rounded-xl border transition-all ${focusMode
+                                    ? 'bg-purple-600 text-white border-purple-500 shadow-lg'
+                                    : theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:text-purple-600'
+                                    }`}
+                            >
+                                {focusMode ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+                            </button>
 
-                        <button
-                            onClick={toggleStreaming}
-                            className={`px-2 py-1.5 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-1.5 transition-all ${isStreaming
-                                ? 'bg-red-500 text-white'
-                                : 'bg-green-500 text-white'
-                                }`}
-                        >
-                            {isStreaming ? (
-                                <><div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /><span className="hidden sm:inline">Live</span></>
-                            ) : (
-                                <><PlayCircle size={isMobile ? 14 : 18} /><span className="hidden sm:inline">Start</span></>
-                            )}
-                        </button>
+                            <button
+                                onClick={() => setShowAIChat(!showAIChat)}
+                                className={`px-4 py-2.5 rounded-xl border font-bold text-sm flex items-center gap-2 transition-all ${showAIChat
+                                    ? 'bg-purple-600 text-white border-purple-500 shadow-lg'
+                                    : theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:text-purple-600'
+                                    }`}
+                            >
+                                <MessageSquare size={18} />
+                                <span className="hidden lg:inline">Ask AI</span>
+                            </button>
+
+                            <button
+                                onClick={toggleStreaming}
+                                className={`px-5 py-2.5 rounded-xl font-black text-sm flex items-center gap-2 transition-all shadow-xl ${isStreaming
+                                    ? 'bg-rose-500 text-white hover:bg-rose-600'
+                                    : 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                    }`}
+                            >
+                                {isStreaming ? (
+                                    <><div className="w-2 h-2 bg-white rounded-full animate-pulse" /><span>LIVE</span></>
+                                ) : (
+                                    <><PlayCircle size={18} /><span>START</span></>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </header>
 
-            {/* Main Content */}
+            {/* --- Main Workspace --- */}
             <div className="flex-1 flex flex-row overflow-hidden relative">
-                {/* Sidebar */}
-                <div
-                    className={`absolute md:relative z-40 h-full border-r transition-all duration-300 ${focusMode
-                        ? '-translate-x-full md:-translate-x-full md:w-0 border-none'
+                {/* Left Sidebar: Indicators & Simulator */}
+                <aside
+                    className={`absolute md:relative z-[60] h-full transition-all duration-500 ease-in-out border-r ${focusMode
+                        ? '-translate-x-full md:w-0 border-none'
                         : isSidebarCollapsed
-                            ? '-translate-x-full md:translate-x-0 md:w-16'
-                            : 'translate-x-0 w-72 md:w-80'
-                        } flex flex-col shadow-2xl md:shadow-none ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white/95 md:bg-white/80 backdrop-blur-xl border-slate-200/50'}`}
+                            ? '-translate-x-full md:w-0 border-none'
+                            : 'translate-x-0 w-[280px] md:w-[320px]'
+                        } ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white/95 backdrop-blur-xl border-slate-200'}`}
                 >
-                    {/* Sidebar Toggle (Mobile Floating) */}
+                    {/* Persistent Sidebar Toggle - Pulls into view even when collapsed */}
                     {!focusMode && (
                         <button
                             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                            className={`absolute -right-10 top-20 md:static p-2.5 border rounded-r-lg shadow-md md:shadow-none md:border-none md:rounded-none transition-colors flex items-center justify-center ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-400 hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'}`}
+                            className={`absolute z-[70] transition-all duration-500 shadow-2xl active:scale-95 flex items-center justify-center border ${isSidebarCollapsed
+                                ? 'right-[-40px] rounded-r-2xl w-10 h-14 top-24'
+                                : 'right-[-16px] rounded-full w-8 h-8 top-6'
+                                } ${theme === 'dark'
+                                    ? 'bg-[#1e2030] border-slate-700 text-purple-400 hover:text-purple-300'
+                                    : 'bg-white border-slate-200 text-purple-600 hover:text-purple-500 shadow-lg'
+                                }`}
+                            title={isSidebarCollapsed ? "Expand Tools" : "Collapse Sidebar"}
                         >
-                            {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+                            {isSidebarCollapsed ? <ChevronRight size={22} className="ml-1" /> : <ChevronLeft size={18} />}
                         </button>
                     )}
 
                     {!isSidebarCollapsed && (
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                            {/* Indicators Dropdown */}
-                            <div className="space-y-2">
-                                <button
-                                    onClick={() => setShowIndicatorsDropdown(!showIndicatorsDropdown)}
-                                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all shadow-sm ${theme === 'dark' ? 'bg-[#16161e] hover:bg-slate-800' : 'bg-gradient-to-r from-slate-100 to-slate-50 hover:from-slate-200 hover:to-slate-100'}`}
-                                >
-                                    <span className={`text-sm font-bold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-700'}`}>INDICATORS</span>
-                                    <ChevronDown
-                                        size={18}
-                                        className={`transition-transform duration-300 ${showIndicatorsDropdown ? 'rotate-180' : ''}`}
-                                    />
-                                </button>
+                        <div className="h-full flex flex-col p-4 md:p-6 space-y-6 overflow-y-auto no-scrollbar">
+                            {/* Indicators Section */}
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between px-1">
+                                    <h3 className={`text-[10px] font-black uppercase tracking-[0.25em] ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Technical Analysis</h3>
+                                    <Sparkles size={14} className="text-purple-500 animate-pulse" />
+                                </div>
 
-                                {showIndicatorsDropdown && (
-                                    <div className="space-y-3 pl-1">
-                                        {/* Trend Indicators */}
-                                        <div className="space-y-1">
-                                            <h4 className="text-[10px] font-bold text-purple-600 uppercase tracking-wider px-2 flex items-center gap-1">
-                                                <TrendingUp size={12} />
-                                                Trend
-                                            </h4>
-                                            {[
-                                                { key: 'ema9', label: 'EMA 9', color: 'bg-amber-500', tooltip: 'Fast-moving average for short-term trends' },
-                                                { key: 'ema21', label: 'EMA 21', color: 'bg-blue-500', tooltip: 'Medium-term trend indicator' },
-                                                { key: 'ema50', label: 'EMA 50', color: 'bg-purple-500', tooltip: 'Intermediate trend strength' },
-                                                { key: 'ema100', label: 'EMA 100', color: 'bg-pink-500', tooltip: 'Long-term trend direction' },
-                                                { key: 'ema200', label: 'EMA 200', color: 'bg-red-500', tooltip: 'Major trend line & key support/resistance' }
-                                            ].map(({ key, label, color, tooltip }) => (
-                                                <button
-                                                    key={key}
-                                                    onClick={() => setSelectedIndicators(prev => ({ ...prev, [key]: !prev[key] }))}
-                                                    className={`group relative w-full px-3 py-2 rounded-lg flex items-center gap-2 transition-all ${selectedIndicators[key]
-                                                        ? (theme === 'dark' ? 'bg-purple-500/20 border-2 border-purple-500/50 shadow-sm' : 'bg-purple-50 border-2 border-purple-300 shadow-sm')
-                                                        : (theme === 'dark' ? 'bg-[#16161e]/50 border-2 border-transparent hover:border-slate-700 hover:shadow-sm' : 'bg-slate-50 border-2 border-transparent hover:border-slate-200 hover:shadow-sm')
-                                                        }`}
-                                                    title={tooltip}
-                                                >
-                                                    <div className={`w-3 h-3 rounded-full ${color} shadow-sm`} />
-                                                    <span className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-slate-700'}`}>{label}</span>
-                                                    {selectedIndicators[key] ? (
-                                                        <Eye size={14} className="ml-auto text-purple-600" />
-                                                    ) : (
-                                                        <EyeOff size={14} className="ml-auto text-slate-400" />
-                                                    )}
-                                                </button>
-                                            ))}
+                                <div className="space-y-4">
+                                    {/* EMA Group Card */}
+                                    <div className={`p-1.5 rounded-3xl border transition-all duration-300 ${theme === 'dark' ? 'bg-[#16161e]/60 border-slate-700/50 hover:bg-[#16161e]/80' : 'bg-white border-slate-200/60 shadow-sm hover:shadow-md'}`}>
+                                        <div className="px-4 py-3 mb-1 flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Activity size={15} className="text-amber-500" />
+                                                <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider">Moving Averages</span>
+                                            </div>
+                                            <div className="w-8 h-1 bg-slate-700/20 rounded-full" />
                                         </div>
-
-                                        {/* Momentum Indicators */}
                                         <div className="space-y-1">
-                                            <h4 className="text-[10px] font-bold text-blue-600 uppercase tracking-wider px-2 flex items-center gap-1">
-                                                <Activity size={12} />
-                                                Momentum
-                                            </h4>
-                                            {[
-                                                { key: 'rsi', label: 'RSI (14)', color: 'bg-indigo-500', tooltip: 'Overbought/oversold indicator (0-100)' },
-                                                { key: 'macd', label: 'MACD', color: 'bg-cyan-500', tooltip: 'Trend momentum & reversal signals' }
-                                            ].map(({ key, label, color, tooltip }) => (
+                                            {['ema9', 'ema21', 'ema50', 'ema100', 'ema200'].map(key => (
                                                 <button
                                                     key={key}
                                                     onClick={() => setSelectedIndicators(prev => ({ ...prev, [key]: !prev[key] }))}
-                                                    className={`group relative w-full px-3 py-2 rounded-lg flex items-center gap-2 transition-all ${selectedIndicators[key]
-                                                        ? (theme === 'dark' ? 'bg-purple-500/20 border-2 border-purple-500/50 shadow-sm' : 'bg-purple-50 border-2 border-purple-300 shadow-sm')
-                                                        : (theme === 'dark' ? 'bg-[#16161e]/50 border-2 border-transparent hover:border-slate-700 hover:shadow-sm' : 'bg-slate-50 border-2 border-transparent hover:border-slate-200 hover:shadow-sm')
-                                                        }`}
-                                                    title={tooltip}
+                                                    className={`w-full px-3 py-2 rounded-xl flex items-center justify-between transition-all ${selectedIndicators[key] ? (theme === 'dark' ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-50 text-purple-600 shadow-sm') : 'hover:bg-purple-500/5 text-slate-500'}`}
                                                 >
-                                                    <div className={`w-3 h-3 rounded-full ${color === 'bg-indigo-500' ? 'bg-purple-500' : color} shadow-sm`} />
-                                                    <span className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-slate-700'}`}>{label}</span>
-                                                    {selectedIndicators[key] ? (
-                                                        <Eye size={14} className="ml-auto text-purple-600" />
-                                                    ) : (
-                                                        <EyeOff size={14} className="ml-auto text-slate-400" />
-                                                    )}
-                                                </button>
-                                            ))}
-                                        </div>
-
-                                        {/* Volatility & Levels */}
-                                        <div className="space-y-1">
-                                            <h4 className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider px-2 flex items-center gap-1">
-                                                <BarChart3 size={12} />
-                                                Volatility & Levels
-                                            </h4>
-                                            {[
-                                                { key: 'bollingerBands', label: 'Bollinger Bands', color: 'bg-violet-500', tooltip: 'Price volatility & deviation bands' },
-                                                { key: 'atr', label: 'ATR (14)', color: 'bg-teal-500', tooltip: 'Average True Range - volatility measure' },
-                                                { key: 'supportResistance', label: 'Support/Resistance', color: 'bg-emerald-500', tooltip: 'Key price levels for reversals' }
-                                            ].map(({ key, label, color, tooltip }) => (
-                                                <button
-                                                    key={key}
-                                                    onClick={() => setSelectedIndicators(prev => ({ ...prev, [key]: !prev[key] }))}
-                                                    className={`group relative w-full px-3 py-2 rounded-lg flex items-center gap-2 transition-all ${selectedIndicators[key]
-                                                        ? (theme === 'dark' ? 'bg-purple-500/20 border-2 border-purple-500/50 shadow-sm' : 'bg-purple-50 border-2 border-purple-300 shadow-sm')
-                                                        : (theme === 'dark' ? 'bg-[#16161e]/50 border-2 border-transparent hover:border-slate-700 hover:shadow-sm' : 'bg-slate-50 border-2 border-transparent hover:border-slate-200 hover:shadow-sm')
-                                                        }`}
-                                                    title={tooltip}
-                                                >
-                                                    <div className={`w-3 h-3 rounded-full ${color} shadow-sm`} />
-                                                    <span className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-slate-700'}`}>{label}</span>
-                                                    {selectedIndicators[key] ? (
-                                                        <Eye size={14} className="ml-auto text-purple-600" />
-                                                    ) : (
-                                                        <EyeOff size={14} className="ml-auto text-slate-400" />
-                                                    )}
+                                                    <div className="flex items-center gap-2">
+                                                        <div className={`w-1.5 h-1.5 rounded-full ${key === 'ema9' ? 'bg-amber-500' : key === 'ema21' ? 'bg-blue-500' : key === 'ema50' ? 'bg-purple-500' : key === 'ema100' ? 'bg-pink-500' : 'bg-red-500'}`} />
+                                                        <span className="text-[11px] font-bold uppercase">{key.replace('ema', 'EMA ')}</span>
+                                                    </div>
+                                                    {selectedIndicators[key] ? <Eye size={13} className="opacity-80" /> : <EyeOff size={13} className="opacity-30" />}
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
-                                )}
+
+                                    {/* Advanced Indicators Grid */}
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {[
+                                            { key: 'rsi', label: 'RSI (14)', icon: Activity },
+                                            { key: 'macd', label: 'MACD', icon: BarChart3 },
+                                            { key: 'bollingerBands', label: 'Bollinger', icon: Layers },
+                                            { key: 'supportResistance', label: 'S/R Levels', icon: Minus }
+                                        ].map(ind => (
+                                            <button
+                                                key={ind.key}
+                                                onClick={() => setSelectedIndicators(prev => ({ ...prev, [ind.key]: !prev[ind.key] }))}
+                                                className={`px-4 py-3 rounded-2xl border flex items-center justify-between transition-all ${selectedIndicators[ind.key]
+                                                    ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/20 active:scale-[0.98]'
+                                                    : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-600 hover:border-purple-200 hover:shadow-md'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <ind.icon size={16} />
+                                                    <span className="text-[11px] font-black uppercase tracking-wider">{ind.label}</span>
+                                                </div>
+                                                {selectedIndicators[ind.key] ? <Eye size={16} /> : <Plus size={16} className="opacity-40" />}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
 
-                            {/* Scenario Simulator */}
-                            <div className="space-y-2">
-                                <h3 className={`text-sm font-bold uppercase tracking-wide ${theme === 'dark' ? 'text-slate-400' : 'text-slate-700'}`}>Scenario Simulator</h3>
-                                <div className="space-y-1">
+                            {/* Simulator Section */}
+                            <div className="space-y-4 pt-4 border-t border-slate-700/20">
+                                <div className="flex items-center justify-between px-1">
+                                    <h3 className={`text-[10px] font-black uppercase tracking-[0.25em] ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Trade Simulator</h3>
+                                    <FastForward size={14} className="text-amber-500" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
                                     {[
-                                        { type: 'long', label: 'Long Support', icon: TrendingUp, color: 'bg-green-500' },
-                                        { type: 'short', label: 'Short Resistance', icon: TrendingDown, color: 'bg-red-500' },
-                                        { type: 'breakout', label: 'Breakout', icon: TrendingUp, color: 'bg-blue-500' },
-                                        { type: 'breakdown', label: 'Breakdown', icon: TrendingDown, color: 'bg-orange-500' },
-                                        { type: 'mean-reversion', label: 'Mean Reversion', icon: Activity, color: 'bg-purple-500' }
-                                    ].map(({ type, label, icon: Icon, color }) => (
+                                        { type: 'long', label: 'Long', icon: TrendingUp, color: 'emerald' },
+                                        { type: 'short', label: 'Short', icon: TrendingDown, color: 'rose' },
+                                        { type: 'breakout', label: 'Breakout', icon: Zap, color: 'amber' },
+                                        { type: 'mean-reversion', label: 'Revert', icon: Activity, color: 'purple' }
+                                    ].map(sim => (
                                         <button
-                                            key={type}
-                                            onClick={() => generateScenario(type)}
-                                            className={`w-full px-3 py-2 rounded-lg flex items-center gap-2 transition-all ${simulationMode === type
-                                                ? (theme === 'dark' ? 'bg-purple-500/20 border-2 border-purple-500/50' : 'bg-purple-50 border-2 border-purple-300')
-                                                : (theme === 'dark' ? 'bg-[#16161e]/50 border-2 border-transparent hover:border-slate-700' : 'bg-slate-50 border-2 border-transparent hover:border-slate-200')
+                                            key={sim.type}
+                                            onClick={() => generateScenario(sim.type)}
+                                            className={`flex flex-col items-center gap-2 p-3 md:p-4 rounded-2xl border transition-all ${simulationMode === sim.type
+                                                ? `bg-${sim.color}-500 border-${sim.color}-400 text-white shadow-lg scale-[1.02]`
+                                                : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:border-slate-500 hover:bg-slate-700/30' : 'bg-white border-slate-200 text-slate-600 hover:border-purple-200'
                                                 }`}
                                         >
-                                            <div className={`p-1 rounded ${color}`}>
-                                                <Icon size={14} className="text-white" />
-                                            </div>
-                                            <span className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-slate-700'}`}>{label}</span>
+                                            <sim.icon size={18} />
+                                            <span className="text-[9px] font-black uppercase tracking-tighter">{sim.label}</span>
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
-                            {/* Active Scenario Info */}
+                            {/* Active Scenario Insights */}
                             {simulationActive && scenarioData && (
-                                <div className={`rounded-xl p-4 border transition-colors ${theme === 'dark' ? 'bg-purple-500/10 border-purple-500/30' : 'bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200'}`}>
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h4 className={`text-sm font-bold ${theme === 'dark' ? 'text-purple-400' : 'text-purple-900'}`}>{scenarioData.type}</h4>
-                                        <button
-                                            onClick={() => {
-                                                setSimulationActive(false);
-                                                setScenarioData(null);
-                                                setSimulationMode(null);
-                                                setActiveAiPattern(null);
-                                                // Clear price lines
-                                                priceLineRefs.current.forEach(line => {
-                                                    if (line && mainSeriesRef.current) {
-                                                        try { mainSeriesRef.current.removePriceLine(line); } catch (e) { }
-                                                    }
-                                                });
-                                                priceLineRefs.current = [];
-                                                // Clear projection
-                                                if (projectionSeries && chartRef.current) {
-                                                    try { chartRef.current.removeSeries(projectionSeries); } catch (e) { }
-                                                    setProjectionSeries(null);
-                                                }
-                                            }}
-                                            className={`transition-colors ${theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700'}`}
-                                        >
-                                            ✕
-                                        </button>
+                                <div className={`mt-auto p-5 rounded-3xl border animate-in slide-in-from-bottom-4 duration-500 ${theme === 'dark' ? 'bg-purple-500/10 border-purple-500/20' : 'bg-purple-50 border-purple-200'}`}>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                                            <h4 className="text-xs font-black uppercase text-purple-500">{scenarioData.type}</h4>
+                                        </div>
+                                        <button onClick={() => setSimulationActive(false)} className="text-slate-400 hover:text-rose-500"><X size={16} /></button>
                                     </div>
-
-                                    <div className="space-y-2 text-xs">
-                                        <div className="flex justify-between">
-                                            <span className={theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}>Entry:</span>
-                                            <span className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>${scenarioData.entryPrice.toFixed(2)}</span>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <div className="text-[9px] uppercase font-bold text-slate-400">Target</div>
+                                            <div className="text-sm font-black text-emerald-500">${scenarioData.targetPrice.toFixed(2)}</div>
                                         </div>
-                                        <div className="flex justify-between">
-                                            <span className={theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}>Target:</span>
-                                            <span className="font-bold text-green-600">${scenarioData.targetPrice.toFixed(2)}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className={theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}>Stop Loss:</span>
-                                            <span className="font-bold text-red-600">${scenarioData.stopLoss.toFixed(2)}</span>
-                                        </div>
-                                        <div className={`flex justify-between pt-2 border-t ${theme === 'dark' ? 'border-purple-500/20' : 'border-purple-200'}`}>
-                                            <span className={theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}>R:R Ratio:</span>
-                                            <span className="font-bold text-purple-600">{scenarioData.riskReward}:1</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className={theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}>Potential Gain:</span>
-                                            <span className="font-bold text-green-600">+{scenarioData.potentialGain}%</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className={theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}>Potential Loss:</span>
-                                            <span className="font-bold text-red-600">-{scenarioData.potentialLoss}%</span>
+                                        <div>
+                                            <div className="text-[9px] uppercase font-bold text-slate-400">Risk/Reward</div>
+                                            <div className="text-sm font-black text-purple-600">{scenarioData.riskReward}:1</div>
                                         </div>
                                     </div>
-                                    <div className={`mt-3 pt-3 border-t ${theme === 'dark' ? 'border-purple-500/20' : 'border-purple-200'}`}>
-                                        <p className={`text-xs italic ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>{scenarioData.description}</p>
-                                    </div>
+                                    <p className="mt-4 text-[11px] leading-relaxed text-slate-500 italic">
+                                        {scenarioData.description}
+                                    </p>
                                 </div>
                             )}
                         </div>
                     )}
-                </div>
+                </aside>
 
-                {/* Chart Area */}
-                <div className={`flex-1 relative min-h-0 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-slate-50'}`}>
-                    {/* OHLC HUD - Compact on Mobile */}
-                    <div className={`absolute top-2 md:top-4 left-16 md:left-4 z-10 backdrop-blur-xl rounded-lg md:rounded-xl shadow-lg border p-2 md:p-4 max-w-[calc(100%-1rem)] overflow-x-auto no-scrollbar transition-colors duration-500 ${theme === 'dark' ? 'bg-[#1e2030]/90 border-slate-700/50' : 'bg-white/90 border-slate-200/50'}`}>
-                        <div className="flex gap-3 md:gap-6 text-[10px] md:text-sm whitespace-nowrap">
-                            <div>
-                                <div className={`text-[8px] md:text-xs mb-0.5 md:mb-1 uppercase tracking-tight ${theme === 'dark' ? 'text-slate-500' : 'text-slate-500'}`}>Open</div>
-                                <div className={`font-bold ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}>
-                                    ${chartData[chartData.length - 1]?.open.toFixed(2) || '—'}
+                {/* Center Content: Chart Area */}
+                <main className={`flex-1 relative min-h-0 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-slate-50'}`}>
+                    {/* OHLC Overlay (Glassmorphism) - Responsive position and layout */}
+                    <div className={`absolute top-4 md:top-6 left-4 md:left-6 right-4 md:right-auto z-20 backdrop-blur-md rounded-2xl md:rounded-3xl border overflow-hidden shadow-2xl transition-all duration-700 ${theme === 'dark' ? 'bg-[#1e2030]/60 border-white/5 shadow-black/40' : 'bg-white/60 border-white shadow-slate-200/50'}`}>
+                        <div className="flex items-center flex-wrap md:flex-nowrap justify-between md:justify-start gap-y-2 gap-x-4 md:gap-8 px-4 md:px-6 py-3 md:py-4">
+                            {[
+                                { label: 'O', val: chartData[chartData.length - 1]?.open, col: theme === 'dark' ? 'text-slate-300' : 'text-slate-500' },
+                                { label: 'H', val: chartData[chartData.length - 1]?.high, col: 'text-emerald-500' },
+                                { label: 'L', val: chartData[chartData.length - 1]?.low, col: 'text-rose-500' },
+                                { label: 'C', val: chartData[chartData.length - 1]?.close, col: 'text-purple-500' }
+                            ].map(ohlc => (
+                                <div key={ohlc.label} className="flex flex-col">
+                                    <span className="text-[8px] md:text-[9px] font-black uppercase text-slate-500 tracking-tighter mb-0.5">{ohlc.label}</span>
+                                    <span className={`text-[12px] md:text-[15px] font-mono font-black ${ohlc.col} leading-none`}>
+                                        ${ohlc.val?.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
+                                    </span>
                                 </div>
-                            </div>
-                            <div>
-                                <div className={`text-[8px] md:text-xs mb-0.5 md:mb-1 uppercase tracking-tight ${theme === 'dark' ? 'text-emerald-500/80' : 'text-slate-500'}`}>High</div>
-                                <div className={`font-bold ${theme === 'dark' ? 'text-emerald-400' : 'text-green-600'}`}>
-                                    ${chartData[chartData.length - 1]?.high.toFixed(2) || '—'}
-                                </div>
-                            </div>
-                            <div>
-                                <div className={`text-[8px] md:text-xs mb-0.5 md:mb-1 uppercase tracking-tight ${theme === 'dark' ? 'text-rose-500/80' : 'text-slate-500'}`}>Low</div>
-                                <div className={`font-bold ${theme === 'dark' ? 'text-rose-400' : 'text-red-600'}`}>
-                                    ${chartData[chartData.length - 1]?.low.toFixed(2) || '—'}
-                                </div>
-                            </div>
-                            <div>
-                                <div className={`text-[8px] md:text-xs mb-0.5 md:mb-1 uppercase tracking-tight ${theme === 'dark' ? 'text-slate-500' : 'text-slate-500'}`}>Close</div>
-                                <div className={`font-bold ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}>
-                                    ${chartData[chartData.length - 1]?.close.toFixed(2) || '—'}
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Chart container */}
+                    {/* Chart Container */}
                     <div ref={chartContainerRef} className="w-full h-full" />
 
-                    {/* Reset Chart button */}
-                    <button
-                        onClick={handleResetChart}
-                        className={`absolute bottom-4 right-16 p-3 backdrop-blur-xl rounded-xl shadow-lg border transition-all group z-10 ${theme === 'dark' ? 'bg-[#1e2030]/90 border-slate-700 hover:bg-orange-500/10 hover:border-orange-500' : 'bg-white/90 border-slate-200/50 hover:bg-orange-50 hover:border-orange-300'}`}
-                        title="Reset Chart (Clear all indicators & patterns)"
-                    >
-                        <RotateCcw size={20} className={`transition-colors ${theme === 'dark' ? 'text-slate-400 group-hover:text-orange-500' : 'text-slate-600 group-hover:text-orange-600'}`} />
-                    </button>
-
-                    {/* Snapshot button */}
-                    <button
-                        className={`absolute bottom-4 right-4 p-3 backdrop-blur-xl rounded-xl shadow-lg border transition-all group z-10 ${theme === 'dark' ? 'bg-[#1e2030]/90 border-slate-700 hover:bg-purple-500/10 hover:border-purple-500' : 'bg-white/90 border-slate-200/50 hover:bg-purple-50 hover:border-purple-300'}`}
-                        title="Take snapshot (Alt+S)"
-                    >
-                        <Camera size={20} className={`transition-colors ${theme === 'dark' ? 'text-slate-400 group-hover:text-purple-400' : 'text-slate-600 group-hover:text-purple-600'}`} />
-                    </button>
+                    {/* Floating Utils - Hidden when AI Chat is open to avoid clutter */}
+                    <div className={`absolute bottom-6 right-6 flex flex-col gap-3 z-[150] transition-all duration-500 ${showAIChat ? 'opacity-0 pointer-events-none translate-y-10' : 'opacity-100'}`}>
+                        <button
+                            onClick={handleResetChart}
+                            className={`p-4 rounded-2xl shadow-2xl border backdrop-blur-xl transition-all hover:scale-110 active:scale-90 ${theme === 'dark' ? 'bg-[#1e2030]/80 border-slate-700 text-slate-400 hover:text-amber-500' : 'bg-white/80 border-slate-200 text-slate-600 hover:text-amber-600'}`}
+                            title="Reset Layout"
+                        >
+                            <RotateCcw size={22} />
+                        </button>
+                        <button
+                            className={`p-4 rounded-2xl shadow-2xl border backdrop-blur-xl transition-all hover:scale-110 active:scale-90 ${theme === 'dark' ? 'bg-[#1e2030]/80 border-slate-700 text-slate-400 hover:text-purple-400' : 'bg-white/80 border-slate-200 text-slate-600 hover:text-purple-600'}`}
+                            title="Snapshot"
+                        >
+                            <Camera size={22} />
+                        </button>
+                    </div>
 
                     {/* Mobile Sidebar Overlay */}
                     {!isSidebarCollapsed && isMobile && (
                         <div
-                            className="absolute inset-0 bg-slate-900/20 backdrop-blur-[2px] z-30 opacity-100 transition-opacity"
+                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 animate-in fade-in duration-300"
                             onClick={() => setIsSidebarCollapsed(true)}
                         />
                     )}
-                </div>
+                </main>
 
-                {/* AI Chat Panel - Dynamic Transition */}
-                <div
-                    className={`h-full border-l transition-all duration-500 ease-in-out flex flex-col flex-shrink-0 z-50 ${focusMode
+                {/* Right Sidebar: AI Assistant */}
+                <aside
+                    className={`h-full border-l transition-all duration-700 ease-in-out flex flex-col flex-shrink-0 z-[100] ${focusMode
                         ? 'w-0 border-none overflow-hidden'
                         : showAIChat
-                            ? isMobile ? 'absolute inset-0 w-full' : 'relative min-w-[450px] max-w-[450px]'
+                            ? isMobile ? 'fixed inset-0 w-full' : 'relative min-w-[420px] max-w-[420px]'
                             : 'w-0 border-none overflow-hidden'
-                        } ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-slate-200/50'}`}
+                        } ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-slate-200'}`}
                 >
                     {showAIChat && !focusMode && (
                         <div className="flex flex-col h-full w-full">
-                            <div className={`flex items-center justify-between p-4 border-b backdrop-blur-md sticky top-0 z-10 ${theme === 'dark' ? 'bg-[#1e2030]/80 border-slate-700/50' : 'bg-white/80 border-slate-200'}`}>
-                                <h3 className={`font-bold flex items-center gap-2 ${theme === 'dark' ? 'text-slate-100' : 'text-slate-800'}`}>
-                                    <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
-                                    <span className="tracking-tight">Nunno AI Assistant</span>
-                                </h3>
+                            <header className={`flex items-center justify-between p-6 border-b sticky top-0 z-10 ${theme === 'dark' ? 'bg-[#1e2030]/90 border-slate-700/50 backdrop-blur-md' : 'bg-white/90 border-slate-200 backdrop-blur-md'}`}>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-2xl bg-purple-600/10 flex items-center justify-center">
+                                        <Brain size={24} className="text-purple-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className={`font-black tracking-tight ${theme === 'dark' ? 'text-slate-100' : 'text-slate-800'}`}>Nunno AI</h3>
+                                        <div className="flex items-center gap-1">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                            <span className="text-[10px] font-bold text-emerald-500">READY TO ASSIST</span>
+                                        </div>
+                                    </div>
+                                </div>
                                 <button
                                     onClick={() => setShowAIChat(false)}
-                                    className={`p-2 rounded-xl transition-colors ${theme === 'dark' ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-slate-100 text-slate-500'}`}
+                                    className={`p-2 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-slate-700 text-slate-500' : 'hover:bg-slate-100 text-slate-400'}`}
                                 >
                                     <X size={20} />
                                 </button>
-                            </div>
+                            </header>
+
                             <div className="flex-1 overflow-hidden">
                                 <PatternChatPanel
                                     onPatternGenerated={handleAIPattern}
@@ -1385,15 +1382,12 @@ const EliteChart = () => {
                                             .filter(key => selectedIndicators[key]);
 
                                         const indicatorValues = {};
-
-                                        // Standard indicators
                                         ['ema9', 'ema21', 'ema50', 'ema100', 'ema200', 'rsi', 'atr'].forEach(key => {
                                             if (selectedIndicators[key] && calculatedIndicators[key]) {
                                                 indicatorValues[key] = getCurrentValue(calculatedIndicators[key]);
                                             }
                                         });
 
-                                        // Multi-value indicators
                                         if (selectedIndicators.bollingerBands && calculatedIndicators.bbUpper) {
                                             indicatorValues.bollingerBands = {
                                                 upper: getCurrentValue(calculatedIndicators.bbUpper),
@@ -1421,21 +1415,20 @@ const EliteChart = () => {
                                             symbol,
                                             interval,
                                             currentPrice: lastCandle.close,
+                                            open: lastCandle.open,
                                             high: lastCandle.high,
                                             low: lastCandle.low,
-                                            open: lastCandle.open,
-                                            volume: lastCandle.volume,
+                                            volume: lastCandle.volume || 0,
                                             recentHistory: chartData.slice(-5).map(d => ({
                                                 t: d.time,
                                                 o: d.open,
                                                 h: d.high,
                                                 l: d.low,
                                                 c: d.close,
-                                                v: d.volume
+                                                v: d.volume || 0
                                             })),
                                             indicatorValues,
                                             activeIndicators,
-                                            dataPointsCount: chartData.length,
                                             timestamp: new Date().toISOString()
                                         };
                                     }}
@@ -1443,7 +1436,7 @@ const EliteChart = () => {
                             </div>
                         </div>
                     )}
-                </div>
+                </aside>
             </div>
         </div>
     );

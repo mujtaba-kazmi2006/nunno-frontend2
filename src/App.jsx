@@ -27,40 +27,54 @@ function LoadingFallback() {
     )
 }
 
+import MiniWidgets from './components/MiniWidgets'
+
 function Dashboard({ userAge }) {
     const [selectedTicker, setSelectedTicker] = useState(null);
 
     return (
-        <>
-            <div className="main-container">
-                {/* Desktop Sidebar - Hidden on mobile */}
-                <div className="sidebar desktop-only">
-                    <MarketTemperature />
-                    <CryptoPriceCard
-                        ticker="BTCUSDT"
-                        name="Bitcoin"
-                        onClick={() => setSelectedTicker("BTCUSDT")}
-                    />
-                    <CryptoPriceCard
-                        ticker="ETHUSDT"
-                        name="Ethereum"
-                        onClick={() => setSelectedTicker("ETHUSDT")}
-                    />
-                </div>
+        <div className="flex flex-col h-full overflow-hidden">
 
-                {/* Chat Container - Full screen on mobile, normal on desktop */}
-                <div className="chat-container">
+            <div className="main-container">
+                {/* Desktop Sidebar - Hidden on mobile via CSS but kept meaningful */}
+                <aside className="sidebar desktop-only">
+                    <div className="flex flex-col gap-6">
+                        <section>
+                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 px-2">Market Pulse</h3>
+                            <MarketTemperature />
+                        </section>
+
+                        <section>
+                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 px-2">Top Cryptos</h3>
+                            <div className="flex flex-col gap-3">
+                                <CryptoPriceCard
+                                    ticker="BTCUSDT"
+                                    name="Bitcoin"
+                                    onClick={() => setSelectedTicker("BTCUSDT")}
+                                />
+                                <CryptoPriceCard
+                                    ticker="ETHUSDT"
+                                    name="Ethereum"
+                                    onClick={() => setSelectedTicker("ETHUSDT")}
+                                />
+                            </div>
+                        </section>
+                    </div>
+                </aside>
+
+                {/* Main Content Area (Chat) */}
+                <main className="chat-container">
                     <ChatInterface userAge={userAge} />
-                </div>
+                </main>
             </div>
 
-            {/* Modal rendered outside main-container to avoid overflow: hidden clipping */}
+            {/* Modal rendered outside main-container */}
             <CryptoDetailModal
                 isOpen={!!selectedTicker}
                 initialTicker={selectedTicker}
                 onClose={() => setSelectedTicker(null)}
             />
-        </>
+        </div>
     )
 }
 
@@ -93,8 +107,8 @@ function MainLayout({ children }) {
                     </button>
                 </div>
 
-                {/* Mobile Menu Trigger - Raised z-index to stay above page content and elite chart panels */}
-                <div className="md:hidden p-3 absolute top-0 left-0 z-[100]">
+                {/* Mobile Menu Trigger - Symmetrical with theme toggle */}
+                <div className="md:hidden absolute top-4 left-4 z-[100]">
                     <button
                         onClick={() => setIsCollapsed(false)}
                         className={`p-2.5 rounded-xl shadow-lg transition-all active:scale-95 ${theme === 'dark'
@@ -108,8 +122,6 @@ function MainLayout({ children }) {
 
                 {/* Content Area */}
                 <main className={`flex-1 overflow-auto ${theme === 'dark' ? 'bg-black/20' : 'bg-gray-50/50'}`}>
-                    {/* Mobile Header Spacer - Provides padding for the absolute positioned triggers */}
-                    <div className="md:hidden h-16" />
                     {children}
                 </main>
             </div>
