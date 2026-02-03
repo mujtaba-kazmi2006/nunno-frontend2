@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import useBinanceWebSocket from '../hooks/useBinanceWebSocket';
+import api from '../services/api';
 
 const MarketDataContext = createContext();
 
@@ -22,9 +23,9 @@ export function MarketDataProvider({ children }) {
     // Helper to fetch sentiment
     const fetchSentiment = async () => {
         try {
-            const response = await fetch('/api/v1/news/BTCUSDT');
-            if (response.ok) {
-                const data = await response.json();
+            const response = await api.get('/api/v1/news/BTCUSDT');
+            if (response.data) {
+                const data = response.data;
                 return {
                     temperature: data.fear_greed_index?.value || 50,
                     sentiment: data.sentiment || 'Neutral'
