@@ -2,13 +2,12 @@ import { useState, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import ChatInterface from './components/ChatInterface'
 import MarketTemperature from './components/MarketTemperature'
-import CryptoPriceCard from './components/CryptoPriceCard'
 import CollapsibleSidebar from './components/CollapsibleSidebar'
-import { Menu, Sun, Moon } from 'lucide-react'
-import CryptoDetailModal from './components/CryptoDetailModal'
+import { Menu, Sun, Moon, ChevronLeft, ChevronRight } from 'lucide-react'
 import LandingPage from './components/LandingPage'
 import EliteChart from './components/EliteChart'  // Elite charting experience
-import { ChatProvider } from './contexts/ChatContext'
+import { ChatProvider, useChat } from './contexts/ChatContext'
+import { useNavigate } from 'react-router-dom'
 import { MarketDataProvider } from './contexts/MarketDataContext'
 import { useTheme } from './contexts/ThemeContext' // Added useTheme
 
@@ -28,52 +27,73 @@ function LoadingFallback() {
 }
 
 import MiniWidgets from './components/MiniWidgets'
+import MarketHighlights from './components/MarketHighlights'
 
 function Dashboard({ userAge }) {
-    const [selectedTicker, setSelectedTicker] = useState(null);
+    const navigate = useNavigate();
+    const { setPendingMessage } = useChat();
+    const [isMobileMarketOpen, setIsMobileMarketOpen] = useState(false);
+
+    const handleAnalyzeChart = (ticker) => {
+        navigate(`/elite-chart?ticker=${ticker}`);
+    };
+
+    const handleAnalyzeTokenomics = (ticker) => {
+        setPendingMessage(`Analyze the tokenomics of ${ticker.replace('USDT', '')} for me. Search the web for the latest supply data, utility, and distribution.`);
+    };
 
     return (
-        <div className="flex flex-col h-full overflow-hidden">
-
-            <div className="main-container">
+        <div className="flex flex-col h-full overflow-hidden relative">
+            <div className="main-container relative">
                 {/* Desktop Sidebar - Hidden on mobile via CSS but kept meaningful */}
                 <aside className="sidebar desktop-only">
                     <div className="flex flex-col gap-6">
-                        <section>
+                        <section className="w-full min-0">
                             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 px-2">Market Pulse</h3>
                             <MarketTemperature />
                         </section>
 
-                        <section>
-                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 px-2">Top Cryptos</h3>
-                            <div className="flex flex-col gap-3">
-                                <CryptoPriceCard
-                                    ticker="BTCUSDT"
-                                    name="Bitcoin"
-                                    onClick={() => setSelectedTicker("BTCUSDT")}
-                                />
-                                <CryptoPriceCard
-                                    ticker="ETHUSDT"
-                                    name="Ethereum"
-                                    onClick={() => setSelectedTicker("ETHUSDT")}
-                                />
-                            </div>
+                        <section className="w-full min-w-0">
+                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 px-2">Market Overview</h3>
+                            <MarketHighlights
+                                onAnalyzeChart={handleAnalyzeChart}
+                                onAnalyzeTokenomics={handleAnalyzeTokenomics}
+                            />
                         </section>
                     </div>
                 </aside>
 
+                {/* Mobile Market Sidebar - ONLY FOR MOBILE */}
+                <aside className={`mobile-market-sidebar md:hidden ${isMobileMarketOpen ? 'open' : 'collapsed'}`}>
+                    <button
+                        onClick={() => setIsMobileMarketOpen(!isMobileMarketOpen)}
+                        className="mobile-market-toggle"
+                        aria-label={isMobileMarketOpen ? "Close market sidebar" : "Open market sidebar"}
+                    >
+                        {isMobileMarketOpen ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+                    </button>
+
+                    <div className="mobile-market-content">
+                        <header className="mb-2">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Market Pulse</h4>
+                        </header>
+                        <MarketTemperature variant="minimal" />
+
+                        <header className="mt-6 mb-2">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Top Movers</h4>
+                        </header>
+                        <MarketHighlights
+                            onAnalyzeChart={handleAnalyzeChart}
+                            onAnalyzeTokenomics={handleAnalyzeTokenomics}
+                        />
+                    </div>
+                </aside>
+
                 {/* Main Content Area (Chat) */}
-                <main className="chat-container">
+                <main className={`chat-container ${isMobileMarketOpen ? 'mobile-market-open' : ''}`}>
                     <ChatInterface userAge={userAge} />
                 </main>
             </div>
-
-            {/* Modal rendered outside main-container */}
-            <CryptoDetailModal
-                isOpen={!!selectedTicker}
-                initialTicker={selectedTicker}
-                onClose={() => setSelectedTicker(null)}
-            />
         </div>
     )
 }

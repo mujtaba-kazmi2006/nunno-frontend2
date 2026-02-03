@@ -67,6 +67,16 @@ export const getNews = async (ticker) => {
     }
 }
 
+export const getMarketHighlights = async () => {
+    try {
+        const response = await api.get('/api/v1/market/highlights')
+        return response.data
+    } catch (error) {
+        console.error('Market highlights error:', error)
+        throw new Error('Failed to fetch market highlights')
+    }
+}
+
 // Stream message with callback for chunks
 // Stream message with callback for chunks
 export async function streamMessage({ message, conversationId, userAge, onChunk, signal }) {

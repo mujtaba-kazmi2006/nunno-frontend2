@@ -211,6 +211,7 @@ body::after {
     flex-direction: column;
     gap: var(--spacing-md);
     height: 100%;
+    min-width: 0;
     /* Fill available height */
 }
 
@@ -276,7 +277,6 @@ body::after {
 /* Base style for sidebar widgets */
 .market-temperature,
 .crypto-price-card {
-    flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
@@ -1372,6 +1372,82 @@ body::after {
         flex: 1;
         height: 100vh;
         min-height: 100vh;
+        border-radius: 0;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .chat-container.mobile-market-open {
+        transform: translateX(-280px);
+    }
+
+    /* Mobile Market Sidebar */
+    .mobile-market-sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 280px;
+        z-index: 1000;
+        background: var(--bg-modal);
+        border-left: 1px solid var(--border);
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .dark .mobile-market-sidebar {
+        background: rgba(30, 32, 48, 0.95);
+        backdrop-filter: blur(20px);
+        border-left: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .mobile-market-sidebar.collapsed {
+        transform: translateX(100%);
+    }
+
+    .mobile-market-sidebar.open {
+        transform: translateX(0);
+    }
+
+    .mobile-market-toggle {
+        position: absolute;
+        left: -40px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 60px;
+        background: var(--bg-primary);
+        border: 1px solid var(--border);
+        border-right: none;
+        border-top-left-radius: 20px;
+        border-bottom-left-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        box-shadow: -4px 0 10px rgba(0, 0, 0, 0.05);
+        z-index: 1001;
+        cursor: pointer;
+    }
+
+    .dark .mobile-market-toggle {
+        background: #1e2030;
+        border-color: rgba(255, 255, 255, 0.05);
+        box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .mobile-market-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .mobile-market-content h3 {
+        padding-left: 8px;
     }
 
     .chat-interface {

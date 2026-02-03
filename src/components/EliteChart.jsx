@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { createChart } from 'lightweight-charts';
 import {
     PlayCircle,
@@ -25,7 +26,13 @@ import {
     Minus,
     Plus,
     Zap,
-    Brain
+    Brain,
+    Search,
+    Crosshair,
+    Target,
+    AlertTriangle,
+    CheckCircle2,
+    Clock
 } from 'lucide-react';
 import {
     calculateEMA,
@@ -47,14 +54,24 @@ const EliteChart = () => {
     const volumeSeriesRef = useRef(null);
     const indicatorSeriesRefs = useRef({});
     const priceLineRefs = useRef([]);
+    const blueprintLineRefs = useRef({ entry: null, target: null, stop: null });
 
     // Data state
+    const [searchParams] = useSearchParams();
     const [chartData, setChartData] = useState([]);
-    const [symbol, setSymbol] = useState('BTCUSDT');
+    const [symbol, setSymbol] = useState(searchParams.get('ticker') || 'BTCUSDT');
     const [interval, setInterval] = useState('1m');
     const [isStreaming, setIsStreaming] = useState(true);
     const [currentPrice, setCurrentPrice] = useState(0);
     const [priceChange, setPriceChange] = useState(0);
+
+    // Update symbol if URL parameter changes
+    useEffect(() => {
+        const ticker = searchParams.get('ticker');
+        if (ticker) {
+            setSymbol(ticker.toUpperCase());
+        }
+    }, [searchParams]);
 
     // UI state
     const [chartType, setChartType] = useState('candlestick');
@@ -109,14 +126,22 @@ const EliteChart = () => {
     // Simulation state
     const [simulationMode, setSimulationMode] = useState(null);
     const [simulationActive, setSimulationActive] = useState(false);
-    const [scenarioData, setScenarioData] = useState(null);
     const [projectionSeries, setProjectionSeries] = useState(null);
     const [activeAiPattern, setActiveAiPattern] = useState(null);
+
+    // Blueprint / Judge My Trade state
+    const [isBlueprintMode, setIsBlueprintMode] = useState(false);
+    const [blueprintPrices, setBlueprintPrices] = useState({ entry: 0, target: 0, stop: 0 });
+    const [blueprintStep, setBlueprintStep] = useState(null); // 'entry', 'target', 'stop'
+    const [blueprintVerdict, setBlueprintVerdict] = useState(null);
+    const [showDetailedVerdict, setShowDetailedVerdict] = useState(false);
+    const [isJudging, setIsJudging] = useState(false);
 
     // UI Enhancement state
     const [focusMode, setFocusMode] = useState(false);
     const [indicatorCategory, setIndicatorCategory] = useState('all'); // 'all', 'trend', 'momentum', 'volatility'
     const [isTickerMenuOpen, setIsTickerMenuOpen] = useState(false);
+    const [tickerSearch, setTickerSearch] = useState('');
     const tickerMenuRef = useRef(null);
 
     // WebSocket ref
@@ -133,8 +158,26 @@ const EliteChart = () => {
         { symbol: 'DOGEUSDT', name: 'Dogecoin' },
         { symbol: 'DOTUSDT', name: 'Polkadot' },
         { symbol: 'AVAXUSDT', name: 'Avalanche' },
-        { symbol: 'LINKUSDT', name: 'Chainlink' }
+        { symbol: 'LINKUSDT', name: 'Chainlink' },
+        { symbol: 'PEPEUSDT', name: 'Pepe' },
+        { symbol: 'SHIBUSDT', name: 'Shiba Inu' },
+        { symbol: 'MATICUSDT', name: 'Polygon' },
+        { symbol: 'NEARUSDT', name: 'Near' },
+        { symbol: 'LTCUSDT', name: 'Litecoin' },
+        { symbol: 'ARBUSDT', name: 'Arbitrum' },
+        { symbol: 'OPUSDT', name: 'Optimism' },
+        { symbol: 'APTUSDT', name: 'Aptos' },
+        { symbol: 'SUIUSDT', name: 'Sui' },
+        { symbol: 'INJUSDT', name: 'Injective' },
+        { symbol: 'RNDRUSDT', name: 'Render' },
+        { symbol: 'FETUSDT', name: 'Fetch.ai' },
+        { symbol: 'STRUSDT', name: 'Star' }
     ];
+
+    const filteredOptions = tokenOptions.filter(token =>
+        token.symbol.toLowerCase().includes(tickerSearch.toLowerCase()) ||
+        token.name.toLowerCase().includes(tickerSearch.toLowerCase())
+    );
 
     // Initialize chart once
     useEffect(() => {
@@ -261,6 +304,196 @@ const EliteChart = () => {
             });
         }
     }, [theme]);
+
+    // Handle blueprint mode clicks
+    useEffect(() => {
+        if (!chartRef.current || !isBlueprintMode) return;
+
+        const handleChartClick = (param) => {
+            if (!param.point) return;
+
+            const price = mainSeriesRef.current.coordinateToPrice(param.point.y);
+            if (!price) return;
+
+            if (blueprintStep === 'entry') {
+                setBlueprintPrices(prev => ({ ...prev, entry: price }));
+                updateBlueprintLines('entry', price);
+                setBlueprintStep('target');
+            } else if (blueprintStep === 'target') {
+                setBlueprintPrices(prev => ({ ...prev, target: price }));
+                updateBlueprintLines('target', price);
+                setBlueprintStep('stop');
+            } else if (blueprintStep === 'stop') {
+                setBlueprintPrices(prev => ({ ...prev, stop: price }));
+                updateBlueprintLines('stop', price);
+                setBlueprintStep(null);
+            }
+        };
+
+        chartRef.current.subscribeClick(handleChartClick);
+        return () => {
+            if (chartRef.current) chartRef.current.unsubscribeClick(handleChartClick);
+        };
+    }, [isBlueprintMode, blueprintStep]);
+
+    const updateBlueprintLines = (type, price) => {
+        if (!mainSeriesRef.current) return;
+
+        // Colors
+        const colors = {
+            entry: '#3b82f6',
+            target: '#22c55e',
+            stop: '#ef4444'
+        };
+
+        // Remove old line if exists
+        if (blueprintLineRefs.current[type]) {
+            try { mainSeriesRef.current.removePriceLine(blueprintLineRefs.current[type]); } catch (e) { }
+        }
+
+        // Add new line
+        const newLine = mainSeriesRef.current.createPriceLine({
+            price: price,
+            color: colors[type],
+            lineWidth: 2,
+            lineStyle: 0,
+            axisLabelVisible: true,
+            title: type.toUpperCase()
+        });
+
+        blueprintLineRefs.current[type] = newLine;
+    };
+
+    const toggleBlueprintMode = () => {
+        const newMode = !isBlueprintMode;
+        setIsBlueprintMode(newMode);
+
+        if (newMode) {
+            setBlueprintStep('entry');
+            setBlueprintVerdict(null);
+            // Clear existing simulations
+            if (projectionSeries && chartRef.current) {
+                chartRef.current.removeSeries(projectionSeries);
+                setProjectionSeries(null);
+            }
+            setSimulationActive(false);
+        } else {
+            setBlueprintStep(null);
+            // Clear lines
+            Object.keys(blueprintLineRefs.current).forEach(type => {
+                if (blueprintLineRefs.current[type]) {
+                    try { mainSeriesRef.current.removePriceLine(blueprintLineRefs.current[type]); } catch (e) { }
+                    blueprintLineRefs.current[type] = null;
+                }
+            });
+        }
+    };
+
+    const judgeTrade = () => {
+        if (!blueprintPrices.entry || !blueprintPrices.target || !blueprintPrices.stop) {
+            alert('Please set all markers (Entry, Target, Stop) on the chart first.');
+            return;
+        }
+
+        setIsJudging(true);
+
+        // Simulate deep analysis delay for "WOW" factor
+        setTimeout(() => {
+            const { entry, target, stop } = blueprintPrices;
+            const isLong = target > entry;
+            const risk = Math.abs(entry - stop);
+            const reward = Math.abs(target - entry);
+            const rr = (reward / risk).toFixed(2);
+
+            // Technical Analysis Input
+            const rsi = getCurrentValue(calculatedIndicators.rsi) || 50;
+            const atr = getCurrentValue(calculatedIndicators.atr) || entry * 0.02;
+
+            let score = 5;
+            let comment = "";
+            let suggestion = "";
+            let status = 'neutral';
+
+            // Risk/Reward Scoring
+            if (rr >= 2.5) score += 2;
+            else if (rr < 1) score -= 2;
+
+            // Trend & RSI Alignment
+            if (isLong) {
+                if (rsi < 40) { score += 1; comment = "Great entry during oversold conditions."; }
+                else if (rsi > 70) { score -= 2; comment = "High risk! You're buying into an overbought climax."; }
+                else { comment = "Solid structural setup based on current momentum."; }
+
+                if (risk < atr * 0.5) {
+                    suggestion = "Your stop is too tight. Current volatility will likely wick you out.";
+                    score -= 1;
+                } else {
+                    suggestion = "Risk management looks professional. Ensure you scale out at the first target.";
+                }
+                status = score > 6 ? 'bullish' : 'neutral';
+            } else {
+                // Short logic
+                if (rsi > 60) { score += 1; comment = "Good timing. Fading the overextended rally."; }
+                else if (rsi < 30) { score -= 2; comment = "Careful, you're shorting into a potential local bottom."; }
+                else { comment = "Short setup looks technically sound."; }
+
+                if (risk < atr * 0.5) {
+                    suggestion = "Stop loss is too close. Give the trade more 'breathing room' based on ATR.";
+                    score -= 1;
+                } else {
+                    suggestion = "Target looks realistic. Watch for liquidity walls on the way down.";
+                }
+                status = score > 6 ? 'bearish' : 'neutral';
+            }
+
+            // Construct Detailed Opinion Narrative
+            let opinion = "";
+            if (isLong) {
+                opinion = `This LONG setup carries a score of ${score}/10. `;
+                if (rsi < 40) opinion += "We are currently seeing significant bullish divergence/oversold conditions on the RSI, which historically suggests a high-probability reversal zone. ";
+                else if (rsi > 70) opinion += "Warning: You are attempting to 'chase' a parabolic move. Historically, entering at these RSI levels leads to significant drawdown as liquidity providers take profit. ";
+
+                if (rr >= 2.5) opinion += `Your Risk/Reward ratio of ${rr}:1 is excellent, allowing for a 'safety margin' where you can be wrong more than 50% of the time and still be profitable. `;
+                else opinion += `The Risk/Reward of ${rr}:1 is sub-optimal. You are risking almost as much as you aim to gain, which requires a very high win rate to stay solvent. `;
+
+                if (risk < atr * 0.5) opinion += "Your Stop Loss is placed within the 'Noise Zone' (below 0.5 ATR). You are likely to be stopped out by normal market volatility before the trade idea even has a chance to play out.";
+                else opinion += "Placing the Stop outside the ATR range shows professional discipline, protecting you from random market wicks.";
+            } else {
+                opinion = `This SHORT setup is rated ${score}/10. `;
+                if (rsi > 60) opinion += "The asset is showing signs of exhaustion on the RSI, making this a technically sound fading opportunity. ";
+                else if (rsi < 30) opinion += "High Risk! You are shorting into a 'Sold Out' market. Expect sudden short-covering bounces that could trigger your stop prematurely. ";
+
+                if (rr >= 2.5) opinion += `An aggressive ${rr}:1 R:R ratio provides great leverage over the market's expected move. `;
+                if (risk < atr * 0.5) opinion += "Technically, your stop is too tight for current volatility levels. Consider widening it to the nearest structural pivot.";
+            }
+
+            setBlueprintVerdict({
+                score: Math.min(10, Math.max(1, score)),
+                comment: comment,
+                suggestion: suggestion,
+                detailedOpinion: opinion,
+                status: status,
+                rr: rr,
+                stats: {
+                    rsi: rsi.toFixed(1),
+                    atr: atr.toFixed(2),
+                    risk: risk.toFixed(2),
+                    reward: reward.toFixed(2),
+                    entry: entry.toFixed(2),
+                    target: target.toFixed(2),
+                    stop: stop.toFixed(2)
+                },
+                checklist: [
+                    { label: 'Risk/Reward > 2.0', pass: rr >= 2 },
+                    { label: isLong ? 'RSI Not Overbought' : 'RSI Not Oversold', pass: isLong ? rsi < 70 : rsi > 30 },
+                    { label: 'Stop Loss outside ATR', pass: risk >= atr * 0.5 },
+                    { label: 'Confluence Check', pass: score > 6 }
+                ]
+            });
+            setIsJudging(false);
+            setShowDetailedVerdict(false);
+        }, 1500);
+    };
 
 
 
@@ -698,10 +931,17 @@ const EliteChart = () => {
         const lastCandle = chartData[chartData.length - 1];
         const avgVolatility = calculatedIndicators.atr ? getCurrentValue(calculatedIndicators.atr) : lastPrice * 0.02;
 
+        // Smart Volatility Engine
+        const volIntensity = avgVolatility / lastPrice;
+        const isHyper = volIntensity > 0.03; // Hyper-volatile if ATR > 3% of price
+
+        const targetMult = isHyper ? 5.5 : 3.5;
+        const stepAdjustment = isHyper ? 0.75 : 1.25;
+
         let scenario = null;
         let projectionPoints = [];
 
-        // Helper to generate a realistic projected path from current price
+        // Helper to generate a realistic projected path
         const generatePath = (entryPrice, targetPrice, steps = 25, startTime = null) => {
             const path = [];
             const totalDiff = targetPrice - entryPrice;
@@ -710,19 +950,17 @@ const EliteChart = () => {
 
             for (let i = 0; i <= steps; i++) {
                 const progress = i / steps;
-                // Use a more realistic curve (not linear)
-                const easeProgress = 1 - Math.pow(1 - progress, 2); // Ease-out quad
+                // Explosive curve for hyper coins
+                const easeProgress = isHyper
+                    ? Math.pow(progress, 1.4)
+                    : 1 - Math.pow(1 - progress, 2);
 
-                // Add realistic volatility
-                const volatilityFactor = Math.sin(progress * Math.PI * 3) * 0.3; // Wave pattern
-                const noise = volatilityFactor * avgVolatility;
-
-                const baseValue = entryPrice + (totalDiff * easeProgress);
-                const value = baseValue + noise;
+                const spikeFactor = isHyper ? (Math.random() > 0.8 ? 2 : 1) : 1;
+                const noise = Math.sin(progress * Math.PI * 3) * 0.4 * spikeFactor * avgVolatility;
 
                 path.push({
                     time: baseTime + (i * timeIncrement),
-                    value: value
+                    value: entryPrice + (totalDiff * easeProgress) + noise
                 });
             }
             return path;
@@ -730,97 +968,99 @@ const EliteChart = () => {
 
         switch (type) {
             case 'long':
-                // Entry at nearest support below current price
-                const supportLevel = calculatedIndicators.support?.[0]?.price || lastPrice * 0.985;
-                const longTarget = supportLevel * 1.025; // 2.5% gain
-                const longStop = supportLevel * 0.988; // 1.2% stop
+                const supportLevel = calculatedIndicators.support?.[0]?.price || lastPrice * 0.98;
+                const longTarget = supportLevel + (Math.max(avgVolatility * targetMult, supportLevel * 0.07));
+                const longStop = supportLevel - (Math.max(avgVolatility * 1.5, supportLevel * 0.03));
 
-                // Path: current -> support (entry) -> target
-                const toSupport = generatePath(lastPrice, supportLevel, 8);
-                const toTarget = generatePath(supportLevel, longTarget, 17, toSupport[toSupport.length - 1].time);
+                const toSupport = generatePath(lastPrice, supportLevel, Math.floor(10 * stepAdjustment));
+                const toTarget = generatePath(supportLevel, longTarget, Math.floor(20 * stepAdjustment), toSupport[toSupport.length - 1].time);
                 projectionPoints = [...toSupport, ...toTarget.slice(1)];
 
                 scenario = {
-                    type: 'Long Support',
+                    type: isHyper ? 'Hyper-Bullish Long' : 'Long Support',
                     entryPrice: supportLevel,
                     targetPrice: longTarget,
                     stopLoss: longStop,
-                    description: 'Buy at support bounce with 2:1 risk-reward ratio.'
+                    description: isHyper
+                        ? 'Explosive volatility detected. Catching a high-speed target bounce.'
+                        : 'Strong recovery expected. High probability bounce from support.'
                 };
                 break;
 
-            case 'short':
-                // Entry at nearest resistance above current price
-                const resistanceLevel = calculatedIndicators.resistance?.[0]?.price || lastPrice * 1.015;
-                const shortTarget = resistanceLevel * 0.975; // 2.5% gain
-                const shortStop = resistanceLevel * 1.012; // 1.2% stop
 
-                // Path: current -> resistance (entry) -> target
-                const toResistance = generatePath(lastPrice, resistanceLevel, 8);
-                const toShortTarget = generatePath(resistanceLevel, shortTarget, 17, toResistance[toResistance.length - 1].time);
+            case 'short':
+                const resistanceLevel = calculatedIndicators.resistance?.[0]?.price || lastPrice * 1.02;
+                const shortTarget = resistanceLevel - (Math.max(avgVolatility * targetMult, resistanceLevel * 0.07));
+                const shortStop = resistanceLevel + (Math.max(avgVolatility * 1.5, resistanceLevel * 0.03));
+
+                const toResistance = generatePath(lastPrice, resistanceLevel, Math.floor(10 * stepAdjustment));
+                const toShortTarget = generatePath(resistanceLevel, shortTarget, Math.floor(20 * stepAdjustment), toResistance[toResistance.length - 1].time);
                 projectionPoints = [...toResistance, ...toShortTarget.slice(1)];
 
                 scenario = {
-                    type: 'Short Resistance',
+                    type: isHyper ? 'Panic Flush Short' : 'Short Resistance',
                     entryPrice: resistanceLevel,
                     targetPrice: shortTarget,
                     stopLoss: shortStop,
-                    description: 'Sell at resistance rejection with 2:1 risk-reward.'
+                    description: isHyper
+                        ? 'Extreme overextension. Expecting a rapid, high-intensity flush.'
+                        : 'Overextended price reaching resistance. Expecting sharp rejection.'
                 };
                 break;
 
             case 'breakout':
-                const breakoutResistance = calculatedIndicators.resistance?.[0]?.price || lastPrice * 1.01;
-                const breakoutTarget = breakoutResistance * 1.035; // Strong move after breakout
-                const breakoutStop = breakoutResistance * 0.995;
+                const bRes = calculatedIndicators.resistance?.[0]?.price || lastPrice * 1.015;
+                const bTarget = bRes + (Math.max(avgVolatility * (targetMult + 2), bRes * 0.14));
+                const bStop = bRes - (Math.max(avgVolatility * 1.5, bRes * 0.04));
 
-                // Path: current -> resistance -> breakout -> target
-                const toBreakoutPoint = generatePath(lastPrice, breakoutResistance, 10);
-                const breakoutMove = generatePath(breakoutResistance, breakoutTarget, 15, toBreakoutPoint[toBreakoutPoint.length - 1].time);
-                projectionPoints = [...toBreakoutPoint, ...breakoutMove.slice(1)];
+                const toBPoint = generatePath(lastPrice, bRes, Math.floor(12 * stepAdjustment));
+                const bMove = generatePath(bRes, bTarget, Math.floor(18 * stepAdjustment), toBPoint[toBPoint.length - 1].time);
+                projectionPoints = [...toBPoint, ...bMove.slice(1)];
 
                 scenario = {
-                    type: 'Breakout',
-                    entryPrice: breakoutResistance,
-                    targetPrice: breakoutTarget,
-                    stopLoss: breakoutStop,
-                    description: 'Momentum breakout above resistance with volume confirmation.'
+                    type: isHyper ? 'Parabolic Breakout' : 'Major Breakout',
+                    entryPrice: bRes,
+                    targetPrice: bTarget,
+                    stopLoss: bStop,
+                    description: 'Explosive momentum breakout. Projected parabolic expansion after structural break.'
                 };
                 break;
 
             case 'breakdown':
-                const breakdownSupport = calculatedIndicators.support?.[0]?.price || lastPrice * 0.99;
-                const breakdownTarget = breakdownSupport * 0.965;
-                const breakdownStop = breakdownSupport * 1.005;
+                const bSupp = calculatedIndicators.support?.[0]?.price || lastPrice * 0.985;
+                const bdTarget = bSupp - (Math.max(avgVolatility * (targetMult + 2), bSupp * 0.14));
+                const bdStop = bSupp + (Math.max(avgVolatility * 1.5, bSupp * 0.04));
 
-                // Path: current -> support -> breakdown -> target
-                const toBreakdownPoint = generatePath(lastPrice, breakdownSupport, 10);
-                const breakdownMove = generatePath(breakdownSupport, breakdownTarget, 15, toBreakdownPoint[toBreakdownPoint.length - 1].time);
-                projectionPoints = [...toBreakdownPoint, ...breakdownMove.slice(1)];
+                const toBDPoint = generatePath(lastPrice, bSupp, Math.floor(12 * stepAdjustment));
+                const bdMove = generatePath(bSupp, bdTarget, Math.floor(18 * stepAdjustment), toBDPoint[toBDPoint.length - 1].time);
+                projectionPoints = [...toBDPoint, ...bdMove.slice(1)];
 
                 scenario = {
-                    type: 'Breakdown',
-                    entryPrice: breakdownSupport,
-                    targetPrice: breakdownTarget,
-                    stopLoss: breakdownStop,
-                    description: 'Momentum breakdown below support level.'
+                    type: isHyper ? 'Flash Crash Breakdown' : 'Major Breakdown',
+                    entryPrice: bSupp,
+                    targetPrice: bdTarget,
+                    stopLoss: bdStop,
+                    description: 'Critical support flush. Internal indicators suggest a high-speed trend collapse.'
                 };
                 break;
 
             case 'mean-reversion':
-                const middleBB = calculatedIndicators.bbMiddle ? getCurrentValue(calculatedIndicators.bbMiddle) : lastPrice;
-                const isAboveMean = lastPrice > middleBB;
-                const meanTarget = middleBB;
-                const meanStop = isAboveMean ? lastPrice * 1.015 : lastPrice * 0.985;
+                const mBB = calculatedIndicators.bbMiddle ? getCurrentValue(calculatedIndicators.bbMiddle) : lastPrice;
+                const isAbove = lastPrice > mBB;
+                const mTarget = isAbove
+                    ? (calculatedIndicators.bbLower ? getCurrentValue(calculatedIndicators.bbLower) : lastPrice * (1 - volIntensity * 3))
+                    : (calculatedIndicators.bbUpper ? getCurrentValue(calculatedIndicators.bbUpper) : lastPrice * (1 + volIntensity * 3));
 
-                projectionPoints = generatePath(lastPrice, meanTarget, 20);
+                const mStop = isAbove ? lastPrice * (1 + volIntensity) : lastPrice * (1 - volIntensity);
+
+                projectionPoints = generatePath(lastPrice, mTarget, Math.floor(25 * stepAdjustment));
 
                 scenario = {
-                    type: 'Mean Reversion',
+                    type: 'Full Cycle Reversion',
                     entryPrice: lastPrice,
-                    targetPrice: meanTarget,
-                    stopLoss: meanStop,
-                    description: `Price ${isAboveMean ? 'above' : 'below'} average - expecting reversion to 20 EMA.`
+                    targetPrice: mTarget,
+                    stopLoss: mStop,
+                    description: `Extreme price deviation. Expecting a high-speed return to equilibrium.`
                 };
                 break;
         }
@@ -1004,32 +1244,76 @@ const EliteChart = () => {
 
                                     {/* Premium Custom Dropdown */}
                                     {isTickerMenuOpen && (
-                                        <div className={`absolute top-full left-0 mt-2 w-64 rounded-2xl shadow-2xl border backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-300 z-[100] ${theme === 'dark' ? 'bg-[#1e2030]/95 border-slate-700/50' : 'bg-white/95 border-slate-200 shadow-slate-200/50'}`}>
-                                            <div className="p-2 grid grid-cols-1 gap-1">
-                                                {tokenOptions.map(token => (
-                                                    <button
-                                                        key={token.symbol}
-                                                        onClick={() => {
-                                                            setSymbol(token.symbol);
-                                                            setIsTickerMenuOpen(false);
+                                        <div className={`absolute top-full left-0 mt-2 w-72 rounded-2xl shadow-2xl border backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-300 z-[100] ${theme === 'dark' ? 'bg-[#1e2030]/95 border-slate-700/50' : 'bg-white/95 border-slate-200 shadow-slate-200/50'}`}>
+                                            <div className="p-3 border-b border-slate-700/30">
+                                                <div className="relative">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Search or enter ticker..."
+                                                        value={tickerSearch}
+                                                        onChange={(e) => setTickerSearch(e.target.value.toUpperCase())}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter' && tickerSearch) {
+                                                                const finalTicker = tickerSearch.endsWith('USDT') ? tickerSearch : `${tickerSearch}USDT`;
+                                                                setSymbol(finalTicker);
+                                                                setIsTickerMenuOpen(false);
+                                                                setTickerSearch('');
+                                                            }
                                                         }}
-                                                        className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all ${symbol === token.symbol
-                                                            ? (theme === 'dark' ? 'bg-purple-600/20 text-purple-400 border border-purple-500/30' : 'bg-purple-50 text-purple-600 border border-purple-100')
-                                                            : (theme === 'dark' ? 'text-slate-300 hover:bg-white/5' : 'text-slate-600 hover:bg-slate-50')
-                                                            }`}
+                                                        className={`w-full px-4 py-2 rounded-xl text-sm font-bold border outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-white focus:border-purple-500' : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-purple-400'}`}
+                                                        autoFocus
+                                                    />
+                                                    <div className="absolute right-3 top-2.5 opacity-40">
+                                                        <Search size={14} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="p-2 max-h-[350px] overflow-y-auto custom-scrollbar grid grid-cols-1 gap-1">
+                                                {filteredOptions.length > 0 ? (
+                                                    filteredOptions.map(token => (
+                                                        <button
+                                                            key={token.symbol}
+                                                            onClick={() => {
+                                                                setSymbol(token.symbol);
+                                                                setIsTickerMenuOpen(false);
+                                                                setTickerSearch('');
+                                                            }}
+                                                            className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all ${symbol === token.symbol
+                                                                ? (theme === 'dark' ? 'bg-purple-600/20 text-purple-400 border border-purple-500/30' : 'bg-purple-50 text-purple-600 border border-purple-100')
+                                                                : (theme === 'dark' ? 'text-slate-300 hover:bg-white/5' : 'text-slate-600 hover:bg-slate-50')
+                                                                }`}
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-[10px] ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                                                                    {token.symbol.substring(0, 1)}
+                                                                </div>
+                                                                <div className="flex flex-col items-start">
+                                                                    <span className="text-sm font-bold">{token.symbol.replace('USDT', '')}</span>
+                                                                    <span className={`text-[10px] opacity-60 font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>{token.name}</span>
+                                                                </div>
+                                                            </div>
+                                                            {symbol === token.symbol && <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]" />}
+                                                        </button>
+                                                    ))
+                                                ) : (
+                                                    <button
+                                                        onClick={() => {
+                                                            const finalTicker = tickerSearch.endsWith('USDT') ? tickerSearch : `${tickerSearch}USDT`;
+                                                            setSymbol(finalTicker);
+                                                            setIsTickerMenuOpen(false);
+                                                            setTickerSearch('');
+                                                        }}
+                                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${theme === 'dark' ? 'text-purple-400 bg-purple-600/10 hover:bg-purple-600/20' : 'text-purple-600 bg-purple-50 hover:bg-purple-100'}`}
                                                     >
-                                                        <div className="flex items-center gap-3">
-                                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-[10px] ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                                                                {token.symbol.substring(0, 1)}
-                                                            </div>
-                                                            <div className="flex flex-col items-start">
-                                                                <span className="text-sm font-bold">{token.symbol.replace('USDT', '')}</span>
-                                                                <span className={`text-[10px] opacity-60 font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>{token.name}</span>
-                                                            </div>
+                                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-purple-500/20">
+                                                            <Plus size={16} />
                                                         </div>
-                                                        {symbol === token.symbol && <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]" />}
+                                                        <div className="flex flex-col items-start">
+                                                            <span className="text-sm font-bold">Use "{tickerSearch}"</span>
+                                                            <span className="text-[10px] opacity-60 font-medium">Try any Binance pair</span>
+                                                        </div>
                                                     </button>
-                                                ))}
+                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -1049,7 +1333,7 @@ const EliteChart = () => {
                             </div>
                         </div>
 
-                        {/* Quick Timeframe Switcher */}
+                        {/* Desktop Timeframe Switcher */}
                         <div className={`hidden sm:flex gap-1 rounded-xl p-1 ${theme === 'dark' ? 'bg-[#16161e]/50' : 'bg-slate-100'}`}>
                             {['1m', '5m', '15m', '1h', '4h', '1d'].map(tf => (
                                 <button
@@ -1063,6 +1347,23 @@ const EliteChart = () => {
                                     {tf}
                                 </button>
                             ))}
+                        </div>
+
+                        {/* Mobile Timeframe Dropdown */}
+                        <div className="sm:hidden relative flex items-center">
+                            <Clock size={16} className="absolute left-3 text-slate-500 pointer-events-none" />
+                            <select
+                                value={interval}
+                                onChange={(e) => setInterval(e.target.value)}
+                                className={`pl-9 pr-4 py-2.5 rounded-xl border text-sm font-black appearance-none outline-none transition-all shadow-xl ${theme === 'dark'
+                                    ? 'bg-[#1e2030] border-slate-700/50 text-slate-300 focus:border-purple-500'
+                                    : 'bg-white border-slate-200 text-slate-600 focus:border-purple-600'
+                                    }`}
+                            >
+                                {['1m', '5m', '15m', '1h', '4h', '1d'].map(tf => (
+                                    <option key={tf} value={tf}>{tf.toUpperCase()}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 
@@ -1255,6 +1556,17 @@ const EliteChart = () => {
                                             <span className="text-[9px] font-black uppercase tracking-tighter">{sim.label}</span>
                                         </button>
                                     ))}
+                                    {/* Blueprint Mode Button */}
+                                    <button
+                                        onClick={toggleBlueprintMode}
+                                        className={`col-span-2 flex items-center justify-center gap-3 p-4 rounded-2xl border transition-all ${isBlueprintMode
+                                            ? 'bg-blue-600 border-blue-500 text-white shadow-lg'
+                                            : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-blue-400 hover:border-blue-500' : 'bg-blue-50 border-blue-100 text-blue-600 hover:border-blue-300'
+                                            }`}
+                                    >
+                                        <Target size={20} className={isBlueprintMode ? 'animate-spin-slow' : ''} />
+                                        <span className="text-[11px] font-bold uppercase tracking-widest">{isBlueprintMode ? 'STOP PLANNING' : 'JUDGE MY TRADE'}</span>
+                                    </button>
                                 </div>
                             </div>
 
@@ -1289,27 +1601,184 @@ const EliteChart = () => {
 
                 {/* Center Content: Chart Area */}
                 <main className={`flex-1 relative min-h-0 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-slate-50'}`}>
-                    {/* OHLC Overlay (Glassmorphism) - Responsive position and layout */}
-                    <div className={`absolute top-4 md:top-6 left-4 md:left-6 right-4 md:right-auto z-20 backdrop-blur-md rounded-2xl md:rounded-3xl border overflow-hidden shadow-2xl transition-all duration-700 ${theme === 'dark' ? 'bg-[#1e2030]/60 border-white/5 shadow-black/40' : 'bg-white/60 border-white shadow-slate-200/50'}`}>
-                        <div className="flex items-center flex-wrap md:flex-nowrap justify-between md:justify-start gap-y-2 gap-x-4 md:gap-8 px-4 md:px-6 py-3 md:py-4">
-                            {[
-                                { label: 'O', val: chartData[chartData.length - 1]?.open, col: theme === 'dark' ? 'text-slate-300' : 'text-slate-500' },
-                                { label: 'H', val: chartData[chartData.length - 1]?.high, col: 'text-emerald-500' },
-                                { label: 'L', val: chartData[chartData.length - 1]?.low, col: 'text-rose-500' },
-                                { label: 'C', val: chartData[chartData.length - 1]?.close, col: 'text-purple-500' }
-                            ].map(ohlc => (
-                                <div key={ohlc.label} className="flex flex-col">
-                                    <span className="text-[8px] md:text-[9px] font-black uppercase text-slate-500 tracking-tighter mb-0.5">{ohlc.label}</span>
-                                    <span className={`text-[12px] md:text-[15px] font-mono font-black ${ohlc.col} leading-none`}>
-                                        ${ohlc.val?.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
-                                    </span>
-                                </div>
-                            ))}
+                    {/* OHLC Overlay (Glassmorphism) */}
+                    <div className={`absolute top-4 md:top-6 left-4 md:left-6 right-4 md:right-auto z-20 pointer-events-none transition-all duration-700`}>
+                        <div className={`backdrop-blur-md rounded-2xl md:rounded-3xl border overflow-hidden shadow-2xl pointer-events-auto ${theme === 'dark' ? 'bg-[#1e2030]/60 border-white/5 shadow-black/40' : 'bg-white/60 border-white shadow-slate-200/50'}`}>
+                            <div className="flex items-center flex-wrap md:flex-nowrap justify-between md:justify-start gap-y-2 gap-x-4 md:gap-8 px-4 md:px-6 py-3 md:py-4">
+                                {[
+                                    { label: 'O', val: chartData[chartData.length - 1]?.open, col: theme === 'dark' ? 'text-slate-300' : 'text-slate-500' },
+                                    { label: 'H', val: chartData[chartData.length - 1]?.high, col: 'text-emerald-500' },
+                                    { label: 'L', val: chartData[chartData.length - 1]?.low, col: 'text-rose-500' },
+                                    { label: 'C', val: chartData[chartData.length - 1]?.close, col: 'text-purple-500' }
+                                ].map(ohlc => (
+                                    <div key={ohlc.label} className="flex flex-col">
+                                        <span className="text-[8px] md:text-[9px] font-black uppercase text-slate-500 tracking-tighter mb-0.5">{ohlc.label}</span>
+                                        <span className={`text-[12px] md:text-[15px] font-mono font-black ${ohlc.col} leading-none`}>
+                                            ${ohlc.val?.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
+                    {/* Blueprint Mode Instructions / HUD */}
+                    {isBlueprintMode && (
+                        <div className="absolute top-24 md:top-28 left-4 right-4 md:left-6 md:right-auto z-[150] pointer-events-none animate-in slide-in-from-top-4 duration-500">
+                            <div className={`p-4 rounded-2xl border shadow-2xl backdrop-blur-xl pointer-events-auto ${theme === 'dark' ? 'bg-blue-600/20 border-blue-500/50' : 'bg-blue-50 border-blue-200'}`}>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-white shadow-lg">
+                                        <Crosshair size={24} className="animate-pulse" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h4 className="text-xs font-black uppercase tracking-widest text-blue-500 mb-1">Trade Blueprint</h4>
+                                        <p className={`text-[11px] font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
+                                            {blueprintStep === 'entry' ? 'CLICK ON CHART TO SET ENTRY PRICE' :
+                                                blueprintStep === 'target' ? 'SET PROFIT TARGET (WHERE DO WE EXIT?)' :
+                                                    blueprintStep === 'stop' ? 'SET STOP LOSS (PROTECT YOUR CAPITAL)' :
+                                                        'PLAN COMPLETE. READY FOR ANALYSIS.'}
+                                        </p>
+                                    </div>
+                                    {!blueprintStep && (
+                                        <button
+                                            onClick={judgeTrade}
+                                            disabled={isJudging}
+                                            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-black uppercase tracking-widest rounded-xl transition-all shadow-xl active:scale-95 flex items-center gap-2"
+                                        >
+                                            {isJudging ? <Zap size={14} className="animate-spin" /> : <Brain size={14} />}
+                                            {isJudging ? 'ANALYZING...' : 'GET VERDICT'}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* AI Verdict Modal/Panel */}
+                    {blueprintVerdict && (
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[200] max-w-sm w-full p-1 animate-in zoom-in-95 duration-500">
+                            <div className={`rounded-[32px] border-4 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] ${theme === 'dark' ? 'bg-[#1e2030] border-slate-800' : 'bg-white border-slate-100'}`}>
+                                <div className={`p-8 text-center relative overflow-hidden ${blueprintVerdict.status === 'bullish' ? 'bg-emerald-500/10' : blueprintVerdict.status === 'bearish' ? 'bg-rose-500/10' : 'bg-purple-500/10'}`}>
+                                    {/* High-fidelity Glass Card UI */}
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-6 italic">Trade Intelligence Report</h3>
+
+                                    <div className="relative inline-block mb-6">
+                                        <div className="text-6xl font-black text-slate-100 flex items-baseline justify-center">
+                                            {blueprintVerdict.score}
+                                            <span className="text-xl text-slate-500">/10</span>
+                                        </div>
+                                        <div className={`mt-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${blueprintVerdict.status === 'bullish' ? 'bg-emerald-500 text-white' : blueprintVerdict.status === 'bearish' ? 'bg-rose-500 text-white' : 'bg-purple-500 text-white'}`}>
+                                            {blueprintVerdict.score > 7 ? 'High Conviction' : blueprintVerdict.score > 4 ? 'Moderate Bias' : 'Low Probability'}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4 text-left">
+                                        {showDetailedVerdict ? (
+                                            <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                {/* Checklist */}
+                                                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-slate-900/60 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
+                                                    <h4 className="text-[10px] font-black uppercase text-slate-500 mb-3 tracking-widest">Technical Checklist</h4>
+                                                    <div className="space-y-2">
+                                                        {blueprintVerdict.checklist.map((item, i) => (
+                                                            <div key={i} className="flex items-center justify-between">
+                                                                <span className="text-[10px] font-bold text-slate-400">{item.label}</span>
+                                                                {item.pass ? <CheckCircle2 size={12} className="text-emerald-500" /> : <X size={12} className="text-rose-500" />}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Stats Grid */}
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <div className={`p-3 rounded-xl border ${theme === 'dark' ? 'bg-slate-900/60 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
+                                                        <div className="text-[8px] font-black text-slate-500 uppercase">RSI (14)</div>
+                                                        <div className="text-xs font-black text-purple-500">{blueprintVerdict.stats.rsi}</div>
+                                                    </div>
+                                                    <div className={`p-3 rounded-xl border ${theme === 'dark' ? 'bg-slate-900/60 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
+                                                        <div className="text-[8px] font-black text-slate-500 uppercase">R:R Ratio</div>
+                                                        <div className="text-xs font-black text-emerald-500 text-center">{blueprintVerdict.rr}:1</div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Detailed Opinion Narrative */}
+                                                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-blue-500/5 border-blue-500/20' : 'bg-blue-50 border-blue-100'}`}>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <Brain size={14} className="text-blue-500" />
+                                                        <span className="text-[10px] font-black uppercase text-blue-600 tracking-wider">Nunno's Deep Logic</span>
+                                                    </div>
+                                                    <p className={`text-[11px] leading-relaxed font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                                                        {blueprintVerdict.detailedOpinion}
+                                                    </p>
+                                                </div>
+
+                                                <button
+                                                    onClick={() => setShowDetailedVerdict(false)}
+                                                    className="w-full py-2 text-[9px] font-black uppercase tracking-tighter text-blue-500 hover:text-blue-400 transition-colors"
+                                                >
+                                                    ← Back to Verdict
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-slate-900/40 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <Target size={14} className="text-blue-500" />
+                                                        <span className="text-[10px] font-black uppercase text-slate-500">Analysis Verdict</span>
+                                                    </div>
+                                                    <p className={`text-xs font-bold leading-relaxed ${theme === 'dark' ? 'text-slate-100' : 'text-slate-800'}`}>
+                                                        {blueprintVerdict.comment}
+                                                    </p>
+                                                </div>
+
+                                                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-slate-900/40 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <AlertTriangle size={14} className="text-amber-500" />
+                                                        <span className="text-[10px] font-black uppercase text-slate-500">AI Warning</span>
+                                                    </div>
+                                                    <p className={`text-xs font-medium leading-relaxed ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                                                        {blueprintVerdict.suggestion}
+                                                    </p>
+                                                </div>
+
+                                                <button
+                                                    onClick={() => setShowDetailedVerdict(true)}
+                                                    className="w-full py-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-500 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                                                >
+                                                    View Detailed Report
+                                                </button>
+                                            </>
+                                        )}
+
+                                        <div className="grid grid-cols-2 gap-3 pt-4">
+                                            <button
+                                                onClick={() => {
+                                                    setBlueprintVerdict(null);
+                                                    setShowDetailedVerdict(false);
+                                                }}
+                                                className={`py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest border transition-all ${theme === 'dark' ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-800'}`}
+                                            >
+                                                CLOSE
+                                            </button>
+                                            <button
+                                                onClick={toggleBlueprintMode}
+                                                className="py-3 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2"
+                                            >
+                                                <RotateCcw size={14} />
+                                                RESET
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Chart Container */}
-                    <div ref={chartContainerRef} className="w-full h-full" />
+                    <div
+                        ref={chartContainerRef}
+                        className={`w-full h-full relative z-10 ${isBlueprintMode ? 'cursor-crosshair' : ''}`}
+                    />
 
                     {/* Floating Utils - Hidden when AI Chat is open to avoid clutter */}
                     <div className={`absolute bottom-6 right-6 flex flex-col gap-3 z-[150] transition-all duration-500 ${showAIChat ? 'opacity-0 pointer-events-none translate-y-10' : 'opacity-100'}`}>

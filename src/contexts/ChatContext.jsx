@@ -24,6 +24,7 @@ export function ChatProvider({ children }) {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingStatus, setLoadingStatus] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(true);
+    const [pendingMessage, setPendingMessage] = useState(null);
 
     const addMessage = useCallback((message) => {
         setMessages(prev => [...prev, message]);
@@ -58,7 +59,9 @@ export function ChatProvider({ children }) {
         addMessage,
         updateLastMessage,
         currentConversationId,
-        setCurrentConversationId
+        setCurrentConversationId,
+        pendingMessage,
+        setPendingMessage
     };
 
     return (

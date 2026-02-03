@@ -93,7 +93,9 @@ export default function ChatInterface({ userAge }) {
         setLoadingStatus,
         showSuggestions,
         setShowSuggestions,
-        currentConversationId
+        currentConversationId,
+        pendingMessage,
+        setPendingMessage
     } = useChat()
 
     const userName = user?.name || 'User'
@@ -143,11 +145,20 @@ export default function ChatInterface({ userAge }) {
         setLoadingStatus('Stopped manually.')
     }
 
-    const handleSend = async () => {
-        if (!input.trim() || isLoading) return
+    // React to pending messages from context
+    useEffect(() => {
+        if (pendingMessage && !isLoading) {
+            handleSend(pendingMessage);
+            setPendingMessage(null);
+        }
+    }, [pendingMessage, isLoading]);
 
-        const userMessage = input.trim()
-        setInput('')
+    const handleSend = async (messageOverride = null) => {
+        const messageToSend = (messageOverride || input).trim()
+        if (!messageToSend || isLoading) return
+
+        const userMessage = messageToSend
+        if (!messageOverride) setInput('')
         setShowSuggestions(false)
         setLoadingStatus('Thinking...')
 
