@@ -104,6 +104,7 @@ export default function ChatInterface({ userAge }) {
     const messagesContainerRef = useRef(null)
     const actionMenuRef = useRef(null)
     const abortController = useRef(null)
+    const isAtBottom = useRef(true)
 
     const suggestions = [
         { icon: <TrendingUp size={16} />, text: "Analyze Bitcoin price" },
@@ -112,17 +113,24 @@ export default function ChatInterface({ userAge }) {
         { icon: <Sparkles size={16} />, text: "Build me a portfolio" }
     ]
 
-    const scrollToBottom = () => {
-        if (messagesContainerRef.current) {
+    const handleScroll = () => {
+        if (!messagesContainerRef.current) return;
+        const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+        // If we are within 100px of the bottom, consider us "at bottom"
+        isAtBottom.current = scrollHeight - scrollTop - clientHeight < 100;
+    };
+
+    const scrollToBottom = (force = false) => {
+        if (messagesContainerRef.current && (isAtBottom.current || force)) {
             messagesContainerRef.current.scrollTo({
                 top: messagesContainerRef.current.scrollHeight,
-                behavior: 'smooth'
+                behavior: force ? 'smooth' : 'auto'
             })
         }
     }
 
     useEffect(() => {
-        scrollToBottom()
+        scrollToBottom(false)
     }, [messages, loadingStatus])
 
     // Close action menu when clicking outside
@@ -154,11 +162,13 @@ export default function ChatInterface({ userAge }) {
     }, [pendingMessage, isLoading]);
 
     const handleSend = async (messageOverride = null) => {
-        const messageToSend = (messageOverride || input).trim()
+        // Ensure messageOverride is a string, not an event object
+        const overrideText = typeof messageOverride === 'string' ? messageOverride : null;
+        const messageToSend = (overrideText || input).trim()
         if (!messageToSend || isLoading) return
 
         const userMessage = messageToSend
-        if (!messageOverride) setInput('')
+        if (!overrideText) setInput('')
         setShowSuggestions(false)
         setLoadingStatus('Thinking...')
 
@@ -432,7 +442,11 @@ export default function ChatInterface({ userAge }) {
 
     return (
         <div className="chat-interface">
-            <div className="messages-container" ref={messagesContainerRef}>
+            <div
+                className="messages-container"
+                ref={messagesContainerRef}
+                onScroll={handleScroll}
+            >
                 {messages.map((message, index) => (
                     <MessageItem key={index} message={message} />
                 ))}

@@ -9,6 +9,7 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
     const [activeTab, setActiveTab] = useState('gainers');
     const [loading, setLoading] = useState(true);
     const [hoveredSymbol, setHoveredSymbol] = useState(null);
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
     useEffect(() => {
         const fetchHighlights = async () => {
@@ -81,9 +82,12 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
                         {currentData.map((item, index) => (
                             <div
                                 key={item.symbol}
-                                onMouseEnter={() => setHoveredSymbol(item.symbol)}
-                                onMouseLeave={() => setHoveredSymbol(null)}
-                                className={`relative flex flex-col p-3 rounded-2xl transition-all w-full max-w-full overflow-hidden ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-slate-50'
+                                onClick={() => setHoveredSymbol(hoveredSymbol === item.symbol ? null : item.symbol)}
+                                onMouseEnter={() => !isMobile && setHoveredSymbol(item.symbol)}
+                                onMouseLeave={() => !isMobile && setHoveredSymbol(null)}
+                                className={`relative flex flex-col p-3 rounded-2xl transition-all w-full max-w-full overflow-hidden cursor-pointer group ${hoveredSymbol === item.symbol
+                                    ? (theme === 'dark' ? 'bg-white/10' : 'bg-slate-100')
+                                    : (theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-slate-50')
                                     }`}
                             >
                                 <div className="flex items-center justify-between w-full min-w-0">
@@ -116,18 +120,26 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
                                     </div>
                                 </div>
 
-                                {/* Action Buttons - Appear on Hover or Always on Mobile */}
-                                <div className={`flex gap-1.5 mt-3 transition-all duration-300 w-full ${hoveredSymbol === item.symbol ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none md:flex hidden'
+                                {/* Action Buttons - Appear on Click/Hover */}
+                                <div className={`flex gap-1.5 transition-all duration-300 w-full ${hoveredSymbol === item.symbol
+                                    ? 'opacity-100 h-auto mt-3 translate-y-0'
+                                    : 'opacity-0 h-0 mt-0 -translate-y-2 pointer-events-none'
                                     }`}>
                                     <button
-                                        onClick={() => onAnalyzeChart?.(item.symbol)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onAnalyzeChart?.(item.symbol);
+                                        }}
                                         className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl bg-purple-600 text-white text-[9px] font-black uppercase tracking-wider hover:bg-purple-700 transition-colors shadow-lg shadow-purple-500/20"
                                     >
                                         <Activity size={10} />
                                         Chart
                                     </button>
                                     <button
-                                        onClick={() => onAnalyzeTokenomics?.(item.symbol)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onAnalyzeTokenomics?.(item.symbol);
+                                        }}
                                         className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-colors border ${theme === 'dark'
                                             ? 'bg-white/5 border-slate-700 text-slate-300 hover:bg-white/10'
                                             : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 shadow-sm'

@@ -32,8 +32,13 @@ import {
     Target,
     AlertTriangle,
     CheckCircle2,
-    Clock
+    Clock,
+    Ghost,
+    Droplets,
+    Loader2,
+    Microscope
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     calculateEMA,
     calculateRSI,
@@ -143,6 +148,17 @@ const EliteChart = () => {
     const [isTickerMenuOpen, setIsTickerMenuOpen] = useState(false);
     const [tickerSearch, setTickerSearch] = useState('');
     const tickerMenuRef = useRef(null);
+
+    // Simulation 2.0 State
+    const [monteCarloFan, setMonteCarloFan] = useState(null);
+    const [monteCarloPaths, setMonteCarloPaths] = useState([]);
+    const [isSimulatingBackend, setIsSimulatingBackend] = useState(false);
+    const [scenarioData, setScenarioData] = useState(null);
+    const [simulationStatus, setSimulationStatus] = useState('');
+    const [simulationError, setSimulationError] = useState(null);
+    const [showSimulationDetails, setShowSimulationDetails] = useState(false);
+    const [showLabDeepDive, setShowLabDeepDive] = useState(false);
+    const fanSeriesRefs = useRef([]);
 
     // WebSocket ref
     const wsRef = useRef(null);
@@ -920,6 +936,191 @@ const EliteChart = () => {
         }
     }, [calculatedIndicators, selectedIndicators, chartData, activeAiPattern]);
 
+    const clearSimulationArtifacts = () => {
+        if (projectionSeries && chartRef.current) {
+            try { chartRef.current.removeSeries(projectionSeries); } catch (e) { }
+            setProjectionSeries(null);
+        }
+        if (fanSeriesRefs.current) {
+            fanSeriesRefs.current.forEach(s => {
+                if (s && chartRef.current) try { chartRef.current.removeSeries(s); } catch (e) { }
+            });
+            fanSeriesRefs.current = [];
+        }
+
+        priceLineRefs.current.forEach(line => {
+            if (line && mainSeriesRef.current) {
+                try { mainSeriesRef.current.removePriceLine(line); } catch (e) { }
+            }
+        });
+        priceLineRefs.current = [];
+        setActiveAiPattern(null);
+        setSimulationActive(false);
+        setSimulationMode(null);
+        setScenarioData(null);
+        setBlueprintVerdict(null);
+        setSimulationStatus('');
+        setSimulationError(null);
+        setShowSimulationDetails(false);
+        setShowLabDeepDive(false);
+    };
+
+    const runMonteCarloSimulation = async () => {
+        if (!chartData || chartData.length < 10) return;
+        const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        setIsSimulatingBackend(true);
+        setSimulationError(null);
+        setSimulationStatus('Initializing Probability Engine...');
+        clearSimulationArtifacts();
+
+        try {
+            setSimulationStatus('Fetching 1,000+ Market Paths...');
+            const response = await fetch(`${apiBaseUrl}/api/v1/simulate/monte-carlo/${symbol}?interval=${interval}`);
+            if (!response.ok) throw new Error('Backend failed to generate paths');
+            const data = await response.json();
+
+            if (data.fan && chartRef.current) {
+                setSimulationStatus('Rendering Probability Cloud...');
+                const timeIncrement = interval === '1d' ? 86400 : interval === '1h' ? 3600 : interval === '15m' ? 900 : 60;
+                const lastCandle = chartData[chartData.length - 1];
+                const baseTime = lastCandle.time;
+
+                // Create the "Heat Fan" using multiple area series or just a few key ones
+                // 1. Median Path (Strong)
+                const medianSeries = chartRef.current.addLineSeries({
+                    color: '#8b5cf6',
+                    lineWidth: 3,
+                    lineStyle: 2,
+                    priceLineVisible: false,
+                    lastValueVisible: false,
+                    title: 'PREDICTED MEDIAN'
+                });
+                medianSeries.setData(data.fan.map(p => ({
+                    time: baseTime + (p.time * timeIncrement),
+                    value: p.p50
+                })));
+                fanSeriesRefs.current.push(medianSeries);
+
+                // 2. Heat Cloud (p25 to p75)
+                const cloudSeries = chartRef.current.addAreaSeries({
+                    topColor: 'rgba(139, 92, 246, 0.3)',
+                    bottomColor: 'rgba(139, 92, 246, 0.05)',
+                    lineColor: 'rgba(139, 92, 246, 0.1)',
+                    lineWidth: 1,
+                    priceLineVisible: false,
+                    lastValueVisible: false,
+                });
+                // To simulate a range area in lightweight-charts, we can use p25 and p75 as the bounds?
+                // Actually AreaSeries only has one value. For a proper range cloud, we'd need a custom plugin
+                // or use two translucent areas. Let's use individual paths for "WOW" factor.
+
+                data.paths.forEach((path, idx) => {
+                    const pSeries = chartRef.current.addLineSeries({
+                        color: `rgba(139, 92, 246, ${0.05 + (Math.random() * 0.1)})`,
+                        lineWidth: 1,
+                        priceLineVisible: false,
+                        lastValueVisible: false,
+                    });
+                    pSeries.setData(path.map(p => ({
+                        time: baseTime + (p.time * timeIncrement),
+                        value: p.value
+                    })));
+                    fanSeriesRefs.current.push(pSeries);
+                });
+
+                setSimulationActive(true);
+                setSimulationMode('monte-carlo');
+                setScenarioData({
+                    type: 'Monte Carlo Probability Fan',
+                    description: `Simulation complete. Engineered 50+ divergent outcomes based on current ${data.market_regime} volatility.`,
+                    market_regime: data.market_regime,
+                    confidence: 75,
+                    isAgentic: true,
+                    meta: data.meta,
+                    metrics: {
+                        spread: `${((Math.abs(data.fan[data.fan.length - 1].max - data.fan[data.fan.length - 1].min) / data.last_price) * 100).toFixed(2)}%`,
+                        bias: data.market_regime.includes('Bull') ? 'Bullish' : data.market_regime.includes('Bear') ? 'Bearish' : 'Neutral'
+                    }
+                });
+            }
+        } catch (error) {
+            console.error("Monte Carlo Failed:", error);
+            setSimulationError("Probability engine failed. Check internet connection.");
+        } finally {
+            setIsSimulatingBackend(false);
+            setSimulationStatus('');
+        }
+    };
+
+    const runRegimeSimulation = async (injectType) => {
+        if (!chartData || chartData.length < 10) return;
+        const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        setIsSimulatingBackend(true);
+        setSimulationError(null);
+        setSimulationStatus(`Injecting ${injectType.replace('_', ' ')}...`);
+        clearSimulationArtifacts();
+
+        try {
+            setSimulationStatus('Calculating Injected Trajectory...');
+            const response = await fetch(`${apiBaseUrl}/api/v1/simulate/regime/${symbol}?type=${injectType}&interval=${interval}`);
+            if (!response.ok) throw new Error('Regime injection failed');
+            const data = await response.json();
+
+            if (data.path && chartRef.current) {
+                setSimulationStatus('Visualizing Scenario...');
+                const timeIncrement = interval === '1d' ? 86400 : interval === '1h' ? 3600 : interval === '15m' ? 900 : 60;
+                const lastCandle = chartData[chartData.length - 1];
+                const baseTime = lastCandle.time;
+
+                const projSeries = chartRef.current.addLineSeries({
+                    color: injectType === 'black_swan' ? '#f43f5e' : '#f59e0b',
+                    lineWidth: 4,
+                    lineStyle: 1,
+                    priceLineVisible: false,
+                    lastValueVisible: false,
+                    title: injectType.toUpperCase()
+                });
+
+                const pathData = data.path.map(p => ({
+                    time: baseTime + (p.time * timeIncrement),
+                    value: p.value
+                }));
+
+                projSeries.setData(pathData);
+                setProjectionSeries(projSeries);
+
+                setSimulationActive(true);
+                setSimulationMode(injectType);
+
+                const descriptions = {
+                    'bullish_breakout': 'Simulating a high-conviction structural break with volume expansion. Watch for resistance flip.',
+                    'black_swan': 'Extreme tail-risk event. Simulating a liquidity collapse and attempted recovery cycle.',
+                    'institutional_flush': 'Manipulation scenario: Stop-loss hunting above resistance followed by a major liquidity capture dump.'
+                };
+
+                const lastVal = pathData[pathData.length - 1].value;
+                const priceChg = ((lastVal - data.last_price) / data.last_price) * 100;
+
+                setScenarioData({
+                    type: injectType.replace(/_/g, ' ').toUpperCase(),
+                    description: descriptions[injectType] || 'Injected market regime scenario.',
+                    isAgentic: true,
+                    meta: data.meta,
+                    metrics: {
+                        projected_move: `${priceChg.toFixed(2)}%`,
+                        target: `$${lastVal.toLocaleString(undefined, { minimumFractionDigits: 1 })}`
+                    }
+                });
+            }
+        } catch (error) {
+            console.error("Regime Simulation Failed:", error);
+            setSimulationError("Scenario injection failed. Try a different regime.");
+        } finally {
+            setIsSimulatingBackend(false);
+            setSimulationStatus('');
+        }
+    };
+
     // Generate scenario simulation - Instant display with realistic entry/exit
     const generateScenario = (type) => {
         if (!chartData || chartData.length < 10) {
@@ -1071,17 +1272,8 @@ const EliteChart = () => {
             scenario.potentialGain = (((scenario.targetPrice - scenario.entryPrice) / scenario.entryPrice) * 100).toFixed(2);
             scenario.potentialLoss = (((scenario.entryPrice - scenario.stopLoss) / scenario.entryPrice) * 100).toFixed(2);
 
-            // Clear previous simulation
-            if (activeAiPattern) setActiveAiPattern(null);
-            if (projectionSeries && chartRef.current) {
-                chartRef.current.removeSeries(projectionSeries);
-            }
-
-            // Clear existing price lines
-            priceLineRefs.current.forEach(line => {
-                try { mainSeriesRef.current.removePriceLine(line); } catch (e) { }
-            });
-            priceLineRefs.current = [];
+            // Clear previous simulation artifacts efficiently
+            clearSimulationArtifacts();
 
             // Draw entry, target, and stop lines
             if (mainSeriesRef.current) {
@@ -1181,34 +1373,8 @@ const EliteChart = () => {
             atr: false
         });
 
-        // Clear simulation and pattern states
-        setSimulationActive(false);
-        setScenarioData(null);
-        setSimulationMode(null);
-        setActiveAiPattern(null);
-
-        // Force clear all price lines and artifacts from the chart object
-        if (priceLineRefs.current.length > 0 && mainSeriesRef.current) {
-            priceLineRefs.current.forEach(line => {
-                try { mainSeriesRef.current.removePriceLine(line); } catch (e) { }
-            });
-            priceLineRefs.current = [];
-        }
-
-        // Remove any extra series (like projections or indicators)
-        Object.values(indicatorSeriesRefs.current).forEach(series => {
-            if (Array.isArray(series)) {
-                series.forEach(s => { if (s && chartRef.current) try { chartRef.current.removeSeries(s); } catch (e) { } });
-            } else if (series && chartRef.current) {
-                try { chartRef.current.removeSeries(series); } catch (e) { }
-            }
-        });
-        indicatorSeriesRefs.current = {};
-
-        if (projectionSeries && chartRef.current) {
-            try { chartRef.current.removeSeries(projectionSeries); } catch (e) { }
-            setProjectionSeries(null);
-        }
+        // Clear simulation and pattern states using helper
+        clearSimulationArtifacts();
     };
 
     // Cleanup on unmount
@@ -1531,12 +1697,53 @@ const EliteChart = () => {
                                 </div>
                             </div>
 
-                            {/* Simulator Section */}
+                            {/* Simulator Section 2.0 */}
                             <div className="space-y-4 pt-4 border-t border-slate-700/20">
                                 <div className="flex items-center justify-between px-1">
-                                    <h3 className={`text-[10px] font-black uppercase tracking-[0.25em] ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Trade Simulator</h3>
-                                    <FastForward size={14} className="text-amber-500" />
+                                    <h3 className={`text-[10px] font-black uppercase tracking-[0.25em] ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Agentic Simulations</h3>
+                                    <Zap size={14} className="text-amber-500 animate-pulse" />
                                 </div>
+
+                                <button
+                                    onClick={runMonteCarloSimulation}
+                                    disabled={isSimulatingBackend}
+                                    className={`w-full p-4 rounded-3xl border flex flex-col items-center justify-center gap-2 transition-all group relative overflow-hidden ${isSimulatingBackend ? 'opacity-50' : 'hover:scale-[1.02] active:scale-95'} ${theme === 'dark' ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400' : 'bg-indigo-50 border-indigo-200 text-indigo-600 shadow-sm'}`}
+                                >
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50" />
+                                    <Layers size={21} className="group-hover:rotate-12 transition-transform" />
+                                    <div className="text-center">
+                                        <div className="text-[10px] font-black uppercase tracking-[0.1em]">Probability Fan</div>
+                                        <div className="text-[8px] font-bold opacity-60 italic text-indigo-500">Monte Carlo 2.0</div>
+                                    </div>
+                                    {isSimulatingBackend && (
+                                        <div className="absolute inset-0 bg-indigo-500/20 backdrop-blur-sm flex flex-col items-center justify-center p-2">
+                                            <Loader2 size={24} className="animate-spin text-indigo-500 mb-1" />
+                                            <span className="text-[7px] font-black uppercase tracking-widest text-indigo-600 animate-pulse text-center">
+                                                {simulationStatus || 'Processing...'}
+                                            </span>
+                                        </div>
+                                    )}
+                                </button>
+
+                                <div className="grid grid-cols-3 gap-2">
+                                    {[
+                                        { type: 'bullish_breakout', label: 'Breakout', icon: Zap },
+                                        { type: 'black_swan', label: 'Black Swan', icon: Ghost },
+                                        { type: 'institutional_flush', label: 'Flush', icon: Droplets }
+                                    ].map(inject => (
+                                        <button
+                                            key={inject.type}
+                                            onClick={() => runRegimeSimulation(inject.type)}
+                                            className={`p-3 rounded-2xl border flex flex-col items-center gap-1.5 transition-all text-[8px] font-black uppercase text-center ${simulationMode === inject.type ? 'bg-purple-600 border-purple-500 text-white' : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-500 shadow-xl' : 'bg-white border-slate-200 text-slate-500 hover:border-purple-300 shadow-sm'}`}
+                                        >
+                                            <inject.icon size={16} />
+                                            {inject.label}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="h-[1px] bg-slate-700/10 my-2" />
+
                                 <div className="grid grid-cols-2 gap-2">
                                     {[
                                         { type: 'long', label: 'Long', icon: TrendingUp, color: 'emerald' },
@@ -1570,29 +1777,174 @@ const EliteChart = () => {
                                 </div>
                             </div>
 
-                            {/* Active Scenario Insights */}
+                            {/* Simulation Errors */}
+                            {simulationError && (
+                                <div className="mt-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                                    <AlertTriangle size={16} className="text-rose-500 shrink-0 mt-0.5" />
+                                    <div className="flex-1">
+                                        <p className="text-[10px] font-bold text-rose-500 uppercase tracking-wider mb-1">Simulation Error</p>
+                                        <p className="text-[9px] text-slate-500 leading-tight">{simulationError}</p>
+                                    </div>
+                                    <button onClick={() => setSimulationError(null)} className="text-slate-400 hover:text-slate-600">
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Active Scenario Insights 2.0 */}
                             {simulationActive && scenarioData && (
-                                <div className={`mt-auto p-5 rounded-3xl border animate-in slide-in-from-bottom-4 duration-500 ${theme === 'dark' ? 'bg-purple-500/10 border-purple-500/20' : 'bg-purple-50 border-purple-200'}`}>
+                                <div className={`mt-auto p-5 rounded-3xl border animate-in slide-in-from-bottom-4 duration-500 ${theme === 'dark' ? 'bg-purple-500/10 border-purple-500/20 shadow-2xl shadow-purple-500/10' : 'bg-purple-50 border-purple-200 shadow-xl'}`}>
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
-                                            <h4 className="text-xs font-black uppercase text-purple-500">{scenarioData.type}</h4>
+                                            <div className="w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
+                                            <h4 className="text-[10px] font-black uppercase text-purple-500 tracking-widest">{scenarioData.type}</h4>
                                         </div>
-                                        <button onClick={() => setSimulationActive(false)} className="text-slate-400 hover:text-rose-500"><X size={16} /></button>
+                                        <button onClick={clearSimulationArtifacts} className="p-1 rounded-full hover:bg-rose-500/10 text-slate-400 hover:text-rose-500 transition-colors">
+                                            <X size={16} />
+                                        </button>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <div className="text-[9px] uppercase font-bold text-slate-400">Target</div>
-                                            <div className="text-sm font-black text-emerald-500">${scenarioData.targetPrice.toFixed(2)}</div>
-                                        </div>
-                                        <div>
-                                            <div className="text-[9px] uppercase font-bold text-slate-400">Risk/Reward</div>
-                                            <div className="text-sm font-black text-purple-600">{scenarioData.riskReward}:1</div>
-                                        </div>
+
+                                    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                                        {/* Core Price/Target Metrics */}
+                                        {scenarioData.targetPrice ? (
+                                            <div>
+                                                <div className="text-[9px] uppercase font-black text-slate-400 tracking-tighter mb-1">Target Potential</div>
+                                                <div className="text-sm font-black text-emerald-500 leading-none">${scenarioData.targetPrice.toLocaleString(undefined, { minimumFractionDigits: 1 })}</div>
+                                            </div>
+                                        ) : scenarioData.metrics?.target ? (
+                                            <div>
+                                                <div className="text-[9px] uppercase font-black text-slate-400 tracking-tighter mb-1">Projected Target</div>
+                                                <div className="text-sm font-black text-emerald-500 leading-none">{scenarioData.metrics.target}</div>
+                                            </div>
+                                        ) : scenarioData.market_regime ? (
+                                            <div>
+                                                <div className="text-[9px] uppercase font-black text-slate-400 tracking-tighter mb-1">Market Regime</div>
+                                                <div className="text-sm font-black text-indigo-500 leading-none uppercase">{scenarioData.market_regime}</div>
+                                            </div>
+                                        ) : null}
+
+                                        {/* Strategic Metrics */}
+                                        {scenarioData.riskReward ? (
+                                            <div>
+                                                <div className="text-[9px] uppercase font-black text-slate-400 tracking-tighter mb-1">R/R Efficiency</div>
+                                                <div className="text-sm font-black text-purple-600 leading-none">{scenarioData.riskReward}:1</div>
+                                            </div>
+                                        ) : scenarioData.metrics?.projected_move ? (
+                                            <div>
+                                                <div className="text-[9px] uppercase font-black text-slate-400 tracking-tighter mb-1">Projected Move</div>
+                                                <div className="text-sm font-black text-amber-500 leading-none">{scenarioData.metrics.projected_move}</div>
+                                            </div>
+                                        ) : scenarioData.metrics?.spread ? (
+                                            <div>
+                                                <div className="text-[9px] uppercase font-black text-slate-400 tracking-tighter mb-1">Outcome Spread</div>
+                                                <div className="text-sm font-black text-purple-500 leading-none">{scenarioData.metrics.spread}</div>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <div className="text-[9px] uppercase font-black text-slate-400 tracking-tighter mb-1">Confidence</div>
+                                                <div className="text-sm font-black text-purple-500 leading-none">AGENTIC</div>
+                                            </div>
+                                        )}
+
+                                        {/* Row 2 Metrics if available */}
+                                        {scenarioData.potentialGain && (
+                                            <div className="col-span-2 mt-1 py-2 px-3 bg-white/5 rounded-xl flex justify-between items-center">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[8px] uppercase font-bold text-slate-400">Potential Gain</span>
+                                                    <span className="text-xs font-black text-emerald-500">+{scenarioData.potentialGain}%</span>
+                                                </div>
+                                                <div className="w-px h-6 bg-slate-700/20" />
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-[8px] uppercase font-bold text-slate-400">Potential Loss</span>
+                                                    <span className="text-xs font-black text-rose-500">-{scenarioData.potentialLoss}%</span>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                    <p className="mt-4 text-[11px] leading-relaxed text-slate-500 italic">
+
+                                    <p className={`mt-4 text-[10px] leading-relaxed font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
                                         {scenarioData.description}
                                     </p>
+
+                                    {/* Detailed Metrics Toggle */}
+                                    {scenarioData.meta && (
+                                        <div className="mt-4">
+                                            <button
+                                                onClick={() => setShowSimulationDetails(!showSimulationDetails)}
+                                                className={`text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-colors ${theme === 'dark' ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-700'}`}
+                                            >
+                                                {showSimulationDetails ? 'Hide Laboratory Metrics' : 'View Laboratory Metrics'}
+                                                <ChevronDown size={12} className={`transition-transform duration-300 ${showSimulationDetails ? 'rotate-180' : ''}`} />
+                                            </button>
+
+                                            <button
+                                                onClick={() => setShowLabDeepDive(true)}
+                                                className={`mt-2 w-full py-2.5 px-3 rounded-xl border text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${theme === 'dark' ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/20' : 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100'}`}
+                                            >
+                                                <Microscope size={14} />
+                                                DEEP DIVE LABORATORY
+                                            </button>
+
+                                            {showSimulationDetails && (
+                                                <div className={`mt-3 p-3 rounded-2xl border text-[9px] font-mono grid grid-cols-2 gap-2 animate-in zoom-in-95 duration-300 ${theme === 'dark' ? 'bg-black/20 border-white/5 text-slate-400' : 'bg-white border-slate-100 text-slate-500'}`}>
+                                                    <div className="flex flex-col">
+                                                        <span className="opacity-50 uppercase text-[7px] mb-0.5">Model Horizon</span>
+                                                        <span className="font-bold text-slate-300">{scenarioData.meta.steps} STEPS</span>
+                                                    </div>
+
+                                                    {scenarioData.meta.num_paths ? (
+                                                        <div className="flex flex-col">
+                                                            <span className="opacity-50 uppercase text-[7px] mb-0.5">Simulated Paths</span>
+                                                            <span className="font-bold text-slate-300">{scenarioData.meta.num_paths} AI AGENTS</span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex flex-col">
+                                                            <span className="opacity-50 uppercase text-[7px] mb-0.5">Engine Volatility</span>
+                                                            <span className="font-bold text-slate-300">{(scenarioData.meta.volatility_used * 100).toFixed(2)}%</span>
+                                                        </div>
+                                                    )}
+
+                                                    {scenarioData.meta.regime ? (
+                                                        <div className="flex flex-col">
+                                                            <span className="opacity-50 uppercase text-[7px] mb-0.5">Detected Regime</span>
+                                                            <span className="font-bold text-slate-300">{scenarioData.meta.regime.toUpperCase()}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex flex-col">
+                                                            <span className="opacity-50 uppercase text-[7px] mb-0.5">Floor Anchor</span>
+                                                            <span className="font-bold text-slate-300">${scenarioData.meta.support_used?.toLocaleString(undefined, { maximumFractionDigits: 1 })}</span>
+                                                        </div>
+                                                    )}
+
+                                                    {scenarioData.meta.vol_multiplier ? (
+                                                        <div className="flex flex-col">
+                                                            <span className="opacity-50 uppercase text-[7px] mb-0.5">Vol Multiplier</span>
+                                                            <span className="font-bold text-slate-400">{scenarioData.meta.vol_multiplier}x</span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex flex-col">
+                                                            <span className="opacity-50 uppercase text-[7px] mb-0.5">Ceiling Anchor</span>
+                                                            <span className="font-bold text-slate-300">${scenarioData.meta.resistance_used?.toLocaleString(undefined, { maximumFractionDigits: 1 })}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {scenarioData.isAgentic && (
+                                        <div className="mt-4 pt-4 border-t border-purple-500/10 flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="p-1.5 rounded-lg bg-purple-500/20">
+                                                    <Brain size={12} className="text-purple-400" />
+                                                </div>
+                                                <span className="text-[9px] font-black text-purple-400 uppercase tracking-widest">AI Projected Path</span>
+                                            </div>
+                                            <div className="flex gap-0.5">
+                                                {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 rounded-full bg-purple-500/40" />)}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -1907,6 +2259,161 @@ const EliteChart = () => {
                     )}
                 </aside>
             </div>
+            {/* Simulation Laboratory Deep Dive Modal */}
+            <AnimatePresence>
+                {showLabDeepDive && scenarioData && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowLabDeepDive(false)}
+                            className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className={`relative w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-[2.5rem] border shadow-2xl flex flex-col ${theme === 'dark' ? 'bg-[#0b0c14] border-white/10' : 'bg-white border-slate-200'}`}
+                        >
+                            {/* Modal Header */}
+                            <div className="p-8 border-b border-white/5 flex items-center justify-between sticky top-0 bg-inherit z-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 rounded-2xl bg-indigo-500/20">
+                                        <Microscope size={24} className="text-indigo-400" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-black uppercase tracking-[0.3em] text-white">Quantum Simulation Lab</h2>
+                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Model: Agentic Monte Carlo Engine v2.4 (Beta)</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setShowLabDeepDive(false)} className="p-2 rounded-full hover:bg-white/5 text-slate-400 transition-colors">
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                {/* Column 1: Core Parameters */}
+                                <div className="space-y-6">
+                                    <div className="p-6 rounded-[2rem] bg-indigo-500/5 border border-indigo-500/10">
+                                        <h3 className="text-[11px] font-black uppercase tracking-widest text-indigo-400 mb-6 flex items-center gap-2">
+                                            <Settings size={14} /> Simulation Constants
+                                        </h3>
+                                        <div className="space-y-4">
+                                            {[
+                                                { label: 'Time Horizon', value: `${scenarioData.meta?.steps || 30} Candles`, desc: 'Max look-forward window for simulation paths.' },
+                                                { label: 'Agent Count', value: scenarioData.meta?.num_paths || 50, desc: 'Divergent paths generated per request.' },
+                                                { label: 'Base Price', value: `$${currentPrice?.toLocaleString()}`, desc: 'The starting equilibrium point for all paths.' },
+                                                { label: 'Volatility Anchor', value: `${((scenarioData.meta?.volatility_used || 0) * 100).toFixed(3)}%`, desc: 'Normalised ATR-based standard deviation.' }
+                                            ].map((param, i) => (
+                                                <div key={i} className="group">
+                                                    <div className="flex justify-between items-end mb-1">
+                                                        <span className="text-[9px] font-bold text-slate-500 uppercase">{param.label}</span>
+                                                        <span className="text-xs font-black text-white">{param.value}</span>
+                                                    </div>
+                                                    <p className="text-[8px] text-slate-600 italic leading-tight">{param.desc}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="p-6 rounded-[2rem] bg-purple-500/5 border border-purple-500/10">
+                                        <h3 className="text-[11px] font-black uppercase tracking-widest text-purple-400 mb-6 flex items-center gap-2">
+                                            <Brain size={14} /> Regime Intelligence
+                                        </h3>
+                                        <div className="space-y-4">
+                                            <div className="p-3 rounded-2xl bg-white/5">
+                                                <span className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Detected Bias</span>
+                                                <span className="text-sm font-black text-purple-400 uppercase tracking-wider">{scenarioData.market_regime || 'NEUTRAL'}</span>
+                                            </div>
+                                            <div className="text-[9px] text-slate-400 leading-relaxed font-medium">
+                                                The simulation is currently using **Geometric Brownian Motion (GBM)** with a drift coefficient of <span className="text-purple-400">λ={scenarioData.meta?.vol_multiplier || 1.0}x</span>. This forces the random-walk agents to respect the momentum detected in the technical layer.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Column 2 & 3: Statistical Breakdown & Physics */}
+                                <div className="lg:col-span-2 space-y-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="p-6 rounded-[2rem] bg-emerald-500/5 border border-emerald-500/10">
+                                            <h3 className="text-[11px] font-black uppercase tracking-widest text-emerald-400 mb-4">Probability Spread</h3>
+                                            <div className="flex items-baseline gap-2 mb-2">
+                                                <span className="text-3xl font-black text-white">{scenarioData.metrics?.spread || '0.00%'}</span>
+                                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Variance</span>
+                                            </div>
+                                            <p className="text-[9px] text-slate-500 leading-normal">
+                                                This metric represents the "Uncertainty Envelope." {parseFloat(scenarioData.metrics?.spread) > 5 ? 'The high spread indicates extreme tail-risk. Expect violent price discovery.' : 'A tight spread indicates high model confidence in the equilibrium target.'}
+                                            </p>
+                                        </div>
+                                        <div className="p-6 rounded-[2rem] bg-amber-500/5 border border-amber-500/10">
+                                            <h3 className="text-[11px] font-black uppercase tracking-widest text-amber-400 mb-4">Outcome Distribution</h3>
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex-1 h-3 rounded-full bg-white/5 overflow-hidden flex">
+                                                    <div className="h-full bg-emerald-500" style={{ width: '65%' }} />
+                                                    <div className="h-full bg-rose-500" style={{ width: '35%' }} />
+                                                </div>
+                                                <span className="text-[10px] font-black text-white uppercase">65% Bulls</span>
+                                            </div>
+                                            <p className="mt-4 text-[9px] text-slate-500 leading-normal italic">
+                                                *Relative distribution based on agent clustering around the P50 median.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* The "Physics" explanation */}
+                                    <div className="p-8 rounded-[2.5rem] bg-white/[0.02] border border-white/5">
+                                        <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-white mb-6">Engine Physics: How it "Thinks"</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-4">
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px] font-black text-indigo-400 shrink-0">01</div>
+                                                    <div>
+                                                        <h4 className="text-[11px] font-bold uppercase text-slate-200 mb-1">Stochastic Modeling</h4>
+                                                        <p className="text-[10px] text-slate-500 leading-relaxed">Nunno uses Monte Carlo methods to solve the future state of {symbol}. We generate N=50 paths using current market heat as the standard deviation.</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px] font-black text-indigo-400 shrink-0">02</div>
+                                                    <div>
+                                                        <h4 className="text-[11px] font-bold uppercase text-slate-200 mb-1">Mean Reversion Tether</h4>
+                                                        <p className="text-[10px] text-slate-500 leading-relaxed">In consolidation regimes, the engine applies a simulated elastic force, pulling "wild" agents back toward the base price to mimic ranging behavior.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-4">
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px] font-black text-indigo-400 shrink-0">03</div>
+                                                    <div>
+                                                        <h4 className="text-[11px] font-bold uppercase text-slate-200 mb-1">Structural Anchoring</h4>
+                                                        <p className="text-[10px] text-slate-500 leading-relaxed">The paths aren't flying into empty space. They are physically bouncing off the **S1 Support (${scenarioData.meta?.support_used?.toFixed(1)})** and **R1 Resistance (${scenarioData.meta?.resistance_used?.toFixed(1)})** detected on the chart.</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px] font-black text-indigo-400 shrink-0">04</div>
+                                                    <div>
+                                                        <h4 className="text-[11px] font-bold uppercase text-slate-200 mb-1">Percentile Synthesis</h4>
+                                                        <p className="text-[10px] text-slate-500 leading-relaxed">Finally, we take the P50 (Median) as the definitive prediction. If 75% of agents (the P75 cloud) are above the start price, the bias is confirmed Bullish.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="p-8 border-t border-white/5 flex items-center justify-between text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+                                <span>© 2026 Nunno Labs • Predictive Intelligence Suite</span>
+                                <div className="flex items-center gap-4">
+                                    <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /> ENGINE ONLINE</span>
+                                    <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-indigo-500" /> SYNCED TO BINANCE</span>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

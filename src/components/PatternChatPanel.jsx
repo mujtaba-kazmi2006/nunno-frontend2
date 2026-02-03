@@ -14,14 +14,26 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000, interval =
     const [isLoading, setIsLoading] = useState(false);
     const [loadingStatus, setLoadingStatus] = useState('');
     const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
-    const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
     const actionMenuRef = useRef(null);
     const abortController = useRef(null);
+    const messagesContainerRef = useRef(null);
+    const isAtBottom = useRef(true);
     const { theme } = useTheme();
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const handleScroll = () => {
+        if (!messagesContainerRef.current) return;
+        const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+        isAtBottom.current = scrollHeight - scrollTop - clientHeight < 100;
+    };
+
+    const scrollToBottom = (force = false) => {
+        if (messagesContainerRef.current && (isAtBottom.current || force)) {
+            messagesContainerRef.current.scrollTo({
+                top: messagesContainerRef.current.scrollHeight,
+                behavior: force ? 'smooth' : 'auto'
+            });
+        }
     };
 
     useEffect(() => {
@@ -247,7 +259,11 @@ INSTRUCTION: You are given direct "live feed" access to the user's chart technic
             {/* Header Removed as requested */}
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+            <div
+                ref={messagesContainerRef}
+                onScroll={handleScroll}
+                className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
+            >
                 {messages.map((message, index) => (
                     <div
                         key={index}
@@ -303,8 +319,6 @@ INSTRUCTION: You are given direct "live feed" access to the user's chart technic
                         </div>
                     </div>
                 )}
-
-                <div ref={messagesEndRef} />
             </div>
 
             {/* Quick Patterns */}
@@ -341,8 +355,8 @@ INSTRUCTION: You are given direct "live feed" access to the user's chart technic
                             onClick={() => setIsActionMenuOpen(!isActionMenuOpen)}
                             disabled={isLoading}
                             className={`p-3 rounded-xl transition-all shadow-sm border flex items-center justify-center ${isActionMenuOpen
-                                    ? (theme === 'dark' ? 'bg-purple-600 border-purple-500 text-white' : 'bg-purple-600 border-purple-500 text-white')
-                                    : (theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-purple-400' : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-purple-600')
+                                ? (theme === 'dark' ? 'bg-purple-600 border-purple-500 text-white' : 'bg-purple-600 border-purple-500 text-white')
+                                : (theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-purple-400' : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-purple-600')
                                 }`}
                         >
                             <Plus size={20} className={`transition-transform duration-300 ${isActionMenuOpen ? 'rotate-45' : ''}`} />
