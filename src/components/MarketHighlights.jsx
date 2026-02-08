@@ -53,8 +53,8 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
 
     return (
         <section className={`w-full max-w-full rounded-[2.5rem] border overflow-hidden transition-all duration-700 shadow-2xl ${theme === 'dark'
-        ? 'bg-white/[0.03] border-white/10 backdrop-blur-lg shadow-black/40'
-        : 'bg-white/80 border-slate-200/60 backdrop-blur-lg shadow-slate-200/50'
+            ? 'bg-[#0c0c14] border-white/10 shadow-black/40'
+            : 'bg-white border-slate-200/60 shadow-slate-200/50'
             }`}>
             {/* Header / Tabs */}
             <div className={`flex flex-col p-5 gap-4 border-b ${theme === 'dark' ? 'border-white/5' : 'border-slate-100'}`}>

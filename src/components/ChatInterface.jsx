@@ -102,14 +102,14 @@ const MessageItem = memo(({ message }) => {
                         <div className={cn(
                             "relative z-10 text-lg leading-relaxed px-6 py-4 rounded-3xl transition-all duration-500",
                             isAssistant
-                                ? "bg-white/5 dark:bg-white/[0.03] backdrop-blur-lg border border-white/10 dark:text-slate-200 shadow-xl shadow-black/5"
+                                ? "bg-white/5 dark:bg-white/[0.03] border border-white/10 dark:text-slate-200 shadow-xl shadow-black/5"
                                 : "bg-gradient-to-br from-purple-600 to-indigo-700 text-white font-medium shadow-2xl shadow-purple-500/20"
                         )}>
                             {isAssistant ? formatMessageContent(message.content) : message.content}
                         </div>
 
                         {!isAssistant && (
-                            <div className="absolute inset-0 bg-purple-500/20 blur-2xl rounded-full scale-75 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                            <div className="absolute inset-0 bg-purple-500/10 rounded-full scale-75 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                         )}
 
                         {isAssistant && message.content && (
@@ -460,7 +460,7 @@ export default function ChatInterface({ userAge }) {
     const isInitialState = messages.length <= 1 && !isLoading;
 
     return (
-        <div className="h-full flex flex-col items-center justify-end relative overflow-hidden bg-transparent">
+        <div className="flex flex-col h-full overflow-hidden relative chat-interface">
             {/* Background Welcome elements - Premium Rebrand */}
             <AnimatePresence>
                 {isInitialState && (
@@ -523,22 +523,19 @@ export default function ChatInterface({ userAge }) {
                 </div>
             </div>
 
-            {/* Input & Glass Window Container - Redesigned for Impact */}
+            {/* Input & Glass Window Container - Performance Optimized */}
             <motion.div
-                layout
                 initial={false}
                 animate={{
                     paddingBottom: isInitialState ? "2rem" : "2.5rem",
                     width: "100%",
                 }}
-                transition={{ type: "spring", stiffness: 100, damping: 20, duration: 0.8 }}
                 className="w-full flex flex-col items-center px-4 md:px-8 z-10"
             >
-                <motion.div
-                    layout
+                <div
                     className={cn(
-                        "relative w-full transition-all duration-700",
-                        isInitialState ? "max-w-5xl bg-white/5 dark:bg-black/20 backdrop-blur-lg rounded-[2rem] sm:rounded-[3rem] p-3 sm:p-6 md:p-16 border border-white/10 shadow-2xl" : "max-w-5xl bg-transparent"
+                        "relative w-full transition-[background-color,border-color,box-shadow,transform] duration-700",
+                        isInitialState ? "max-w-5xl bg-white dark:bg-[#0c0c14] rounded-[2rem] sm:rounded-[3rem] p-3 sm:p-6 md:p-16 border border-white/10 shadow-2xl" : "max-w-5xl bg-transparent"
                     )}
                 >
                     {isInitialState && (
@@ -547,8 +544,8 @@ export default function ChatInterface({ userAge }) {
 
                     {/* Centered / Bottom Input Design */}
                     <div className={cn(
-                        "relative bg-white/90 dark:bg-[#0c0c14]/90 rounded-2xl sm:rounded-[2rem] shadow-2xl border border-purple-100/50 dark:border-white/10 p-2 sm:p-4 backdrop-blur-lg group ring-1 ring-white/5",
-                        !isInitialState && "hover:border-purple-500/30 transition-colors"
+                        "relative bg-white dark:bg-[#0c0c14] rounded-2xl sm:rounded-[2rem] shadow-2xl border border-purple-100/50 dark:border-white/10 p-2 sm:p-4 group ring-1 ring-white/5",
+                        !isInitialState && "hover:border-purple-500/30 transition-[border-color]"
                     )}>
                         <div className="relative flex gap-2 sm:gap-4 items-center">
                             <div className="relative" ref={actionMenuRef}>
@@ -568,7 +565,7 @@ export default function ChatInterface({ userAge }) {
                                     <motion.div
                                         initial={{ opacity: 0, scale: 0.9, y: 15 }}
                                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                                        className="absolute bottom-full mb-6 left-0 w-72 bg-white/95 dark:bg-[#12121a]/95 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] border border-purple-100/50 dark:border-white/10 overflow-hidden z-50 p-2 space-y-2 backdrop-blur-md"
+                                        className="absolute bottom-full mb-6 left-0 w-72 bg-white dark:bg-[#12121a] rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] border border-purple-100/50 dark:border-white/10 overflow-hidden z-50 p-2 space-y-2"
                                     >
                                         <button onClick={() => { handleFeedNunno(); setIsActionMenuOpen(false); }} className="w-full flex items-center gap-4 p-4 hover:bg-purple-50 dark:hover:bg-white/5 rounded-2xl text-slate-700 dark:text-slate-200 text-sm font-bold transition-all group">
                                             <div className="size-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform"><Zap size={20} /></div>
@@ -634,7 +631,7 @@ export default function ChatInterface({ userAge }) {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.4 + i * 0.1 }}
                                     onClick={() => handleSuggestionClick(s.text)}
-                                    className="flex items-center gap-3 sm:gap-4 p-3 sm:p-5 bg-white/5 dark:bg-white/[0.03] hover:bg-white/10 dark:hover:bg-white/[0.08] border border-white/5 hover:border-purple-500/30 rounded-2xl sm:rounded-3xl text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-bold transition-all group backdrop-blur-md"
+                                    className="flex items-center gap-3 sm:gap-4 p-3 sm:p-5 bg-white/5 dark:bg-white/[0.03] hover:bg-white/10 dark:hover:bg-white/[0.08] border border-white/5 hover:border-purple-500/30 rounded-2xl sm:rounded-3xl text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-bold transition-all group"
                                 >
                                     <div className="size-8 sm:size-10 rounded-xl sm:rounded-2xl bg-white/5 flex items-center justify-center text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-all ring-1 ring-white/10 flex-shrink-0">
                                         {s.icon}
@@ -644,8 +641,8 @@ export default function ChatInterface({ userAge }) {
                             ))}
                         </div>
                     )}
-                </motion.div>
+                </div>
             </motion.div>
-        </div>
+        </div >
     )
 }

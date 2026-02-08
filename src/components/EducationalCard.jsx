@@ -63,7 +63,7 @@ export default function EducationalCard({ data }) {
     const signalsToShow = showAllIndicators ? displaySignals : displaySignals.slice(0, 6)
 
     return (
-        <div className={`educational-card ${getBiasClass(safeBias)} border border-white/10 bg-white/[0.02] backdrop-blur-lg rounded-[2.5rem] overflow-hidden shadow-2xl`}>
+        <div className={`educational-card ${getBiasClass(safeBias)} border border-white/10 bg-white/[0.04] rounded-[2.5rem] overflow-hidden shadow-2xl`}>
             <div className="card-header border-b border-white/5 p-6 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <div className={`card-icon p-3 rounded-2xl ${getBiasClass(safeBias)} shadow-lg`}>

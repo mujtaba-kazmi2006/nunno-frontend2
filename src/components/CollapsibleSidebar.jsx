@@ -54,11 +54,11 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
 
     const isActive = (path) => location.pathname === path;
 
-    // Render Overlay for Mobile
+    // Render Overlay for Mobile - Removed Blur
     const MobileOverlay = () => (
         isMobile && !isCollapsed && (
             <div
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[190]"
+                className="fixed inset-0 bg-black/60 z-[190]"
                 onClick={() => setIsCollapsed(true)}
             />
         )
@@ -69,26 +69,26 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
             <MobileOverlay />
             <div
                 className={cn(
-                    "flex flex-col h-screen transition-[width,transform,background-color] duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] z-[200] relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.3)] will-change-[width,transform]",
+                    "flex flex-col h-screen transition-[width,transform] duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] z-[200] relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.3)] will-change-[width,transform]",
                     isMobile ? "fixed inset-y-0 left-0" : "relative",
                     isCollapsed ? (isMobile ? "-translate-x-full" : "w-24") : "w-[300px]",
-                    theme === 'dark' ? "bg-[#020205] border-r border-white/5" : "bg-white border-r border-slate-200"
+                    theme === 'dark' ? "bg-[#0c0c14] border-r border-white/5" : "bg-white border-r border-slate-200"
                 )}
             >
-                {/* Premium Effects */}
+                {/* Premium Effects - Optimized */}
                 {theme === 'dark' && (
                     <>
-                        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.1] pointer-events-none z-0" />
-                        <div className="absolute top-20 -left-20 w-40 h-40 bg-purple-600/10 blur-[80px] rounded-full pointer-events-none" />
+                        <div className="absolute top-20 -left-20 w-40 h-40 bg-[radial-gradient(circle,rgba(139,92,246,0.1),transparent_70%)] rounded-full pointer-events-none" />
                     </>
                 )}
+
 
                 {/* Toggle Button - Redesigned */}
                 {!isMobile && (
                     <button
                         onClick={() => setIsCollapsed(!isCollapsed)}
                         className={cn(
-                            "absolute -right-4 top-12 size-9 flex items-center justify-center rounded-xl z-50 transition-all duration-500 border-2",
+                            "absolute -right-4 top-12 size-9 flex items-center justify-center rounded-xl z-50 transition-[transform,box-shadow] duration-500 border-2",
                             theme === 'dark'
                                 ? "bg-white text-black border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)]"
                                 : "bg-white text-black border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_30px_rgba(0,0,0,0.2)]",
@@ -108,7 +108,7 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                 )}>
                     <div className="flex items-center gap-4">
                         <div className="relative group/logo">
-                            <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-full scale-150 opacity-0 group-hover/logo:opacity-100 transition-opacity" />
+                            <div className="absolute inset-0 bg-purple-500/10 rounded-full scale-150 opacity-0 group-hover/logo:opacity-100 transition-opacity" />
                             <img
                                 src="/logo.png"
                                 alt="Nunno Finance"
@@ -143,7 +143,7 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                                 to={item.path}
                                 onClick={() => isMobile && setIsCollapsed(true)}
                                 className={cn(
-                                    "flex items-center px-4 py-3.5 rounded-2xl transition-all duration-300 group relative overflow-hidden whitespace-nowrap",
+                                    "flex items-center px-4 py-3.5 rounded-2xl transition-[background-color,color,box-shadow,transform] duration-300 group relative overflow-hidden whitespace-nowrap",
                                     active
                                         ? "bg-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.1)]"
                                         : "text-slate-500 hover:text-white hover:bg-white/5"

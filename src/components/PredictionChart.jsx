@@ -69,13 +69,12 @@ export default function PredictionChart({ data, support, resistance, currentPric
                         />
                         <Tooltip
                             contentStyle={{
-                                backgroundColor: 'rgba(10, 10, 15, 0.95)',
+                                backgroundColor: 'rgba(10, 10, 15, 0.98)',
                                 border: '1px solid rgba(255,255,255,0.1)',
                                 borderRadius: '16px',
                                 fontSize: '10px',
                                 textTransform: 'uppercase',
-                                fontWeight: 900,
-                                backdropFilter: 'blur(10px)'
+                                fontWeight: 900
                             }}
                             itemStyle={{ color: '#fff' }}
                             labelStyle={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}

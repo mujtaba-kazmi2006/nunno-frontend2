@@ -55,35 +55,36 @@ function Dashboard({ userAge }) {
 
                 {/* Main Content Area (Chat) */}
                 <main className={cn(
-                    "flex-1 h-full relative transition-[margin] duration-500 ease-in-out overflow-hidden will-change-[margin]",
+                    "flex-1 h-full relative transition-[margin] duration-500 ease-in-out overflow-hidden will-change-[margin] dashboard-container",
                     isMarketOpen && !isInitial ? "lg:mr-80" : "mr-0"
                 )}>
                     <ChatInterface userAge={userAge} />
                 </main>
 
-                {/* Right Collapsible Market Sidebar (Desktop & Mobile Unified) */}
+                {/* Right Collapsible Market Sidebar - Optimized Performance */}
                 {!isInitial && (
                     <aside className={cn(
                         "fixed top-0 right-0 h-full transition-transform duration-500 ease-in-out z-40 flex flex-col will-change-transform",
                         theme === 'dark'
-                            ? "bg-[#020205]/80 backdrop-blur-lg border-l border-white/5"
-                            : "bg-white/70 backdrop-blur-lg border-l border-purple-100/50",
+                            ? "bg-[#0c0c14] border-l border-white/5"
+                            : "bg-white border-l border-purple-100/50",
                         isMarketOpen ? "w-80 translate-x-0" : "w-80 translate-x-full"
                     )}>
-                        {/* Toggle Button - Attached to the side of the panel */}
+                        {/* Toggle Button - Removed Blur */}
                         <button
                             onClick={() => setIsMarketOpen(!isMarketOpen)}
                             className={cn(
-                                "absolute left-[-40px] top-1/2 -translate-y-1/2 w-10 h-20 shadow-[-10px_0_20px_rgba(0,0,0,0.2)] backdrop-blur-lg border border-r-0 rounded-l-3xl flex items-center justify-center transition-all pointer-events-auto",
+                                "absolute left-[-40px] top-1/2 -translate-y-1/2 w-10 h-20 shadow-[-10px_0_20px_rgba(0,0,0,0.2)] border border-r-0 rounded-l-3xl flex items-center justify-center transition-all pointer-events-auto",
                                 theme === 'dark'
-                                    ? "bg-[#020205]/80 border-white/10 text-purple-400 hover:text-white"
-                                    : "bg-white/70 border-purple-100 text-purple-600 hover:text-purple-800",
+                                    ? "bg-[#0c0c14] border-white/10 text-purple-400 hover:text-white"
+                                    : "bg-white border-purple-100 text-purple-600 hover:text-purple-800",
                                 !isMarketOpen && "opacity-80 hover:opacity-100"
                             )}
                             title={isMarketOpen ? "Close Market Info" : "Open Market Info"}
                         >
                             {isMarketOpen ? <ChevronRight size={24} strokeWidth={3} /> : <ChevronLeft size={24} strokeWidth={3} />}
                         </button>
+
 
                         <div className="flex-1 flex flex-col p-6 overflow-y-auto custom-scrollbar">
                             <header className="mb-8 mt-12 flex items-center justify-between">
@@ -134,33 +135,24 @@ function MainLayout({ children }) {
 
     return (
         <div className={cn(
-            "flex h-screen overflow-hidden relative selection:bg-purple-500/30",
+            "flex h-screen overflow-hidden relative selection:bg-purple-500/30 main-layout",
             theme === 'dark'
                 ? 'bg-[#020205]' // Deeper black for premium feel
                 : 'bg-gradient-to-br from-purple-50 via-white to-purple-50/30'
         )}>
-            {/* Ambient Background Elements - Intensified & Multi-colored */}
+            {/* Radical Optimization: Solid Gradients, No Blur Filters */}
             <div className={cn(
-                "absolute top-[-20%] right-[-20%] w-[90%] h-[90%] md:w-[70%] md:h-[70%] blur-[120px] rounded-full pointer-events-none transition-all duration-1000 will-change-transform",
+                "absolute top-[-5%] right-[-5%] w-[70%] h-[70%] rounded-full pointer-events-none transition-all duration-1000 will-change-transform opacity-30",
                 theme === 'dark'
-                    ? "bg-purple-600/10 animate-float"
-                    : "bg-purple-400/5"
+                    ? "bg-[radial-gradient(circle,rgba(139,92,246,0.15),transparent_70%)] animate-float"
+                    : "bg-[radial-gradient(circle,rgba(139,92,246,0.05),transparent_70%)]"
             )} />
             <div className={cn(
-                "absolute bottom-[-20%] left-[-20%] w-[90%] h-[90%] md:w-[70%] md:h-[70%] blur-[120px] rounded-full pointer-events-none transition-all duration-1000 will-change-transform",
+                "absolute bottom-[-5%] left-[-5%] w-[70%] h-[70%] rounded-full pointer-events-none transition-all duration-1000 will-change-transform opacity-20",
                 theme === 'dark'
-                    ? "bg-indigo-600/10 animate-float-alt"
-                    : "bg-blue-400/5"
+                    ? "bg-[radial-gradient(circle,rgba(79,70,229,0.15),transparent_70%)] animate-float-alt"
+                    : "bg-[radial-gradient(circle,rgba(79,70,229,0.05),transparent_70%)]"
             )} />
-            <div className={cn(
-                "absolute top-[10%] left-[10%] w-[80%] h-[80%] md:w-[60%] md:h-[60%] blur-[150px] rounded-full pointer-events-none transition-all duration-1000 will-change-transform",
-                theme === 'dark'
-                    ? "bg-pink-600/05 animate-float"
-                    : "hidden"
-            )} />
-
-            {/* Premium Grain Overlay */}
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] dark:opacity-[0.15] brightness-100 contrast-150 pointer-events-none z-0" />
 
             <CollapsibleSidebar
                 isCollapsed={isCollapsed}
@@ -168,7 +160,7 @@ function MainLayout({ children }) {
             />
 
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
-                {/* Top Navigation Bar (Floating/Glassy) */}
+                {/* Top Navigation Bar - Removed Blur Filters */}
                 <div className="absolute top-0 left-0 right-0 h-20 items-center justify-between px-6 flex pointer-events-none z-[1000]">
                     {/* Mobile Menu Trigger */}
                     <div className="md:hidden pointer-events-auto">
@@ -177,8 +169,8 @@ function MainLayout({ children }) {
                             className={cn(
                                 "p-3 rounded-2xl shadow-lg transition-all active:scale-95 border",
                                 theme === 'dark'
-                                    ? 'bg-[#020205]/90 text-purple-400 border-white/10'
-                                    : 'bg-white/90 text-slate-600 border-purple-100'
+                                    ? 'bg-[#0c0c14] text-purple-400 border-white/10'
+                                    : 'bg-white text-slate-600 border-purple-100'
                             )}
                         >
                             <Menu size={22} strokeWidth={3} />
@@ -187,15 +179,15 @@ function MainLayout({ children }) {
 
                     <div className="flex-1" />
 
-                    {/* Theme Toggle */}
+                    {/* Theme Toggle - Optimized */}
                     <div className="pointer-events-auto">
                         <button
                             onClick={toggleTheme}
                             className={cn(
-                                "p-3 rounded-2xl shadow-2xl backdrop-blur-3xl transition-all duration-500 border group",
+                                "p-3 rounded-2xl shadow-2xl transition-all duration-500 border group",
                                 theme === 'dark'
-                                    ? 'bg-[#020205]/90 border-white/10 text-amber-400 shadow-amber-900/10'
-                                    : 'bg-white/80 border-purple-100 text-slate-600 hover:text-purple-600 shadow-purple-100/50'
+                                    ? 'bg-[#0c0c14] border-white/10 text-amber-400'
+                                    : 'bg-white border-purple-100 text-slate-600 hover:text-purple-600'
                             )}
                             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                         >
@@ -207,6 +199,8 @@ function MainLayout({ children }) {
                         </button>
                     </div>
                 </div>
+
+
 
                 {/* Content Area */}
                 <main className="flex-1 overflow-hidden">

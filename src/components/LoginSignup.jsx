@@ -11,7 +11,6 @@ export default function LoginSignup({ onClose }) {
         email: '',
         password: '',
         name: '',
-        confirmPassword: '',
         experienceLevel: 'beginner'
     });
     const [showPassword, setShowPassword] = useState(false);
@@ -29,12 +28,6 @@ export default function LoginSignup({ onClose }) {
         e.preventDefault();
         setError('');
         setLoading(true);
-
-        if (!isLogin && formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
-            setLoading(false);
-            return;
-        }
 
         const result = isLogin
             ? await login(formData.email, formData.password)
@@ -61,36 +54,36 @@ export default function LoginSignup({ onClose }) {
                     className="absolute inset-0 bg-black/80 backdrop-blur-md"
                 />
 
-                {/* Modal Container */}
+                {/* Modal Container - Optimized Size */}
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 1.1, y: 10 }}
-                    className="relative w-full max-w-lg bg-[#0c0c14]/90 border border-white/10 rounded-[3rem] shadow-[0_32px_128px_rgba(0,0,0,0.8)] overflow-hidden backdrop-blur-lg group"
+                    className="relative w-full max-w-md bg-[#0c0c14]/90 border border-white/10 rounded-[2.5rem] shadow-[0_32px_128px_rgba(0,0,0,0.8)] overflow-hidden backdrop-blur-lg group"
                 >
                     {/* Interior Effects */}
                     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.1] pointer-events-none" />
-                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-purple-600/20 blur-[100px] rounded-full pointer-events-none" />
-                    <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-600/20 blur-[100px] rounded-full pointer-events-none" />
+                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-purple-600/10 blur-[100px] rounded-full pointer-events-none" />
+                    <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-600/10 blur-[100px] rounded-full pointer-events-none" />
 
                     {/* Close Button */}
                     <button
                         onClick={onClose}
-                        className="absolute top-8 right-8 text-white/30 hover:text-white transition-all hover:rotate-90 p-2 z-10"
+                        className="absolute top-6 right-6 text-white/30 hover:text-white transition-all hover:rotate-90 p-2 z-10"
                     >
-                        <X size={24} />
+                        <X size={20} />
                     </button>
 
-                    <div className="relative p-10 sm:p-12">
+                    <div className="relative p-8 sm:p-10">
                         {/* Header */}
-                        <div className="text-center mb-10">
+                        <div className="text-center mb-8">
                             <motion.div
                                 initial={{ y: -20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
-                                className="inline-flex justify-center mb-6"
+                                className="inline-flex justify-center mb-4 scale-90"
                             >
-                                <div className="p-4 rounded-3xl bg-white/5 border border-white/10 shadow-2xl">
-                                    <NunnoLogo size="xl" animated />
+                                <div className="p-3 rounded-2xl bg-white/5 border border-white/10 shadow-2xl">
+                                    <NunnoLogo size="lg" animated />
                                 </div>
                             </motion.div>
 
@@ -98,17 +91,18 @@ export default function LoginSignup({ onClose }) {
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.1 }}
-                                className="text-4xl font-black text-white italic uppercase tracking-tighter leading-none mb-3"
+                                className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none mb-2"
                             >
                                 {isLogin ? 'Mission' : 'Enlist'}<br />
-                                <span className="text-purple-500 underline decoration-purple-500/30 underline-offset-8">
+                                <span className="text-purple-500 underline decoration-purple-500/30 underline-offset-4">
                                     {isLogin ? 'Control' : 'Protocol'}
                                 </span>
                             </motion.h2>
-                            <p className="text-slate-400 font-medium italic">
+                            <p className="text-slate-400 text-xs font-medium italic">
                                 {isLogin ? 'Access your financial intelligence node' : 'Initiate your neural market training'}
                             </p>
                         </div>
+
 
                         {/* Error Message */}
                         <AnimatePresence>
@@ -250,19 +244,18 @@ export default function LoginSignup({ onClose }) {
                             </button>
                         </form>
 
-                        {/* Toggle */}
-                        <div className="mt-8 text-center pt-8 border-t border-white/5">
-                            <p className="text-sm font-medium text-slate-500 italic">
+                        <div className="mt-6 text-center pt-6 border-t border-white/5">
+                            <p className="text-[11px] font-medium text-slate-500 italic">
                                 {isLogin ? "New Operative?" : "Already Authorized?"}
                                 <button
                                     onClick={() => {
                                         setIsLogin(!isLogin);
                                         setError('');
-                                        setFormData({ email: '', password: '', name: '', confirmPassword: '' });
+                                        setFormData({ email: '', password: '', name: '', experienceLevel: 'beginner' });
                                     }}
-                                    className="ml-3 text-white font-black uppercase tracking-widest hover:text-purple-400 transition-colors"
+                                    className="ml-2 text-white font-black uppercase tracking-widest hover:text-purple-400 transition-colors"
                                 >
-                                    {isLogin ? 'ENLIST NOW' : 'SECURE LOGIN'}
+                                    {isLogin ? 'ENLIST' : 'LOGIN'}
                                 </button>
                             </p>
                         </div>

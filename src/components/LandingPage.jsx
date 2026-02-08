@@ -94,27 +94,26 @@ const LandingPage = () => {
     visible: {
       y: 0,
       opacity: 1,
-      transition: { type: 'spring', stiffness: 100 }
+      transition: { duration: 0.5, ease: 'easeOut' }
     }
   };
 
   return (
     <div className="min-h-screen bg-[#020205] text-white selection:bg-purple-500/30 overflow-x-hidden">
-      {/* Dynamic Background */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-600/20 blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[120px] rounded-full animate-pulse delay-700" />
-        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-pink-600/10 blur-[100px] rounded-full animate-pulse delay-1000" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 pointer-events-none" />
+      {/* Optimized Dynamic Background - No Filters */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] bg-[radial-gradient(circle,rgba(147,51,234,0.1),transparent_70%)] animate-pulse will-change-transform" />
+        <div className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] bg-[radial-gradient(circle,rgba(37,99,235,0.05),transparent_70%)] animate-pulse delay-700 will-change-transform" />
       </div>
 
-      {/* Navigation */}
+      {/* Navigation - Removed Blur */}
       <nav className={cn(
-        "fixed top-0 w-full z-50 transition-all duration-500 border-b",
+        "fixed top-0 w-full z-50 transition-[background-color,padding,border-color] duration-500 border-b",
         isScrolled
-          ? "bg-black/60 backdrop-blur-xl border-white/5 py-3"
+          ? "bg-[#020205] border-white/5 py-3"
           : "bg-transparent border-transparent py-5"
       )}>
+
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -123,8 +122,9 @@ const LandingPage = () => {
           >
             <div className="relative">
               <NunnoLogo size="sm" />
-              <div className="absolute inset-0 bg-purple-500/20 blur-lg rounded-full scale-0 group-hover:scale-150 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(168,85,247,0.2),transparent_70%)] rounded-full scale-0 group-hover:scale-150 transition-transform duration-500" />
             </div>
+
             <span className="text-2xl font-black tracking-tighter text-white uppercase italic">Nunno</span>
           </motion.div>
 
@@ -143,7 +143,7 @@ const LandingPage = () => {
             <a href="/elite-chart" className="text-sm font-semibold hover:text-purple-400 transition-colors">
               Charts
             </a>
-            <a href="/dashboard" className="px-5 py-2.5 bg-white text-black rounded-full font-bold text-sm hover:bg-purple-500 hover:text-white transition-all transform active:scale-95">
+            <a href="/dashboard" className="px-5 py-2.5 bg-white text-black rounded-full font-bold text-sm hover:bg-purple-500 hover:text-white transition-[background-color,color,transform] transform active:scale-95">
               Launch App
             </a>
           </div>
@@ -198,7 +198,8 @@ const LandingPage = () => {
 
             <motion.button
               whileHover={{ scale: 1.05 }}
-              className="flex items-center space-x-3 py-4 px-8 rounded-full border border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all"
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center space-x-3 py-4 px-8 rounded-full border border-white/10 bg-[#0c0c14] hover:bg-white/10 transition-all font-bold"
             >
               <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
                 <Play className="w-3 h-3 fill-white text-white ml-0.5" />
@@ -215,7 +216,7 @@ const LandingPage = () => {
           transition={{ duration: 1, delay: 0.5 }}
           className="mt-20 px-6 w-full max-w-6xl relative"
         >
-          <div className="aspect-[16/9] rounded-2xl border border-white/10 bg-gradient-to-b from-white/10 to-transparent p-2 backdrop-blur-sm shadow-2xl relative overflow-hidden group">
+          <div className="aspect-[16/9] rounded-2xl border border-white/10 bg-gradient-to-b from-white/10 to-transparent p-2 shadow-2xl relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 via-transparent to-blue-500/10" />
             <div className="w-full h-full rounded-xl bg-[#0a0a12] border border-white/5 flex items-center justify-center relative overflow-hidden">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(147,51,234,0.1),transparent_70%)]" />
@@ -241,7 +242,7 @@ const LandingPage = () => {
             <motion.div
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 4, repeat: Infinity }}
-              className="absolute top-10 left-10 p-4 rounded-xl bg-white/5 backdrop-blur-xl border border-white/10 hidden lg:block"
+              className="absolute top-10 left-10 p-4 rounded-xl bg-[#0c0c14] border border-white/10 hidden lg:block"
             >
               <div className="flex items-center gap-3">
                 <div className="size-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
@@ -257,7 +258,7 @@ const LandingPage = () => {
             <motion.div
               animate={{ y: [0, 10, 0] }}
               transition={{ duration: 5, repeat: Infinity }}
-              className="absolute bottom-10 right-10 p-4 rounded-xl bg-white/5 backdrop-blur-xl border border-white/10 hidden lg:block"
+              className="absolute bottom-10 right-10 p-4 rounded-xl bg-[#0c0c14] border border-white/10 hidden lg:block"
             >
               <div className="flex items-center gap-3">
                 <div className="size-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
@@ -426,7 +427,7 @@ const LandingPage = () => {
                 </div>
               </div>
               {/* Glow effect */}
-              <div className="absolute -inset-10 bg-purple-500/20 blur-[100px] -z-10 rounded-full" />
+              <div className="absolute -inset-10 bg-[radial-gradient(circle,rgba(168,85,247,0.15),transparent_70%)] -z-10 rounded-full" />
             </motion.div>
           </div>
         </div>
@@ -451,7 +452,8 @@ const LandingPage = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="relative p-12 md:p-20 rounded-[3rem] bg-white/[0.02] border border-white/5 backdrop-blur-lg overflow-hidden"
+                className="relative p-12 md:p-20 rounded-[3rem] bg-[#0c0c14] border border-white/5 overflow-hidden"
+
               >
                 <div className="absolute top-10 left-10 text-purple-500/20">
                   <Zap size={120} weight="fill" />

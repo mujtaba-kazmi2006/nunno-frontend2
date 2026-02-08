@@ -54,7 +54,7 @@ export default function useBinanceWebSocket(symbols = []) {
 
                 ws.pingInterval = pingInterval
 
-                // Flush pending updates every 500ms to throttle re-renders
+                // Flush pending updates every 1200ms to throttle re-renders (optimized for low-end)
                 ws.flushInterval = setInterval(() => {
                     const updates = Object.keys(pendingUpdates)
                     if (updates.length > 0) {
@@ -72,7 +72,7 @@ export default function useBinanceWebSocket(symbols = []) {
                         // Clear pending updates
                         updates.forEach(s => delete pendingUpdates[s])
                     }
-                }, 500)
+                }, 1200)
             }
 
             ws.onmessage = (event) => {

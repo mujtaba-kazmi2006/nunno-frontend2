@@ -74,8 +74,8 @@ export default function MarketTemperature({ variant = 'default' }) {
 
     return (
         <div className={cn(
-            "market-temperature group p-5 rounded-[2rem] border backdrop-blur-lg transition-all duration-500",
-            theme === 'dark' ? "bg-white/[0.03] border-white/10" : "bg-slate-50/50 border-slate-200 shadow-sm"
+            "market-temperature group p-5 rounded-[2rem] border transition-all duration-500",
+            theme === 'dark' ? "bg-[#0c0c14] border-white/10" : "bg-white border-slate-200 shadow-sm"
         )}>
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-3">
@@ -142,7 +142,7 @@ export default function MarketTemperature({ variant = 'default' }) {
 
             <div className="mt-4 grid grid-cols-2 gap-2">
                 <div className={cn(
-                    "p-3 rounded-2xl border flex flex-col gap-1 transition-all",
+                    "p-3 rounded-2xl border flex flex-col gap-1 transition-[background-color,border-color,box-shadow]",
                     theme === 'dark' ? "bg-white/[0.02] border-white/5" : "bg-white border-slate-100 shadow-sm"
                 )}>
                     <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Volatility</span>
@@ -152,7 +152,7 @@ export default function MarketTemperature({ variant = 'default' }) {
                     )}>Moderate</span>
                 </div>
                 <div className={cn(
-                    "p-3 rounded-2xl border flex flex-col gap-1 transition-all",
+                    "p-3 rounded-2xl border flex flex-col gap-1 transition-[background-color,border-color,box-shadow]",
                     theme === 'dark' ? "bg-white/[0.02] border-white/5" : "bg-white border-slate-100 shadow-sm"
                 )}>
                     <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Momentum</span>
