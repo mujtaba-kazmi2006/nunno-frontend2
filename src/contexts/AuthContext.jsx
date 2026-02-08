@@ -46,9 +46,9 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const signup = async (email, password, name) => {
+    const signup = async (email, password, name, experienceLevel = 'pro') => {
         try {
-            const response = await axios.post('/api/auth/signup', { email, password, name });
+            const response = await axios.post('/api/auth/signup', { email, password, name, experience_level: experienceLevel });
             setToken(response.data.token);
             setUser(response.data.user);
             localStorage.setItem('token', response.data.token);

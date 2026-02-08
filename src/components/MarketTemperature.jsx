@@ -3,6 +3,7 @@ import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from '
 import { TrendingUp, TrendingDown, Minus, Thermometer } from 'lucide-react'
 import { useMarketData } from '../contexts/MarketDataContext'
 import { useTheme } from '../contexts/ThemeContext'
+import { cn } from '../utils/cn'
 
 export default function MarketTemperature({ variant = 'default' }) {
     const { temperature, sentiment, loading, lastUpdated } = useMarketData()
@@ -28,11 +29,11 @@ export default function MarketTemperature({ variant = 'default' }) {
         return (
             <div className="market-temperature loading">
                 <div className="flex justify-between items-center mb-4">
-                    <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
-                    <div className="h-4 w-12 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-6 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
+                    <div className="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
                 </div>
-                <div className="h-32 w-full bg-gray-100 rounded-full animate-pulse flex items-center justify-center">
-                    <div className="h-16 w-16 bg-gray-200 rounded-full"></div>
+                <div className="h-32 w-full bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse flex items-center justify-center border border-slate-200 dark:border-slate-700">
+                    <div className="h-16 w-16 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
                 </div>
             </div>
         )
@@ -44,12 +45,18 @@ export default function MarketTemperature({ variant = 'default' }) {
             <div className="market-temperature-minimal">
                 <div className="flex justify-between items-end mb-2">
                     <div className="flex flex-col">
-                        <span className={`text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>Sentiment</span>
-                        <span className="text-sm font-black" style={{ color }}>{getLabel(temperature)}</span>
+                        <span className={cn(
+                            "text-[10px] font-black uppercase tracking-widest italic",
+                            theme === 'dark' ? "text-slate-500" : "text-slate-400"
+                        )}>Sentiment</span>
+                        <span className="text-sm font-black italic uppercase tracking-tighter" style={{ color }}>{getLabel(temperature)}</span>
                     </div>
-                    <span className="text-2xl font-black" style={{ color }}>{temperature}</span>
+                    <span className="text-2xl font-black italic tracking-tighter" style={{ color }}>{temperature}</span>
                 </div>
-                <div className={`h-1.5 w-full rounded-full overflow-hidden ${theme === 'dark' ? 'bg-slate-800' : 'bg-gray-200'}`}>
+                <div className={cn(
+                    "h-1.5 w-full rounded-full overflow-hidden",
+                    theme === 'dark' ? "bg-white/5" : "bg-slate-200"
+                )}>
                     <div
                         className="h-full transition-all duration-1000 ease-out rounded-full"
                         style={{
@@ -66,48 +73,93 @@ export default function MarketTemperature({ variant = 'default' }) {
     const chartData = [{ name: 'Sentiment', value: temperature, fill: getColor(temperature) }]
 
     return (
-        <div className="market-temperature group">
-            <div className="flex justify-between items-center mb-1">
-                <div className="flex items-center gap-2">
-                    <Thermometer size={18} className={theme === 'dark' ? 'text-slate-400' : 'text-gray-500'} />
-                    <h3 className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-gray-700'}`}>Market Temp</h3>
+        <div className={cn(
+            "market-temperature group p-5 rounded-[2rem] border backdrop-blur-lg transition-all duration-500",
+            theme === 'dark' ? "bg-white/[0.03] border-white/10" : "bg-slate-50/50 border-slate-200 shadow-sm"
+        )}>
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-3">
+                    <div className={cn(
+                        "p-2 rounded-xl transition-colors",
+                        theme === 'dark' ? "bg-purple-500/10 text-purple-400" : "bg-purple-50 text-purple-600"
+                    )}>
+                        <Thermometer size={18} />
+                    </div>
+                    <h3 className={cn(
+                        "text-[10px] font-black uppercase tracking-[0.3em] italic",
+                        theme === 'dark' ? "text-slate-200" : "text-slate-600"
+                    )}>Neural Sentiment</h3>
                 </div>
                 {lastUpdated && (
-                    <span className="text-xs text-gray-400 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                        Live
+                    <span className={cn(
+                        "text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 px-3 py-1 rounded-full border transition-all",
+                        theme === 'dark'
+                            ? "text-purple-400 bg-purple-500/10 border-purple-500/20"
+                            : "text-purple-600 bg-purple-50 border-purple-100 shadow-sm"
+                    )}>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+                        Sync
                     </span>
                 )}
             </div>
 
-            <div className="relative h-32 w-full flex items-center justify-center">
+            <div className="relative h-40 w-full flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
                     <RadialBarChart
-                        innerRadius="80%"
+                        innerRadius="85%"
                         outerRadius="100%"
-                        barSize={10}
+                        barSize={12}
                         data={chartData}
-                        startAngle={180}
-                        endAngle={0}
+                        startAngle={210}
+                        endAngle={-30}
                     >
                         <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
                         <RadialBar
                             minAngle={15}
-                            background
+                            background={{ fill: theme === 'dark' ? 'rgba(255,255,255,0.03)' : '#f1f5f9' }}
                             clockWise
                             dataKey="value"
-                            cornerRadius={10}
+                            cornerRadius={20}
                         />
                     </RadialBarChart>
                 </ResponsiveContainer>
 
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/3 text-center">
-                    <span className="block text-3xl font-extrabold transition-colors duration-300" style={{ color: getColor(temperature) }}>
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center mt-2">
+                    <span className="text-5xl font-black italic tracking-tighter transition-all duration-700 hover:scale-110 cursor-default" style={{
+                        color: getColor(temperature),
+                        textShadow: `0 0 20px ${getColor(temperature)}40`
+                    }}>
                         {temperature}
                     </span>
-                    <span className={`text-xs font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>
+                    <span className={cn(
+                        "text-[10px] font-black uppercase tracking-widest italic mt-1",
+                        theme === 'dark' ? "text-slate-500" : "text-slate-400"
+                    )}>
                         {getLabel(temperature)}
                     </span>
+                </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-2">
+                <div className={cn(
+                    "p-3 rounded-2xl border flex flex-col gap-1 transition-all",
+                    theme === 'dark' ? "bg-white/[0.02] border-white/5" : "bg-white border-slate-100 shadow-sm"
+                )}>
+                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Volatility</span>
+                    <span className={cn(
+                        "text-xs font-bold transition-colors",
+                        theme === 'dark' ? "text-slate-200" : "text-slate-700"
+                    )}>Moderate</span>
+                </div>
+                <div className={cn(
+                    "p-3 rounded-2xl border flex flex-col gap-1 transition-all",
+                    theme === 'dark' ? "bg-white/[0.02] border-white/5" : "bg-white border-slate-100 shadow-sm"
+                )}>
+                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Momentum</span>
+                    <span className={cn(
+                        "text-xs font-bold transition-colors",
+                        theme === 'dark' ? "text-slate-200" : "text-slate-700"
+                    )}>Increasing</span>
                 </div>
             </div>
         </div>

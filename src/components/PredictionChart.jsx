@@ -15,178 +15,100 @@ export default function PredictionChart({ data, support, resistance, currentPric
         return data.map((item, index) => ({
             ...item,
             index: index,
-            displayTime: index % 10 === 0 ? item.timestamp.split(' ')[0] : '' // Show every 10th label
+            displayTime: (index % 10 === 0 && item.timestamp && typeof item.timestamp === 'string')
+                ? item.timestamp.split(' ')[0]
+                : (index % 10 === 0 ? String(item.time || index) : '')
         }))
     }, [data])
 
     return (
-        <div className="prediction-chart">
-            <div className="chart-header">
-                <h5>📈 Price Chart (Last {data.length} Periods)</h5>
+        <div className="prediction-chart p-4 rounded-3xl bg-black/20 border border-white/5 shadow-inner">
+            <div className="chart-header mb-6">
+                <h5 className="text-[10px] font-black uppercase tracking-[0.2em] italic text-slate-500">Neural Price Projection Node</h5>
             </div>
 
             {/* Display Support and Resistance Levels */}
             {supportResistance && supportResistance.length > 0 && (
-                <div className="s-r-levels" style={{
-                    marginBottom: '16px',
-                    padding: '12px',
-                    backgroundColor: theme === 'dark' ? '#16161e' : '#f8fafc',
-                    borderRadius: '8px',
-                    border: theme === 'dark' ? '1px solid #1e293b' : 'none'
-                }}>
-                    <h6 style={{ margin: '0 0 8px 0', color: theme === 'dark' ? '#cbd5e1' : '#334155', fontSize: '14px' }}>Key Support & Resistance Levels:</h6>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                        {supportResistance.map((level, index) => (
-                            <div
-                                key={index}
-                                style={{
-                                    padding: '6px 12px',
-                                    borderRadius: '20px',
-                                    backgroundColor: level.type === 'support' ? '#dcfce7' : '#fee2e2',
-                                    border: level.type === 'support' ? '1px solid #4ade80' : '1px solid #f87171',
-                                    fontSize: '12px',
-                                    fontWeight: '500'
-                                }}
-                            >
-                                <span style={{ color: level.type === 'support' ? '#166534' : '#991b1b' }}>
-                                    {level.type.toUpperCase()}: ${Number(level.price).toFixed(2)}
-                                </span>
-                                <span style={{ marginLeft: '6px', color: '#64748b' }}>
-                                    ({level.strength})
-                                </span>
-                            </div>
-                        ))}
-                    </div>
+                <div className="s-r-levels mb-6 flex flex-wrap gap-2">
+                    {supportResistance.slice(0, 3).map((level, index) => (
+                        <div
+                            key={index}
+                            className={`px-3 py-1 rounded-xl border text-[9px] font-black uppercase tracking-tight ${level.type === 'support'
+                                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                                : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                                }`}
+                        >
+                            {level.type}: ${Number(level.price).toFixed(2)}
+                        </div>
+                    ))}
                 </div>
             )}
 
-            <ResponsiveContainer width="100%" height={220}>
-                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <defs>
-                        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor={chartColor} stopOpacity={0.3} />
-                            <stop offset="95%" stopColor={chartColor} stopOpacity={0} />
-                        </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#1e293b' : '#e2e8f0'} opacity={0.5} />
-                    <XAxis
-                        dataKey="displayTime"
-                        tick={{ fontSize: 10, fill: theme === 'dark' ? '#64748b' : '#94a3b8' }}
-                        tickLine={false}
-                        axisLine={{ stroke: theme === 'dark' ? '#1e293b' : '#e2e8f0' }}
-                    />
-                    <YAxis
-                        domain={['auto', 'auto']}
-                        tick={{ fontSize: 11, fill: theme === 'dark' ? '#64748b' : '#94a3b8' }}
-                        tickLine={false}
-                        axisLine={{ stroke: theme === 'dark' ? '#1e293b' : '#e2e8f0' }}
-                        tickFormatter={(value) => `$${value.toLocaleString()}`}
-                    />
-                    <Tooltip
-                        contentStyle={{
-                            backgroundColor: theme === 'dark' ? '#1e2030' : 'rgba(255, 255, 255, 0.95)',
-                            border: theme === 'dark' ? '1px solid #334155' : '1px solid #e2e8f0',
-                            borderRadius: '8px',
-                            fontSize: '12px',
-                            color: theme === 'dark' ? '#cbd5e1' : '#1e293b'
-                        }}
-                        itemStyle={{ color: theme === 'dark' ? '#cbd5e1' : '#1e293b' }}
-                        labelStyle={{ color: theme === 'dark' ? '#94a3b8' : '#64748b' }}
-                        labelFormatter={(label, payload) => {
-                            if (payload && payload[0]) {
-                                return payload[0].payload.timestamp
-                            }
-                            return label
-                        }}
-                        formatter={(value, name) => {
-                            if (name === 'price') return [`$${value.toFixed(2)}`, 'Price']
-                            if (name === 'ema9') return [`$${value.toFixed(2)}`, 'EMA 9']
-                            if (name === 'ema21') return [`$${value.toFixed(2)}`, 'EMA 21']
-                            return [value, name]
-                        }}
-                    />
-
-                    {/* Support Line */}
-                    {support && (
-                        <ReferenceLine
-                            y={support}
-                            stroke="#22c55e"
-                            strokeDasharray="5 5"
-                            strokeWidth={1.5}
-                            label={{
-                                value: `Support: $${support.toFixed(2)}`,
-                                position: 'left',
-                                fill: '#22c55e',
-                                fontSize: 10,
-                                fontWeight: 600
-                            }}
+            <div className="h-[220px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <defs>
+                            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={chartColor} stopOpacity={0.4} />
+                                <stop offset="95%" stopColor={chartColor} stopOpacity={0} />
+                            </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                        <XAxis
+                            dataKey="displayTime"
+                            tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)', fontWeight: 800 }}
+                            tickLine={false}
+                            axisLine={false}
                         />
-                    )}
-
-                    {/* Resistance Line */}
-                    {resistance && (
-                        <ReferenceLine
-                            y={resistance}
-                            stroke="#ef4444"
-                            strokeDasharray="5 5"
-                            strokeWidth={1.5}
-                            label={{
-                                value: `Resistance: $${resistance.toFixed(2)}`,
-                                position: 'left',
-                                fill: '#ef4444',
-                                fontSize: 10,
-                                fontWeight: 600
-                            }}
+                        <YAxis
+                            domain={['auto', 'auto']}
+                            tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)', fontWeight: 800 }}
+                            tickLine={false}
+                            axisLine={false}
+                            tickFormatter={(value) => value !== null && value !== undefined ? `$${value.toLocaleString()}` : ''}
                         />
-                    )}
+                        <Tooltip
+                            contentStyle={{
+                                backgroundColor: 'rgba(10, 10, 15, 0.95)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '16px',
+                                fontSize: '10px',
+                                textTransform: 'uppercase',
+                                fontWeight: 900,
+                                backdropFilter: 'blur(10px)'
+                            }}
+                            itemStyle={{ color: '#fff' }}
+                            labelStyle={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}
+                            labelFormatter={(label, payload) => payload?.[0]?.payload?.timestamp || label}
+                            formatter={(value, name) => [`$${Number(value).toFixed(2)}`, name.toUpperCase()]}
+                        />
 
-                    {/* EMA Lines */}
-                    <Area
-                        type="monotone"
-                        dataKey="ema9"
-                        stroke="#3b82f6"
-                        strokeWidth={1}
-                        fill="none"
-                        dot={false}
-                        strokeOpacity={0.6}
-                        isAnimationActive={false}
-                    />
-                    <Area
-                        type="monotone"
-                        dataKey="ema21"
-                        stroke="#8b5cf6"
-                        strokeWidth={1}
-                        fill="none"
-                        dot={false}
-                        strokeOpacity={0.6}
-                        isAnimationActive={false}
-                    />
+                        {/* main area */}
+                        <Area
+                            type="monotone"
+                            dataKey="price"
+                            stroke={chartColor}
+                            strokeWidth={3}
+                            fill={`url(#${gradientId})`}
+                            dot={false}
+                            animationDuration={1000}
+                        />
 
-                    {/* Main Price Area */}
-                    <Area
-                        type="monotone"
-                        dataKey="price"
-                        stroke={chartColor}
-                        strokeWidth={2}
-                        fill={`url(#${gradientId})`}
-                        dot={false}
-                        animationDuration={300}
-                    />
-                </AreaChart>
-            </ResponsiveContainer>
+                        {/* EMA Lines */}
+                        <Area type="monotone" dataKey="ema9" stroke="#60a5fa" strokeWidth={1} fill="none" dot={false} strokeOpacity={0.4} isAnimationActive={false} />
+                        <Area type="monotone" dataKey="ema21" stroke="#a78bfa" strokeWidth={1} fill="none" dot={false} strokeOpacity={0.4} isAnimationActive={false} />
+                    </AreaChart>
+                </ResponsiveContainer>
+            </div>
 
-            <div className="chart-legend">
-                <div className="legend-item">
-                    <div className="legend-dot" style={{ backgroundColor: chartColor }}></div>
-                    <span>Price</span>
+            <div className="flex gap-4 mt-4 px-2">
+                <div className="flex items-center gap-2">
+                    <div className="size-1.5 rounded-full" style={{ backgroundColor: chartColor, boxShadow: `0 0 10px ${chartColor}` }} />
+                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Price Node</span>
                 </div>
-                <div className="legend-item">
-                    <div className="legend-dot" style={{ backgroundColor: '#3b82f6' }}></div>
-                    <span>EMA 9</span>
-                </div>
-                <div className="legend-item">
-                    <div className="legend-dot" style={{ backgroundColor: '#8b5cf6' }}></div>
-                    <span>EMA 21</span>
+                <div className="flex items-center gap-2 opacity-30">
+                    <div className="size-1.5 rounded-full bg-blue-400" />
+                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">EMA Cloud</span>
                 </div>
             </div>
         </div>

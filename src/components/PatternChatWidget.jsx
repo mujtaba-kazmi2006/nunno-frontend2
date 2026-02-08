@@ -193,12 +193,14 @@ const PatternChatWidget = ({ onPatternGenerated, currentPrice = 50000 }) => {
                         ))}
 
                         {isLoading && (
-                            <div className="flex justify-start">
-                                <div className={`px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm border ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400' : 'bg-white border-slate-200 text-slate-600'}`}>
-                                    <div className="flex items-center gap-2">
-                                        <Loader2 size={16} className={`animate-spin ${theme === 'dark' ? 'text-purple-400' : ''}`} />
-                                        <span className="text-sm">Analyzing pattern...</span>
+                            <div className="flex justify-start px-2">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="relative">
+                                        <Loader2 size={16} className="animate-spin text-purple-600 dark:text-purple-400" />
                                     </div>
+                                    <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest animate-pulse">
+                                        Analyzing pattern...
+                                    </span>
                                 </div>
                             </div>
                         )}

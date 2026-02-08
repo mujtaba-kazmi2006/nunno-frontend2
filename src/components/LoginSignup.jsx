@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Mail, Lock, User, Eye, EyeOff, LogIn, UserPlus } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, LogIn, UserPlus, X, Sparkles, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import NunnoLogo from './NunnoLogo';
+import { cn } from '../utils/cn';
 
 export default function LoginSignup({ onClose }) {
     const [isLogin, setIsLogin] = useState(true);
@@ -8,7 +11,8 @@ export default function LoginSignup({ onClose }) {
         email: '',
         password: '',
         name: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        experienceLevel: 'beginner'
     });
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
@@ -34,7 +38,7 @@ export default function LoginSignup({ onClose }) {
 
         const result = isLogin
             ? await login(formData.email, formData.password)
-            : await signup(formData.email, formData.password, formData.name);
+            : await signup(formData.email, formData.password, formData.name, formData.experienceLevel);
 
         setLoading(false);
 
@@ -46,166 +50,225 @@ export default function LoginSignup({ onClose }) {
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 sm:p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-sm sm:max-w-md w-full p-4 sm:p-6 md:p-8 relative max-h-[95vh] overflow-y-auto">
-                {/* Close button */}
-                <button
+        <AnimatePresence>
+            <div className="fixed inset-0 flex items-center justify-center z-[1000] p-4 overflow-hidden">
+                {/* Backdrop */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                     onClick={onClose}
-                    className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-400 hover:text-gray-600 transition-colors text-xl sm:text-2xl w-8 h-8 flex items-center justify-center"
+                    className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                />
+
+                {/* Modal Container */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 1.1, y: 10 }}
+                    className="relative w-full max-w-lg bg-[#0c0c14]/90 border border-white/10 rounded-[3rem] shadow-[0_32px_128px_rgba(0,0,0,0.8)] overflow-hidden backdrop-blur-lg group"
                 >
-                    ✕
-                </button>
+                    {/* Interior Effects */}
+                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.1] pointer-events-none" />
+                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-purple-600/20 blur-[100px] rounded-full pointer-events-none" />
+                    <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-600/20 blur-[100px] rounded-full pointer-events-none" />
 
-                {/* Logo */}
-                <div className="text-center mb-6 sm:mb-8">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-tr from-purple-500 to-purple-400 rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                        <span className="text-white text-xl sm:text-2xl font-bold">N</span>
-                    </div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-                        {isLogin ? 'Welcome Back!' : 'Create Account'}
-                    </h2>
-                    <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">
-                        {isLogin ? 'Sign in to continue your journey' : 'Start your financial education journey'}
-                    </p>
-                </div>
-
-                {/* Error message */}
-                {error && (
-                    <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs sm:text-sm">
-                        {error}
-                    </div>
-                )}
-
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-                    {!isLogin && (
-                        <div>
-                            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
-                                Full Name
-                            </label>
-                            <div className="relative">
-                                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    required={!isLogin}
-                                    className="w-full pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
-                                    placeholder="John Doe"
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    <div>
-                        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
-                            Email Address
-                        </label>
-                        <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                            <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                required
-                                className="w-full pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
-                                placeholder="you@example.com"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
-                            Password
-                        </label>
-                        <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                required
-                                className="w-full pl-10 pr-12 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
-                                placeholder="••••••••"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            >
-                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                            </button>
-                        </div>
-                    </div>
-
-                    {!isLogin && (
-                        <div>
-                            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
-                                Confirm Password
-                            </label>
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    name="confirmPassword"
-                                    value={formData.confirmPassword}
-                                    onChange={handleChange}
-                                    required={!isLogin}
-                                    className="w-full pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
-                                    placeholder="••••••••"
-                                />
-                            </div>
-                        </div>
-                    )}
-
+                    {/* Close Button */}
                     <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full py-2.5 sm:py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base mt-4 sm:mt-6"
+                        onClick={onClose}
+                        className="absolute top-8 right-8 text-white/30 hover:text-white transition-all hover:rotate-90 p-2 z-10"
                     >
-                        {loading ? (
-                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                            <>
-                                {isLogin ? <LogIn size={18} /> : <UserPlus size={18} />}
-                                {isLogin ? 'Sign In' : 'Create Account'}
-                            </>
-                        )}
+                        <X size={24} />
                     </button>
-                </form>
 
-                {/* Toggle */}
-                <div className="mt-4 sm:mt-6 text-center">
-                    <p className="text-xs sm:text-sm text-gray-600">
-                        {isLogin ? "Don't have an account?" : 'Already have an account?'}
-                        <button
-                            onClick={() => {
-                                setIsLogin(!isLogin);
-                                setError('');
-                                setFormData({ email: '', password: '', name: '', confirmPassword: '' });
-                            }}
-                            className="ml-2 text-purple-600 font-semibold hover:text-purple-700 transition-colors"
-                        >
-                            {isLogin ? 'Sign Up' : 'Sign In'}
-                        </button>
-                    </p>
-                </div>
+                    <div className="relative p-10 sm:p-12">
+                        {/* Header */}
+                        <div className="text-center mb-10">
+                            <motion.div
+                                initial={{ y: -20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                className="inline-flex justify-center mb-6"
+                            >
+                                <div className="p-4 rounded-3xl bg-white/5 border border-white/10 shadow-2xl">
+                                    <NunnoLogo size="xl" animated />
+                                </div>
+                            </motion.div>
 
-                {/* Free tier info */}
-                {!isLogin && (
-                    <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-purple-50 rounded-xl border border-purple-100">
-                        <p className="text-xs sm:text-sm text-purple-700 font-semibold mb-1.5 sm:mb-2">🎉 Free Tier Includes:</p>
-                        <ul className="text-[10px] sm:text-xs text-purple-600 space-y-0.5 sm:space-y-1">
-                            <li>• 1,000 AI tokens per month</li>
-                            <li>• 5 searches per day</li>
-                            <li>• Basic financial analysis</li>
-                        </ul>
+                            <motion.h2
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.1 }}
+                                className="text-4xl font-black text-white italic uppercase tracking-tighter leading-none mb-3"
+                            >
+                                {isLogin ? 'Mission' : 'Enlist'}<br />
+                                <span className="text-purple-500 underline decoration-purple-500/30 underline-offset-8">
+                                    {isLogin ? 'Control' : 'Protocol'}
+                                </span>
+                            </motion.h2>
+                            <p className="text-slate-400 font-medium italic">
+                                {isLogin ? 'Access your financial intelligence node' : 'Initiate your neural market training'}
+                            </p>
+                        </div>
+
+                        {/* Error Message */}
+                        <AnimatePresence>
+                            {error && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-400 text-xs font-black uppercase tracking-widest italic"
+                                >
+                                    ⚠️ ERROR: {error}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* Form */}
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <AnimatePresence mode="popLayout">
+                                {!isLogin && (
+                                    <motion.div
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: 20 }}
+                                        className="space-y-2"
+                                    >
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] pl-4 italic">Neural Identity</label>
+                                        <div className="relative group/input">
+                                            <User className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/input:text-purple-400 transition-colors" size={18} />
+                                            <input
+                                                type="text"
+                                                name="name"
+                                                value={formData.name}
+                                                onChange={handleChange}
+                                                required={!isLogin}
+                                                className="w-full pl-14 pr-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all font-medium"
+                                                placeholder="OPERATIVE NAME"
+                                            />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] pl-4 italic">Comm Channel</label>
+                                <div className="relative group/input">
+                                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/input:text-purple-400 transition-colors" size={18} />
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full pl-14 pr-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all font-medium"
+                                        placeholder="EMAIL@PROTOCOL.COM"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] pl-4 italic">Security Key</label>
+                                <div className="relative group/input">
+                                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/input:text-purple-400 transition-colors" size={18} />
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full pl-14 pr-14 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all font-medium"
+                                        placeholder="••••••••"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <AnimatePresence mode="popLayout">
+                                {!isLogin && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        className="space-y-3"
+                                    >
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] pl-4 italic">Operative Level</label>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, experienceLevel: 'beginner' })}
+                                                className={cn(
+                                                    "flex flex-col items-center gap-2 p-4 rounded-3xl border-2 transition-all duration-300",
+                                                    formData.experienceLevel === 'beginner'
+                                                        ? "bg-purple-600 border-purple-400 text-white shadow-[0_0_30px_rgba(168,85,247,0.3)]"
+                                                        : "bg-white/5 border-white/10 text-slate-400 hover:border-white/20"
+                                                )}
+                                            >
+                                                <Sparkles size={16} className={formData.experienceLevel === 'beginner' ? "animate-pulse" : ""} />
+                                                <span className="text-[10px] font-black uppercase tracking-widest italic">Recruit</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, experienceLevel: 'pro' })}
+                                                className={cn(
+                                                    "flex flex-col items-center gap-2 p-4 rounded-3xl border-2 transition-all duration-300",
+                                                    formData.experienceLevel === 'pro'
+                                                        ? "bg-indigo-600 border-indigo-400 text-white shadow-[0_0_30px_rgba(99,102,241,0.3)]"
+                                                        : "bg-white/5 border-white/10 text-slate-400 hover:border-white/20"
+                                                )}
+                                            >
+                                                <ChevronRight size={16} />
+                                                <span className="text-[10px] font-black uppercase tracking-widest italic">Veteran</span>
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full group/btn relative py-5 bg-white text-black rounded-[1.5rem] font-black uppercase tracking-[0.2em] italic hover:bg-purple-600 hover:text-white transition-all duration-500 overflow-hidden shadow-2xl flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-indigo-500 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                                <span className="relative z-10 flex items-center gap-3">
+                                    {loading ? (
+                                        <div className="w-6 h-6 border-4 border-black border-t-transparent rounded-full animate-spin group-hover/btn:border-white group-hover/btn:border-t-transparent" />
+                                    ) : (
+                                        <>
+                                            {isLogin ? <LogIn size={20} /> : <UserPlus size={20} />}
+                                            {isLogin ? 'AUTHORIZE ACCESS' : 'INITIALIZE PROTOCOL'}
+                                        </>
+                                    )}
+                                </span>
+                            </button>
+                        </form>
+
+                        {/* Toggle */}
+                        <div className="mt-8 text-center pt-8 border-t border-white/5">
+                            <p className="text-sm font-medium text-slate-500 italic">
+                                {isLogin ? "New Operative?" : "Already Authorized?"}
+                                <button
+                                    onClick={() => {
+                                        setIsLogin(!isLogin);
+                                        setError('');
+                                        setFormData({ email: '', password: '', name: '', confirmPassword: '' });
+                                    }}
+                                    className="ml-3 text-white font-black uppercase tracking-widest hover:text-purple-400 transition-colors"
+                                >
+                                    {isLogin ? 'ENLIST NOW' : 'SECURE LOGIN'}
+                                </button>
+                            </p>
+                        </div>
                     </div>
-                )}
+                </motion.div>
             </div>
-        </div>
+        </AnimatePresence>
     );
 }

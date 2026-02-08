@@ -21,6 +21,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import LoginSignup from './LoginSignup';
 import MarketTemperature from './MarketTemperature';
 import CryptoPriceCard from './CryptoPriceCard';
+import { cn } from '../utils/cn';
 
 export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
     const { user, logout, isAuthenticated } = useAuth();
@@ -67,119 +68,160 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
         <>
             <MobileOverlay />
             <div
-                className={`flex flex-col h-screen shadow-2xl transition-all duration-300 ease-in-out z-[200] ${isMobile ? 'fixed inset-y-0 left-0' : 'relative'
-                    } ${isCollapsed ? (isMobile ? '-translate-x-full' : 'w-20') : 'w-[280px]'
-                    } ${theme === 'dark' ? 'bg-[#1e2030] border-r border-slate-700/50' : 'bg-white'}`}
+                className={cn(
+                    "flex flex-col h-screen transition-[width,transform,background-color] duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] z-[200] relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.3)] will-change-[width,transform]",
+                    isMobile ? "fixed inset-y-0 left-0" : "relative",
+                    isCollapsed ? (isMobile ? "-translate-x-full" : "w-24") : "w-[300px]",
+                    theme === 'dark' ? "bg-[#020205] border-r border-white/5" : "bg-white border-r border-slate-200"
+                )}
             >
-                {/* Toggle Button - Only visible on Desktop or when mobile sidebar is open */}
+                {/* Premium Effects */}
+                {theme === 'dark' && (
+                    <>
+                        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.1] pointer-events-none z-0" />
+                        <div className="absolute top-20 -left-20 w-40 h-40 bg-purple-600/10 blur-[80px] rounded-full pointer-events-none" />
+                    </>
+                )}
+
+                {/* Toggle Button - Redesigned */}
                 {!isMobile && (
                     <button
                         onClick={() => setIsCollapsed(!isCollapsed)}
-                        className={`absolute -right-3 top-9 bg-purple-600 text-white p-1.5 rounded-full shadow-lg hover:bg-purple-700 transition-colors z-50`}
+                        className={cn(
+                            "absolute -right-4 top-12 size-9 flex items-center justify-center rounded-xl z-50 transition-all duration-500 border-2",
+                            theme === 'dark'
+                                ? "bg-white text-black border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)]"
+                                : "bg-white text-black border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_30px_rgba(0,0,0,0.2)]",
+                            "hover:scale-110 active:scale-95 group/toggle"
+                        )}
                     >
-                        {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+                        <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-purple-500 to-indigo-500 opacity-0 group-hover/toggle:opacity-15 transition-opacity" />
+                        <div className="relative z-10">
+                            {isCollapsed ? <ChevronRight size={18} strokeWidth={3} className="text-black" /> : <ChevronLeft size={18} strokeWidth={3} className="text-black" />}
+                        </div>
                     </button>
                 )}
 
-                <div className={`flex items-center p-6 ${isCollapsed ? 'justify-center' : 'justify-between gap-4'}`}>
-                    <div className="flex items-center gap-3">
-                        <img
-                            src="/logo.png"
-                            alt="Nunno Finance"
-                            className={`transition-all duration-300 ${isCollapsed ? 'w-8 h-8' : 'w-10 h-10'} object-contain`}
-                        />
+                <div className={cn(
+                    "relative z-10 flex items-center p-8 mb-4",
+                    isCollapsed ? "justify-center" : "justify-between gap-4"
+                )}>
+                    <div className="flex items-center gap-4">
+                        <div className="relative group/logo">
+                            <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-full scale-150 opacity-0 group-hover/logo:opacity-100 transition-opacity" />
+                            <img
+                                src="/logo.png"
+                                alt="Nunno Finance"
+                                className={cn(
+                                    "relative transition-[width,height] duration-500 will-change-[width,height]",
+                                    isCollapsed ? "w-10 h-10" : "w-12 h-12",
+                                    "object-contain select-none"
+                                )}
+                            />
+                        </div>
                         {!isCollapsed && (
                             <div className="flex flex-col overflow-hidden whitespace-nowrap">
-                                <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
-                                    Nunno Finance
+                                <h1 className={cn(
+                                    "text-xl font-black italic uppercase tracking-tighter transition-colors",
+                                    theme === 'dark' ? "text-white" : "text-slate-900"
+                                )}>
+                                    NUNNO <span className="text-purple-500">LABS</span>
                                 </h1>
-                                <span className={`text-xs font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>AI Financial Educator</span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 italic">Neural Intelligence</span>
                             </div>
                         )}
                     </div>
-
-                    {/* Mobile Close Button */}
-                    {isMobile && !isCollapsed && (
-                        <button
-                            onClick={() => setIsCollapsed(true)}
-                            className={`p-2 rounded-xl transition-colors ${theme === 'dark' ? 'text-slate-400 hover:bg-slate-800' : 'text-gray-400 hover:bg-gray-100'}`}
-                        >
-                            <ChevronLeft size={24} />
-                        </button>
-                    )}
                 </div>
 
-
-
                 {/* Navigation */}
-                <nav className="px-4 py-6 space-y-2 overflow-y-auto overflow-x-hidden">
-                    {menuItems.map((item) => (
-                        <Link
-                            key={item.path}
-                            to={item.path}
-                            onClick={() => isMobile && setIsCollapsed(true)}
-                            className={`flex items-center px-4 py-3 rounded-xl transition-all group relative overflow-hidden whitespace-nowrap ${isActive(item.path)
-                                ? theme === 'dark' ? 'bg-purple-500/20 text-purple-300 shadow-sm' : 'bg-purple-50 text-purple-700 shadow-sm'
-                                : theme === 'dark' ? 'text-slate-400 hover:bg-[#16161e] hover:text-purple-400' : 'text-gray-600 hover:bg-gray-50 hover:text-purple-600'
-                                }`}
-                        >
-                            <item.icon
-                                className={`flex-shrink-0 transition-colors ${isActive(item.path) ? (theme === 'dark' ? 'text-purple-400' : 'text-purple-600') : (theme === 'dark' ? 'text-slate-500 group-hover:text-purple-400' : 'text-gray-500 group-hover:text-purple-600')
-                                    }`}
-                                size={22}
-                            />
-
-                            <span
-                                className={`ml-3 font-medium transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
-                                    }`}
+                <nav className="relative z-10 px-4 py-2 space-y-2 overflow-y-auto no-scrollbar overflow-x-hidden">
+                    {menuItems.map((item) => {
+                        const active = isActive(item.path);
+                        return (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                onClick={() => isMobile && setIsCollapsed(true)}
+                                className={cn(
+                                    "flex items-center px-4 py-3.5 rounded-2xl transition-all duration-300 group relative overflow-hidden whitespace-nowrap",
+                                    active
+                                        ? "bg-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.1)]"
+                                        : "text-slate-500 hover:text-white hover:bg-white/5"
+                                )}
                             >
-                                {item.label}
-                            </span>
+                                <item.icon
+                                    className={cn(
+                                        "flex-shrink-0 transition-transform duration-500",
+                                        active ? "scale-110" : "group-hover:scale-110"
+                                    )}
+                                    size={22}
+                                    strokeWidth={active ? 2.5 : 2}
+                                />
 
-                            {/* Tooltip for collapsed state */}
-                            {isCollapsed && !isMobile && (
-                                <div className="absolute left-full ml-2 px-3 py-1.5 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl">
+                                <span
+                                    className={cn(
+                                        "ml-4 text-xs font-black uppercase tracking-[0.15em] transition-all duration-500 italic",
+                                        isCollapsed ? "opacity-0 -translate-x-4" : "opacity-100 translate-x-0"
+                                    )}
+                                >
                                     {item.label}
-                                </div>
-                            )}
+                                </span>
 
-                            {isActive(item.path) && !isCollapsed && (
-                                <div className="absolute right-0 w-1 h-8 bg-purple-600 rounded-l-full" />
-                            )}
-                        </Link>
-                    ))}
+                                {/* Tooltip for collapsed state */}
+                                {isCollapsed && !isMobile && (
+                                    <div className="absolute left-full ml-4 px-4 py-2 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 translate-x-2 group-hover:translate-x-0 z-50 shadow-2xl">
+                                        {item.label}
+                                    </div>
+                                )}
+
+                                {active && !isCollapsed && (
+                                    <div className="absolute right-2 w-1.5 h-1.5 bg-purple-600 rounded-full animate-pulse" />
+                                )}
+                            </Link>
+                        );
+                    })}
                 </nav>
 
-                {/* Market Overview Section - Redesigned Utility Grid for Mobile */}
-                {!isCollapsed && isMobile && (
-                    <div className={`px-4 pb-8 border-t mt-4 pt-6 ${theme === 'dark' ? 'border-slate-800/50' : 'border-gray-100'}`}>
-                        <div className="flex items-center justify-between px-2 mb-4">
-                            <h3 className={`text-[11px] font-bold uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>
-                                Market Pulse
+                {/* Market Quick Glance - Mobile Only */}
+                {isMobile && !isCollapsed && (
+                    <div className="relative z-10 px-6 py-6 mt-4 border-t border-white/5 group/pulse">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 italic group-hover/pulse:text-purple-400 transition-colors">
+                                Vital Pulse
                             </h3>
                             <div className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="text-[10px] font-bold text-emerald-500/80 uppercase">Live</span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                <span className="text-[10px] font-black italic text-emerald-500 uppercase tracking-tighter">Live Sync</span>
                             </div>
                         </div>
 
-                        <div className="space-y-3">
-                            {/* Temperature - Horizontal "Speedometer" Style */}
-                            <div className={`rounded-2xl p-4 border shadow-sm transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-800/50' : 'bg-slate-50 border-gray-100'
-                                }`}>
+                        <div className={cn(
+                            "h-1.5 w-full rounded-full overflow-hidden mb-6",
+                            theme === 'dark' ? "bg-white/5" : "bg-slate-200"
+                        )}>
+                            <div className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 w-[72%] animate-pulse" />
+                        </div>
+
+                        {/* Restored Crypto Widgets */}
+                        <div className="space-y-4">
+                            <div className={cn(
+                                "p-4 rounded-[2rem] border transition-all duration-500",
+                                theme === 'dark'
+                                    ? "bg-white/[0.03] border-white/5 hover:bg-white/[0.05]"
+                                    : "bg-slate-50 border-slate-200 hover:bg-slate-100"
+                            )}>
                                 <MarketTemperature variant="minimal" />
                             </div>
 
-                            {/* BTC & ETH - Side-by-Side Integrated Tiles */}
                             <div className="grid grid-cols-2 gap-3">
                                 <CryptoPriceCard
                                     ticker="BTCUSDT"
-                                    name="Bitcoin"
+                                    name="BTC"
                                     variant="compact"
                                 />
                                 <CryptoPriceCard
                                     ticker="ETHUSDT"
-                                    name="Ethereum"
+                                    name="ETH"
                                     variant="compact"
                                 />
                             </div>
@@ -187,79 +229,91 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                     </div>
                 )}
 
-                <div className="mt-auto border-t border-gray-100" />
+                <div className="mt-auto h-px bg-white/5 w-full relative z-10" />
 
-                {/* User Items (only if logged in) */}
-                {isAuthenticated && userItems.map((item) => (
-                    <div key={item.label} className="px-4 py-2">
+                {/* Bottom Actions */}
+                <div className="relative z-10 p-4 space-y-2">
+                    {isAuthenticated && userItems.map((item) => (
                         <Link
+                            key={item.label}
                             to={item.path}
                             onClick={() => isMobile && setIsCollapsed(true)}
-                            className={`flex items-center px-4 py-3 rounded-xl transition-all group relative overflow-hidden whitespace-nowrap ${isActive(item.path)
-                                ? theme === 'dark' ? 'bg-purple-500/20 text-purple-300 shadow-sm' : 'bg-purple-50 text-purple-700 shadow-sm'
-                                : theme === 'dark' ? 'text-slate-400 hover:bg-[#16161e] hover:text-purple-400' : 'text-gray-600 hover:bg-gray-50 hover:text-purple-600'
-                                }`}
+                            className={cn(
+                                "flex items-center px-4 py-3.5 rounded-2xl transition-all duration-300 group text-slate-500 hover:text-white hover:bg-white/5",
+                                isCollapsed && !isMobile ? "justify-center" : ""
+                            )}
                         >
-                            <item.icon className="flex-shrink-0 transition-colors" size={22} />
-                            <span className={`ml-3 font-medium transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>
-                                {item.label}
-                            </span>
-                            {isCollapsed && !isMobile && (
-                                <div className="absolute left-full ml-2 px-3 py-1.5 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl">
-                                    {item.label}
-                                </div>
+                            <item.icon className="flex-shrink-0 group-hover:scale-110 transition-transform" size={20} />
+                            {!isCollapsed && (
+                                <span className="ml-4 text-xs font-black uppercase tracking-[0.15em] italic">{item.label}</span>
                             )}
                         </Link>
-                    </div>
-                ))}
+                    ))}
 
-                {/* Footer / User Profile */}
-                <div className={`p-4 border-t transition-colors ${theme === 'dark' ? 'border-slate-800/50 bg-[#16161e]/50' : 'border-gray-100 bg-gray-50/50'}`}>
+                    <button
+                        onClick={toggleTheme}
+                        className={cn(
+                            "w-full flex items-center px-4 py-3.5 rounded-2xl transition-all duration-300 group",
+                            theme === 'dark' ? "text-amber-400 hover:bg-amber-400/10" : "text-slate-600 hover:bg-slate-100",
+                            isCollapsed && !isMobile ? "justify-center" : "gap-4"
+                        )}
+                    >
+                        {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                        {!isCollapsed && (
+                            <span className="text-xs font-black uppercase tracking-[0.15em] italic">
+                                {theme === 'dark' ? 'SOLAR MODE' : 'LUNAR MODE'}
+                            </span>
+                        )}
+                    </button>
+                </div>
+
+                {/* Footer Component */}
+                <div className={cn(
+                    "relative z-10 p-6 border-t transition-all duration-500",
+                    theme === 'dark' ? "border-white/5 bg-white/[0.02]" : "border-slate-100 bg-slate-50"
+                )}>
                     {isAuthenticated ? (
-                        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold flex-shrink-0 shadow-md transform hover:scale-105 transition-transform cursor-pointer">
+                        <div className={cn("flex items-center", isCollapsed ? "justify-center" : "gap-4")}>
+                            <div className="size-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-lg font-black italic shadow-xl group/avatar cursor-pointer hover:rotate-6 transition-transform">
                                 {user?.name?.charAt(0) || 'U'}
                             </div>
 
                             {!isCollapsed && (
                                 <div className="flex-1 overflow-hidden">
-                                    <h4 className={`text-sm font-bold truncate ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>{user?.name || 'User'}</h4>
-                                    <p className={`text-xs truncate capitalize ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>{user?.tier} Plan</p>
+                                    <h4 className={cn(
+                                        "text-xs font-black uppercase tracking-tight mb-0.5 transition-colors",
+                                        theme === 'dark' ? "text-white" : "text-slate-900"
+                                    )}>{user?.name || 'OPERATIVE'}</h4>
+                                    <div className="flex items-center gap-2">
+                                        <div className="size-1.5 rounded-full bg-emerald-500" />
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 italic truncate">LVL. 4 {user?.tier} CLASSIFIED</span>
+                                    </div>
                                 </div>
                             )}
 
                             {!isCollapsed && (
                                 <button
                                     onClick={logout}
-                                    className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'text-slate-500 hover:text-rose-400 hover:bg-rose-500/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}
+                                    className="p-2 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
                                 >
                                     <LogOut size={18} />
                                 </button>
                             )}
                         </div>
                     ) : (
-                        <div className={`flex flex-col gap-3 ${isCollapsed ? 'items-center' : ''}`}>
+                        <div className={cn("flex flex-col gap-3", isCollapsed ? "items-center" : "")}>
                             {!isCollapsed ? (
-                                <>
-                                    <button
-                                        onClick={() => setShowLoginModal(true)}
-                                        className={`w-full ${isMobile ? 'py-1.5 text-sm' : 'py-2.5'} bg-purple-600 text-white rounded-xl font-semibold shadow-md hover:bg-purple-700 hover:shadow-lg transition-all flex items-center justify-center gap-2`}
-                                    >
-                                        <LogIn size={isMobile ? 16 : 18} />
-                                        <span>Log In</span>
-                                    </button>
-                                    <button
-                                        onClick={() => setShowLoginModal(true)}
-                                        className={`w-full ${isMobile ? 'py-1.5 text-sm' : 'py-2.5'} bg-white text-purple-600 border border-purple-200 rounded-xl font-semibold hover:bg-purple-50 transition-all flex items-center justify-center gap-2`}
-                                    >
-                                        <UserPlus size={isMobile ? 16 : 18} />
-                                        <span>Sign Up</span>
-                                    </button>
-                                </>
+                                <button
+                                    onClick={() => setShowLoginModal(true)}
+                                    className="w-full py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest italic hover:bg-purple-600 hover:text-white transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-3"
+                                >
+                                    <LogIn size={18} />
+                                    <span>AUTHORIZE</span>
+                                </button>
                             ) : (
                                 <button
                                     onClick={() => setShowLoginModal(true)}
-                                    className="w-10 h-10 bg-purple-600 text-white rounded-xl flex items-center justify-center shadow-md hover:bg-purple-700 transition-all"
+                                    className="size-12 bg-white text-black rounded-2xl flex items-center justify-center shadow-xl hover:bg-purple-600 hover:text-white transition-all active:scale-90"
                                 >
                                     <LogIn size={20} />
                                 </button>

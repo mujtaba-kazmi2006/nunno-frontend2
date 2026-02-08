@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Sparkles, TrendingUp, TrendingDown, Layers, Square, User, Bot, Plus, PieChart, Info, Zap } from 'lucide-react';
 import { streamMessage } from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
+import ThinkingLoader from './ThinkingLoader';
 
 const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000, interval = '1d', getTechnicalContext }) => {
     const [messages, setMessages] = useState([
@@ -85,7 +86,7 @@ ${Object.entries(context.indicatorValues).map(([name, val]) => {
             return `- ${name.toUpperCase()}: ${val}`;
         }).join('\n')}
 
-INSTRUCTION: You are given direct "live feed" access to the user's chart technicals. Create a comprehensive, premium market intelligence report. Analyze price action momentum across the recent history, identify indicator confluence, and break down support/resistance dynamics. Provide a high-confidence verdict on the imminent chart bias.`;
+INSTRUCTION: You are given direct "live feed" access to the user's chart technicals. Create a comprehensive, premium market intelligence report. Analyze price action momentum across the recent history, identify indicator confluence, identify any clear candlestick patterns (like pinbars, hammers, or engulfing candles), and break down support/resistance dynamics. Provide a high-confidence verdict on the imminent chart bias. Explore the educational aspect of any patterns found.`;
 
         // Add user notification message
         setMessages(prev => [...prev, {
@@ -248,10 +249,10 @@ INSTRUCTION: You are given direct "live feed" access to the user's chart technic
     };
 
     const quickPatterns = [
-        { name: 'Bull Flag', icon: <TrendingUp className="w-3 h-3" /> },
-        { name: 'Head and Shoulders', icon: <Layers className="w-3 h-3" /> },
-        { name: 'Ascending Triangle', icon: <TrendingUp className="w-3 h-3" /> },
-        { name: 'Double Bottom', icon: <TrendingUp className="w-3 h-3" /> },
+        { name: 'Hammer Pattern', icon: <Zap className="w-3 h-3" /> },
+        { name: 'Bullish Engulfing', icon: <TrendingUp className="w-3 h-3" /> },
+        { name: 'Doji Meaning', icon: <Layers className="w-3 h-3" /> },
+        { name: 'Price Prediction', icon: <Sparkles className="w-3 h-3" /> },
     ];
 
     return (
@@ -307,14 +308,12 @@ INSTRUCTION: You are given direct "live feed" access to the user's chart technic
                 ))}
 
                 {isLoading && loadingStatus && (
-                    <div className="flex justify-start gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${theme === 'dark' ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-600'}`}>
-                            <Bot className="w-5 h-5 animate-pulse" />
-                        </div>
-                        <div className={`px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm border ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-100' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
-                            <div className="flex items-center gap-2">
-                                <Loader2 className={`w-4 h-4 animate-spin ${theme === 'dark' ? 'text-purple-400' : 'text-purple-500'}`} />
-                                <span className="text-sm font-medium">{loadingStatus}</span>
+                    <div className="flex justify-start gap-3 items-center">
+                        <div className={`px-4 py-2 rounded-[1.5rem] rounded-tl-sm shadow-sm border flex items-center gap-4 ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-100' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
+                            <ThinkingLoader />
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest animate-pulse italic">Thinking</span>
+                                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-tighter truncate max-w-[150px]">{loadingStatus}</span>
                             </div>
                         </div>
                     </div>

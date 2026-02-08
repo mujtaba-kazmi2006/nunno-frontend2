@@ -124,9 +124,14 @@ const EliteChart = () => {
         macd: false,
         bollingerBands: false,
         supportResistance: true,
-        atr: false
+        atr: false,
+        candlestickPatterns: false
     });
     const [calculatedIndicators, setCalculatedIndicators] = useState({});
+    const [candlestickMarkers, setCandlestickMarkers] = useState([]);
+    const [activeCandlePatterns, setActiveCandlePatterns] = useState(['all']);
+    const [showCandlePatternsDropdown, setShowCandlePatternsDropdown] = useState(false);
+
 
     // Simulation state
     const [simulationMode, setSimulationMode] = useState(null);
@@ -206,7 +211,7 @@ const EliteChart = () => {
                 background: { color: theme === 'dark' ? '#16161e' : '#ffffff' },
                 textColor: theme === 'dark' ? '#cbd5e1' : '#334155',
                 fontSize: 12,
-                fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
             },
             grid: {
                 vertLines: { color: theme === 'dark' ? '#1e293b' : '#f1f5f9' },
@@ -688,6 +693,11 @@ const EliteChart = () => {
                             } else {
                                 newData.push(newCandle);
                                 if (newData.length > 500) newData.shift();
+
+                                // Re-fetch patterns on candle close if enabled
+                                if (selectedIndicators.candlestickPatterns) {
+                                    fetchCandlePatterns();
+                                }
                             }
                             return newData;
                         });
@@ -724,7 +734,32 @@ const EliteChart = () => {
         }
     };
 
-    // Handle symbol/interval change & Initial Load
+    // Fetch Candlestick Patterns from Backend
+    const fetchCandlePatterns = async () => {
+        if (!symbol) return;
+        const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        try {
+            const response = await fetch(`${apiBaseUrl}/api/v1/technical/${symbol}?interval=${interval}`);
+            if (!response.ok) return;
+            const data = await response.json();
+            if (data.candlestick_markers) {
+                setCandlestickMarkers(data.candlestick_markers);
+            }
+        } catch (error) {
+            console.error('Error fetching candlestick patterns:', error);
+        }
+    };
+
+    // Trigger fetch when patterns enabled or symbol changes
+    useEffect(() => {
+        if (selectedIndicators.candlestickPatterns) {
+            fetchCandlePatterns();
+        } else {
+            setCandlestickMarkers([]);
+        }
+    }, [selectedIndicators.candlestickPatterns, symbol, interval]);
+
+    // Cleanup on change or unmount
     useEffect(() => {
         let isMounted = true;
 
@@ -737,7 +772,6 @@ const EliteChart = () => {
 
         init();
 
-        // Cleanup on change or unmount
         return () => {
             isMounted = false;
             disconnectWebSocket();
@@ -749,9 +783,17 @@ const EliteChart = () => {
         setIsStreaming(prev => !prev);
     };
 
-    // Calculate indicators
+    // Calculate indicators with throttling to prevent UI lag
+    const lastIndicatorCalcRef = useRef(0);
     useEffect(() => {
         if (chartData.length < 2) return;
+
+        const now = Date.now();
+        // Only recalculate at most once per 800ms during streaming
+        if (isStreaming && now - lastIndicatorCalcRef.current < 800) {
+            return;
+        }
+        lastIndicatorCalcRef.current = now;
 
         const indicators = {};
 
@@ -781,7 +823,7 @@ const EliteChart = () => {
         if (selectedIndicators.atr) indicators.atr = calculateATR(chartData, 14);
 
         setCalculatedIndicators(indicators);
-    }, [chartData, selectedIndicators]);
+    }, [chartData, selectedIndicators, isStreaming]);
 
     // Update indicator lines and price lines on chart
     useEffect(() => {
@@ -878,6 +920,20 @@ const EliteChart = () => {
             }
         }
 
+        // Apply Candlestick Pattern Markers
+        if (selectedIndicators.candlestickPatterns && candlestickMarkers.length > 0 && mainSeriesRef.current) {
+            const filteredMarkers = activeCandlePatterns.includes('all')
+                ? candlestickMarkers
+                : candlestickMarkers.filter(m => activeCandlePatterns.includes(m.pattern));
+            mainSeriesRef.current.setMarkers(filteredMarkers);
+        } else if (mainSeriesRef.current) {
+
+            // Only clear markers if we are not in an AI pattern to avoid flickering
+            if (!activeAiPattern) {
+                mainSeriesRef.current.setMarkers([]);
+            }
+        }
+
         // Draw AI Pattern if active
         if (activeAiPattern && chartData.length > 0) {
             const timeIncrement = interval === '1d' ? 86400 : interval === '1h' ? 3600 : interval === '15m' ? 900 : 60;
@@ -934,7 +990,8 @@ const EliteChart = () => {
                 patternSeries.setMarkers(markers);
             }
         }
-    }, [calculatedIndicators, selectedIndicators, chartData, activeAiPattern]);
+    }, [calculatedIndicators, selectedIndicators, activeAiPattern, candlestickMarkers, activeCandlePatterns]);
+
 
     const clearSimulationArtifacts = () => {
         if (projectionSeries && chartRef.current) {
@@ -975,73 +1032,216 @@ const EliteChart = () => {
 
         try {
             setSimulationStatus('Fetching 1,000+ Market Paths...');
-            const response = await fetch(`${apiBaseUrl}/api/v1/simulate/monte-carlo/${symbol}?interval=${interval}`);
+            const response = await fetch(`${apiBaseUrl}/api/v1/simulate/monte-carlo/${symbol}?interval=${interval}&enhanced=true`);
             if (!response.ok) throw new Error('Backend failed to generate paths');
             const data = await response.json();
 
-            if (data.fan && chartRef.current) {
-                setSimulationStatus('Rendering Probability Cloud...');
-                const timeIncrement = interval === '1d' ? 86400 : interval === '1h' ? 3600 : interval === '15m' ? 900 : 60;
-                const lastCandle = chartData[chartData.length - 1];
-                const baseTime = lastCandle.time;
+            // Check if we have enhanced data
+            const isEnhanced = data.enhanced && data.scenarios;
 
-                // Create the "Heat Fan" using multiple area series or just a few key ones
-                // 1. Median Path (Strong)
-                const medianSeries = chartRef.current.addLineSeries({
-                    color: '#8b5cf6',
-                    lineWidth: 3,
-                    lineStyle: 2,
-                    priceLineVisible: false,
-                    lastValueVisible: false,
-                    title: 'PREDICTED MEDIAN'
-                });
-                medianSeries.setData(data.fan.map(p => ({
-                    time: baseTime + (p.time * timeIncrement),
-                    value: p.p50
-                })));
-                fanSeriesRefs.current.push(medianSeries);
+            if (isEnhanced) {
+                // Enhanced mode - use base scenario with advanced features
+                setSimulationStatus('Rendering Enhanced Probability Cloud...');
+                const baseScenario = data.scenarios.base || data.paths;
+                const stats = data.statistics?.base;
+                const cone = data.confidence_cones?.base;
 
-                // 2. Heat Cloud (p25 to p75)
-                const cloudSeries = chartRef.current.addAreaSeries({
-                    topColor: 'rgba(139, 92, 246, 0.3)',
-                    bottomColor: 'rgba(139, 92, 246, 0.05)',
-                    lineColor: 'rgba(139, 92, 246, 0.1)',
-                    lineWidth: 1,
-                    priceLineVisible: false,
-                    lastValueVisible: false,
-                });
-                // To simulate a range area in lightweight-charts, we can use p25 and p75 as the bounds?
-                // Actually AreaSeries only has one value. For a proper range cloud, we'd need a custom plugin
-                // or use two translucent areas. Let's use individual paths for "WOW" factor.
+                if (baseScenario && chartRef.current) {
+                    const timeIncrement = interval === '1d' ? 86400 : interval === '1h' ? 3600 : interval === '15m' ? 900 : 60;
+                    const lastCandle = chartData[chartData.length - 1];
+                    const baseTime = lastCandle.time;
 
-                data.paths.forEach((path, idx) => {
-                    const pSeries = chartRef.current.addLineSeries({
-                        color: `rgba(139, 92, 246, ${0.05 + (Math.random() * 0.1)})`,
-                        lineWidth: 1,
+                    // Use confidence cone if available, otherwise fall back to fan
+                    if (cone && cone.length > 0) {
+                        // Validate cone data
+                        const validCone = cone.filter(p =>
+                            p.median > 0 &&
+                            p.median < lastCandle.close * 3 &&
+                            p.median > lastCandle.close * 0.3 &&
+                            !isNaN(p.median) &&
+                            isFinite(p.median)
+                        );
+
+                        if (validCone.length > 0) {
+                            // Draw confidence cone
+                            const medianSeries = chartRef.current.addLineSeries({
+                                color: '#8b5cf6',
+                                lineWidth: 3,
+                                lineStyle: 2,
+                                priceLineVisible: false,
+                                lastValueVisible: false,
+                                title: 'PREDICTED MEDIAN'
+                            });
+                            medianSeries.setData(validCone.map(p => ({
+                                time: baseTime + (p.time * timeIncrement),
+                                value: p.median
+                            })));
+                            fanSeriesRefs.current.push(medianSeries);
+
+                            // Draw 95% confidence interval
+                            if (validCone[0].p95) {
+                                const upperSeries = chartRef.current.addLineSeries({
+                                    color: 'rgba(139, 92, 246, 0.3)',
+                                    lineWidth: 1,
+                                    lineStyle: 2,
+                                    priceLineVisible: false,
+                                    lastValueVisible: false,
+                                    title: '95% Upper'
+                                });
+                                const validUpper = validCone.filter(p =>
+                                    p.p95?.upper > 0 &&
+                                    p.p95?.upper < lastCandle.close * 3 &&
+                                    !isNaN(p.p95?.upper) &&
+                                    isFinite(p.p95?.upper)
+                                );
+                                if (validUpper.length > 0) {
+                                    upperSeries.setData(validUpper.map(p => ({
+                                        time: baseTime + (p.time * timeIncrement),
+                                        value: p.p95.upper
+                                    })));
+                                    fanSeriesRefs.current.push(upperSeries);
+                                }
+
+                                const lowerSeries = chartRef.current.addLineSeries({
+                                    color: 'rgba(139, 92, 246, 0.3)',
+                                    lineWidth: 1,
+                                    lineStyle: 2,
+                                    priceLineVisible: false,
+                                    lastValueVisible: false,
+                                    title: '95% Lower'
+                                });
+                                const validLower = validCone.filter(p =>
+                                    p.p95?.lower > 0 &&
+                                    p.p95?.lower > lastCandle.close * 0.3 &&
+                                    !isNaN(p.p95?.lower) &&
+                                    isFinite(p.p95?.lower)
+                                );
+                                if (validLower.length > 0) {
+                                    lowerSeries.setData(validLower.map(p => ({
+                                        time: baseTime + (p.time * timeIncrement),
+                                        value: p.p95.lower
+                                    })));
+                                    fanSeriesRefs.current.push(lowerSeries);
+                                }
+                            }
+                        }
+                    }
+
+                    // Draw individual paths (limit to 10 for performance)
+                    const pathsToShow = baseScenario.slice(0, 10);
+                    pathsToShow.forEach((path, idx) => {
+                        // Validate and filter path data
+                        const validPath = path.filter(p => {
+                            // Filter out unrealistic values (more than 3x or less than 0.3x current price)
+                            return p.value > 0 &&
+                                p.value < lastCandle.close * 3 &&
+                                p.value > lastCandle.close * 0.3 &&
+                                !isNaN(p.value) &&
+                                isFinite(p.value);
+                        });
+
+                        if (validPath.length > 0) {
+                            const pSeries = chartRef.current.addLineSeries({
+                                color: `rgba(139, 92, 246, ${0.05 + (Math.random() * 0.1)})`,
+                                lineWidth: 1,
+                                priceLineVisible: false,
+                                lastValueVisible: false,
+                            });
+                            pSeries.setData(validPath.map(p => ({
+                                time: baseTime + (p.time * timeIncrement),
+                                value: p.value
+                            })));
+                            fanSeriesRefs.current.push(pSeries);
+                        }
+                    });
+
+                    setSimulationActive(true);
+                    setSimulationMode('monte-carlo');
+
+                    // Enhanced scenario data with risk metrics
+                    const scenarioInfo = {
+                        type: 'Enhanced Monte Carlo Analysis',
+                        description: `Advanced simulation complete. Generated ${data.meta?.num_paths || 100} paths using ${data.regime} regime model.`,
+                        market_regime: data.market_regime,
+                        confidence: 85,
+                        isAgentic: true,
+                        enhanced: true,
+                        meta: data.meta,
+                        metrics: {
+                            expected_return: stats ? `${stats.expected_return.toFixed(2)}%` : 'N/A',
+                            var_95: stats ? `${stats.var_95.toFixed(2)}%` : 'N/A',
+                            probability_profit: stats ? `${stats.probability_profit.toFixed(1)}%` : 'N/A',
+                            sharpe_ratio: stats ? stats.sharpe_ratio.toFixed(2) : 'N/A',
+                            bias: data.market_regime?.includes('Bull') ? 'Bullish' :
+                                data.market_regime?.includes('Bear') ? 'Bearish' : 'Neutral'
+                        }
+                    };
+
+                    // Add price targets if available
+                    if (stats?.price_targets) {
+                        scenarioInfo.price_targets = {
+                            p10: `$${stats.price_targets.p10.toFixed(2)}`,
+                            p50: `$${stats.price_targets.p50.toFixed(2)}`,
+                            p90: `$${stats.price_targets.p90.toFixed(2)}`
+                        };
+                    }
+
+                    setScenarioData(scenarioInfo);
+                }
+            } else {
+                // Legacy mode - use old fan structure
+                if (data.fan && chartRef.current) {
+                    setSimulationStatus('Rendering Probability Cloud...');
+                    const timeIncrement = interval === '1d' ? 86400 : interval === '1h' ? 3600 : interval === '15m' ? 900 : 60;
+                    const lastCandle = chartData[chartData.length - 1];
+                    const baseTime = lastCandle.time;
+
+                    // Create the "Heat Fan" using multiple area series or just a few key ones
+                    // 1. Median Path (Strong)
+                    const medianSeries = chartRef.current.addLineSeries({
+                        color: '#8b5cf6',
+                        lineWidth: 3,
+                        lineStyle: 2,
                         priceLineVisible: false,
                         lastValueVisible: false,
+                        title: 'PREDICTED MEDIAN'
                     });
-                    pSeries.setData(path.map(p => ({
+                    medianSeries.setData(data.fan.map(p => ({
                         time: baseTime + (p.time * timeIncrement),
-                        value: p.value
+                        value: p.p50
                     })));
-                    fanSeriesRefs.current.push(pSeries);
-                });
+                    fanSeriesRefs.current.push(medianSeries);
 
-                setSimulationActive(true);
-                setSimulationMode('monte-carlo');
-                setScenarioData({
-                    type: 'Monte Carlo Probability Fan',
-                    description: `Simulation complete. Engineered 50+ divergent outcomes based on current ${data.market_regime} volatility.`,
-                    market_regime: data.market_regime,
-                    confidence: 75,
-                    isAgentic: true,
-                    meta: data.meta,
-                    metrics: {
-                        spread: `${((Math.abs(data.fan[data.fan.length - 1].max - data.fan[data.fan.length - 1].min) / data.last_price) * 100).toFixed(2)}%`,
-                        bias: data.market_regime.includes('Bull') ? 'Bullish' : data.market_regime.includes('Bear') ? 'Bearish' : 'Neutral'
-                    }
-                });
+                    // 2. Individual paths
+                    data.paths.forEach((path, idx) => {
+                        const pSeries = chartRef.current.addLineSeries({
+                            color: `rgba(139, 92, 246, ${0.05 + (Math.random() * 0.1)})`,
+                            lineWidth: 1,
+                            priceLineVisible: false,
+                            lastValueVisible: false,
+                        });
+                        pSeries.setData(path.map(p => ({
+                            time: baseTime + (p.time * timeIncrement),
+                            value: p.value
+                        })));
+                        fanSeriesRefs.current.push(pSeries);
+                    });
+
+                    setSimulationActive(true);
+                    setSimulationMode('monte-carlo');
+                    setScenarioData({
+                        type: 'Monte Carlo Probability Fan',
+                        description: `Simulation complete. Engineered 50+ divergent outcomes based on current ${data.market_regime} volatility.`,
+                        market_regime: data.market_regime,
+                        confidence: 75,
+                        isAgentic: true,
+                        meta: data.meta,
+                        metrics: {
+                            spread: `${((Math.abs(data.fan[data.fan.length - 1].max - data.fan[data.fan.length - 1].min) / data.last_price) * 100).toFixed(2)}%`,
+                            bias: data.market_regime?.includes('Bull') ? 'Bullish' : data.market_regime?.includes('Bear') ? 'Bearish' : 'Neutral'
+                        }
+                    });
+                }
             }
         } catch (error) {
             console.error("Monte Carlo Failed:", error);
@@ -1671,28 +1871,107 @@ const EliteChart = () => {
                                     </div>
 
                                     {/* Advanced Indicators Grid */}
-                                    <div className="grid grid-cols-1 gap-2">
-                                        {[
-                                            { key: 'rsi', label: 'RSI (14)', icon: Activity },
-                                            { key: 'macd', label: 'MACD', icon: BarChart3 },
-                                            { key: 'bollingerBands', label: 'Bollinger', icon: Layers },
-                                            { key: 'supportResistance', label: 'S/R Levels', icon: Minus }
-                                        ].map(ind => (
-                                            <button
-                                                key={ind.key}
-                                                onClick={() => setSelectedIndicators(prev => ({ ...prev, [ind.key]: !prev[ind.key] }))}
-                                                className={`px-4 py-3 rounded-2xl border flex items-center justify-between transition-all ${selectedIndicators[ind.key]
-                                                    ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/20 active:scale-[0.98]'
-                                                    : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-600 hover:border-purple-200 hover:shadow-md'
-                                                    }`}
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <ind.icon size={16} />
-                                                    <span className="text-[11px] font-black uppercase tracking-wider">{ind.label}</span>
-                                                </div>
-                                                {selectedIndicators[ind.key] ? <Eye size={16} /> : <Plus size={16} className="opacity-40" />}
-                                            </button>
-                                        ))}
+                                    {[
+                                        { key: 'rsi', label: 'RSI (14)', icon: Activity },
+                                        { key: 'macd', label: 'MACD', icon: BarChart3 },
+                                        { key: 'bollingerBands', label: 'Bollinger', icon: Layers },
+                                        { key: 'supportResistance', label: 'S/R Levels', icon: Minus },
+                                    ].map(ind => (
+                                        <button
+                                            key={ind.key}
+                                            onClick={() => setSelectedIndicators(prev => ({ ...prev, [ind.key]: !prev[ind.key] }))}
+                                            className={`px-4 py-3 rounded-2xl border flex items-center justify-between transition-all ${selectedIndicators[ind.key]
+                                                ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/20 active:scale-[0.98]'
+                                                : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-600 hover:border-purple-200 hover:shadow-md'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <ind.icon size={16} />
+                                                <span className="text-[11px] font-black uppercase tracking-wider">{ind.label}</span>
+                                            </div>
+                                            {selectedIndicators[ind.key] ? <Eye size={16} /> : <Plus size={16} className="opacity-40" />}
+                                        </button>
+                                    ))}
+
+                                    {/* Candlestick Patterns Toggle with Sub-options */}
+                                    <div className="space-y-2">
+                                        <button
+                                            onClick={() => setSelectedIndicators(prev => ({ ...prev, candlestickPatterns: !prev.candlestickPatterns }))}
+                                            className={`w-full px-4 py-3 rounded-2xl border flex items-center justify-between transition-all ${selectedIndicators.candlestickPatterns
+                                                ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/20 active:scale-[0.98]'
+                                                : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-600 hover:border-purple-200 hover:shadow-md'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <Sparkles size={16} />
+                                                <span className="text-[11px] font-black uppercase tracking-wider">Candle Patterns</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {selectedIndicators.candlestickPatterns && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setShowCandlePatternsDropdown(!showCandlePatternsDropdown);
+                                                        }}
+                                                        className={`p-1 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-purple-500' : 'hover:bg-purple-700'}`}
+                                                    >
+                                                        <ChevronDown size={14} className={`transition-transform duration-300 ${showCandlePatternsDropdown ? 'rotate-180' : ''}`} />
+                                                    </button>
+                                                )}
+                                                {selectedIndicators.candlestickPatterns ? <Eye size={16} /> : <Plus size={16} className="opacity-40" />}
+                                            </div>
+                                        </button>
+
+                                        <AnimatePresence>
+                                            {selectedIndicators.candlestickPatterns && showCandlePatternsDropdown && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    className={`overflow-hidden rounded-2xl border ${theme === 'dark' ? 'bg-[#16161e] border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}
+                                                >
+                                                    <div className="p-2 space-y-1">
+                                                        {[
+                                                            { id: 'all', label: 'All Patterns' },
+                                                            { id: 'pinbar_bullish', label: 'Hammer (Bullish)' },
+                                                            { id: 'pinbar_bearish', label: 'Shooting Star' },
+                                                            { id: 'engulfing_bullish', label: 'Bullish Engulfing' },
+                                                            { id: 'engulfing_bearish', label: 'Bearish Engulfing' },
+                                                            { id: 'tweezer_bottom', label: 'Tweezer Bottom' },
+                                                            { id: 'tweezer_top', label: 'Tweezer Top' },
+                                                            { id: 'marubozu_bullish', label: 'Bullish Marubozu' },
+                                                            { id: 'marubozu_bearish', label: 'Bearish Marubozu' },
+                                                            { id: 'doji', label: 'Doji (Neutral)' },
+                                                        ].map(pattern => (
+                                                            <button
+                                                                key={pattern.id}
+                                                                onClick={() => {
+                                                                    if (pattern.id === 'all') {
+                                                                        setActiveCandlePatterns(['all']);
+                                                                    } else {
+                                                                        setActiveCandlePatterns(prev => {
+                                                                            if (prev.includes('all')) return [pattern.id];
+                                                                            if (prev.includes(pattern.id)) {
+                                                                                const next = prev.filter(id => id !== pattern.id);
+                                                                                return next.length === 0 ? ['all'] : next;
+                                                                            }
+                                                                            return [...prev, pattern.id];
+                                                                        });
+                                                                    }
+                                                                }}
+                                                                className={`w-full px-3 py-2 rounded-xl text-[10px] font-bold flex items-center justify-between transition-all ${activeCandlePatterns.includes(pattern.id)
+                                                                    ? (theme === 'dark' ? 'bg-purple-500/20 text-purple-400' : 'bg-purple-100 text-purple-700')
+                                                                    : (theme === 'dark' ? 'text-slate-500 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-100')
+                                                                    }`}
+                                                            >
+                                                                {pattern.label}
+                                                                {activeCandlePatterns.includes(pattern.id) && <CheckCircle2 size={12} />}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
                                 </div>
                             </div>
@@ -1952,7 +2231,7 @@ const EliteChart = () => {
                 </aside>
 
                 {/* Center Content: Chart Area */}
-                <main className={`flex-1 relative min-h-0 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-slate-50'}`}>
+                <main className={`flex-1 relative min-h-0 min-w-0 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-slate-50'}`}>
                     {/* OHLC Overlay (Glassmorphism) */}
                     <div className={`absolute top-4 md:top-6 left-4 md:left-6 right-4 md:right-auto z-20 pointer-events-none transition-all duration-700`}>
                         <div className={`backdrop-blur-md rounded-2xl md:rounded-3xl border overflow-hidden shadow-2xl pointer-events-auto ${theme === 'dark' ? 'bg-[#1e2030]/60 border-white/5 shadow-black/40' : 'bg-white/60 border-white shadow-slate-200/50'}`}>
@@ -2158,13 +2437,12 @@ const EliteChart = () => {
                     )}
                 </main>
 
-                {/* Right Sidebar: AI Assistant */}
                 <aside
-                    className={`h-full border-l transition-all duration-700 ease-in-out flex flex-col flex-shrink-0 z-[100] ${focusMode
-                        ? 'w-0 border-none overflow-hidden'
+                    className={`h-full border-l transition-[width,opacity] duration-500 ease-in-out flex flex-col flex-shrink-0 z-[100] will-change-[width,opacity] ${focusMode
+                        ? 'w-0 border-none overflow-hidden opacity-0 pointer-events-none'
                         : showAIChat
-                            ? isMobile ? 'fixed inset-0 w-full' : 'relative min-w-[420px] max-w-[420px]'
-                            : 'w-0 border-none overflow-hidden'
+                            ? isMobile ? 'fixed inset-0 w-full' : 'relative w-[450px] xl:w-[550px] min-w-[450px] xl:min-w-[550px] opacity-100'
+                            : 'w-0 border-none overflow-hidden opacity-0 pointer-events-none'
                         } ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-slate-200'}`}
                 >
                     {showAIChat && !focusMode && (

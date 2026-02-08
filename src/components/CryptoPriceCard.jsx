@@ -3,6 +3,7 @@ import { AreaChart, Area, ResponsiveContainer, YAxis } from 'recharts'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { useMarketData } from '../contexts/MarketDataContext'
 import { useTheme } from '../contexts/ThemeContext'
+import { cn } from '../utils/cn'
 
 export default function CryptoPriceCard({ ticker, name, onClick, variant = 'default' }) {
     const { prices } = useMarketData()
@@ -34,9 +35,12 @@ export default function CryptoPriceCard({ ticker, name, onClick, variant = 'defa
 
     if (loading) {
         return (
-            <div className={`p-4 rounded-xl border animate-pulse ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-gray-100'}`}>
-                <div className="h-4 w-12 bg-gray-200 rounded mb-2"></div>
-                <div className="h-6 w-20 bg-gray-300 rounded"></div>
+            <div className={cn(
+                "p-4 rounded-[2rem] border animate-pulse transition-colors",
+                theme === 'dark' ? "bg-white/[0.03] border-white/5" : "bg-slate-50 border-slate-200"
+            )}>
+                <div className={cn("h-3 w-12 rounded mb-3", theme === 'dark' ? "bg-white/10" : "bg-slate-200")}></div>
+                <div className={cn("h-6 w-24 rounded", theme === 'dark' ? "bg-white/20" : "bg-slate-300")}></div>
             </div>
         )
     }
@@ -52,12 +56,15 @@ export default function CryptoPriceCard({ ticker, name, onClick, variant = 'defa
             <div
                 onClick={onClick}
                 className={`flex flex-col p-3 rounded-2xl border transition-all cursor-pointer group ${theme === 'dark'
-                        ? 'bg-[#16161e] border-slate-800/50 hover:border-purple-500/50 hover:bg-purple-500/5'
-                        : 'bg-white border-gray-100 hover:border-purple-200 hover:bg-purple-50/30 shadow-sm hover:shadow-md'
+                    ? 'bg-[#16161e] border-slate-800/50 hover:border-purple-500/50 hover:bg-purple-500/5'
+                    : 'bg-white border-gray-100 hover:border-purple-200 hover:bg-purple-50/30 shadow-sm hover:shadow-md'
                     }`}
             >
                 <div className="flex justify-between items-center mb-1">
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>
+                    <span className={cn(
+                        "text-[10px] font-black uppercase tracking-widest italic transition-colors",
+                        theme === 'dark' ? "text-slate-500" : "text-slate-400"
+                    )}>
                         {name === 'Bitcoin' ? 'BTC' : 'ETH'}
                     </span>
                     <span className={`text-[10px] font-bold ${isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
@@ -65,7 +72,10 @@ export default function CryptoPriceCard({ ticker, name, onClick, variant = 'defa
                     </span>
                 </div>
 
-                <div className={`text-sm font-black mb-2 ${theme === 'dark' ? 'text-slate-200' : 'text-slate-800'}`}>
+                <div className={cn(
+                    "text-sm font-black italic transition-colors",
+                    theme === 'dark' ? "text-slate-200" : "text-slate-900"
+                )}>
                     ${priceData.current_price.toLocaleString(undefined, { minimumFractionDigits: ticker === 'ETHUSDT' ? 2 : 0, maximumFractionDigits: 2 })}
                 </div>
 

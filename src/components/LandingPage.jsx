@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Brain, TrendingUp, Shield, Zap, Users, Star, ChevronDown, Play, ExternalLink, Github, Twitter } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Brain, TrendingUp, Shield, Zap, Users, Star, ChevronDown, Play, ExternalLink, Github, Twitter, Sparkles, Rocket, Globe, Lock } from 'lucide-react';
 import NunnoLogo from './NunnoLogo';
+import { cn } from '../utils/cn';
 
 const LandingPage = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -10,38 +12,49 @@ const LandingPage = () => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(interval);
   }, []);
 
   const features = [
     {
-      icon: <Brain className="w-8 h-8" />,
+      icon: <Brain className="w-7 h-7" />,
       title: "Empathetic AI Educator",
-      description: "Learn finance like you're 15 with real-world analogies and beginner-friendly explanations for every technical term."
+      description: "Learn finance like you're 15 with real-world analogies and beginner-friendly explanations.",
+      color: "from-purple-500 to-indigo-500"
     },
     {
-      icon: <TrendingUp className="w-8 h-8" />,
-      title: "Technical Analysis",
-      description: "Real-time crypto analysis with actionable insights and confidence indicators tailored for beginners."
+      icon: <TrendingUp className="w-7 h-7" />,
+      title: "Elite Analysis",
+      description: "Real-time crypto insights with actionable confidence indicators tailored for newcomers.",
+      color: "from-emerald-500 to-teal-500"
     },
     {
-      icon: <Shield className="w-8 h-8" />,
-      title: "Educational Focus",
-      description: "Click any financial term to see simple definitions and analogies with our interactive learning system."
+      icon: <Sparkles className="w-7 h-7" />,
+      title: "Interactive Learning",
+      description: "Click any financial term to see simple definitions and analogies instantly.",
+      color: "from-amber-500 to-orange-500"
     },
     {
-      icon: <Zap className="w-8 h-8" />,
-      title: "Smart Tool Calling",
-      description: "AI automatically uses the right tools for price analysis, tokenomics, and market sentiment research."
+      icon: <Zap className="w-7 h-7" />,
+      title: "Smart Execution",
+      description: "AI automatically coordinates tools for price analysis and market sentiment research.",
+      color: "from-blue-500 to-cyan-500"
     }
+  ];
+
+  const stats = [
+    { number: "10K+", label: "Active Learners", icon: <Users className="w-4 h-4" /> },
+    { number: "95%", label: "Satisfaction", icon: <Star className="w-4 h-4" /> },
+    { number: "500+", label: "Concepts", icon: <Brain className="w-4 h-4" /> },
+    { number: "24/7", label: "AI Mentor", icon: <Zap className="w-4 h-4" /> }
   ];
 
   const testimonials = [
@@ -49,237 +62,434 @@ const LandingPage = () => {
       name: "Sarah Chen",
       role: "Complete Beginner",
       content: "Nunno made crypto investing finally understandable. I went from zero knowledge to confident investor in weeks!",
-      rating: 5
+      initials: "SC"
     },
     {
       name: "Mike Rodriguez",
       role: "Tech Professional",
       content: "The educational cards and analogies helped me grasp complex concepts I struggled with for months elsewhere.",
-      rating: 5
+      initials: "MR"
     },
     {
       name: "Emma Thompson",
       role: "Student",
       content: "As a college student, Nunno's approach made finance accessible without the intimidating jargon.",
-      rating: 5
+      initials: "ET"
     }
   ];
 
-  const stats = [
-    { number: "10K+", label: "Active Learners" },
-    { number: "95%", label: "Success Rate" },
-    { number: "500+", label: "Financial Concepts Explained" },
-    { number: "24/7", label: "AI Support" }
-  ];
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.3
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: 'spring', stiffness: 100 }
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-[#020205] text-white selection:bg-purple-500/30 overflow-x-hidden">
+      {/* Dynamic Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-600/20 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[120px] rounded-full animate-pulse delay-700" />
+        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-pink-600/10 blur-[100px] rounded-full animate-pulse delay-1000" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 pointer-events-none" />
+      </div>
+
       {/* Navigation */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-slate-900/95 backdrop-blur-sm border-b border-slate-700' : 'bg-transparent'
-        }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
+      <nav className={cn(
+        "fixed top-0 w-full z-50 transition-all duration-500 border-b",
+        isScrolled
+          ? "bg-black/60 backdrop-blur-xl border-white/5 py-3"
+          : "bg-transparent border-transparent py-5"
+      )}>
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center space-x-3 group cursor-pointer"
+          >
+            <div className="relative">
               <NunnoLogo size="sm" />
-              <span className="text-white text-xl font-bold">Nunno</span>
+              <div className="absolute inset-0 bg-purple-500/20 blur-lg rounded-full scale-0 group-hover:scale-150 transition-transform duration-500" />
             </div>
+            <span className="text-2xl font-black tracking-tighter text-white uppercase italic">Nunno</span>
+          </motion.div>
 
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
-              <a href="#about" className="text-gray-300 hover:text-white transition-colors">About</a>
-              <a href="#testimonials" className="text-gray-300 hover:text-white transition-colors">Reviews</a>
-              <a href="/elite-chart" className="bg-gradient-to-r from-purple-600 to-purple-400 text-white px-6 py-2 rounded-full hover:from-purple-700 hover:to-purple-500 transition-all duration-300 transform hover:scale-105">
-                Live Charts
+          <div className="hidden md:flex items-center space-x-10">
+            {['Features', 'Intelligence', 'Academy'].map((item) => (
+              <a
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                className="text-sm font-medium text-slate-400 hover:text-white transition-colors relative group"
+              >
+                {item}
+                <span className="absolute -bottom-1 left-0 w-0 h-px bg-purple-500 transition-all duration-300 group-hover:w-full" />
               </a>
-              <a href="/dashboard" className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-full hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105">
-                Try Now
-              </a>
-            </div>
-
-            <button className="md:hidden text-white">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+            ))}
+            <div className="h-4 w-px bg-white/10" />
+            <a href="/elite-chart" className="text-sm font-semibold hover:text-purple-400 transition-colors">
+              Charts
+            </a>
+            <a href="/dashboard" className="px-5 py-2.5 bg-white text-black rounded-full font-bold text-sm hover:bg-purple-500 hover:text-white transition-all transform active:scale-95">
+              Launch App
+            </a>
           </div>
+
+          <button className="md:hidden text-white p-2">
+            <div className="w-6 h-0.5 bg-white mb-1.5 rounded-full" />
+            <div className="w-6 h-0.5 bg-white mb-1.5 rounded-full" />
+            <div className="w-4 h-0.5 bg-white rounded-full ml-auto" />
+          </button>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 opacity-50" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }}></div>
+      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 flex flex-col items-center justify-center overflow-hidden z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="text-center px-6 max-w-5xl"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="inline-flex items-center px-4 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-300 text-xs font-bold uppercase tracking-widest mb-10 shadow-[0_0_20px_rgba(168,85,247,0.15)]"
+          >
+            <Sparkles className="w-3.5 h-3.5 mr-2" />
+            The Future of Financial Literacy
+          </motion.div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center">
-            <div className="inline-flex items-center px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-300 text-sm mb-8">
-              <Star className="w-4 h-4 mr-2" />
-              Your Empathetic AI Financial Educator
-            </div>
+          <h1 className="text-6xl md:text-8xl lg:text-9xl font-black text-white mb-8 tracking-tighter leading-[0.9]">
+            FINANCE <br />
+            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent italic">
+              SIMPLIFIED.
+            </span>
+          </h1>
 
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-              Learn Finance
-              <span className="block bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Like You're 15
-              </span>
-            </h1>
+          <p className="text-lg md:text-xl text-slate-400 mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
+            Stop guessing. Start knowing. Nunno turns complexity into clarity with empathetic AI designed to make you a confident investor.
+          </p>
 
-            <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Nunno Finance transforms complex financial concepts into simple, digestible lessons.
-              Powered by advanced AI, we make crypto trading and investing accessible for everyone.
-            </p>
+          <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
+            <motion.a
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              href="/dashboard"
+              className="group py-4 px-10 bg-purple-600 rounded-full font-bold text-lg hover:bg-purple-500 transition-all flex items-center space-x-3 shadow-[0_0_30px_rgba(147,51,234,0.3)]"
+            >
+              <span>Get Started Free</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </motion.a>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <a
-                href="/dashboard"
-                className="group bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2"
-              >
-                <span>Try Nunno Now</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </a>
-
-              <button className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
-                <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
-                  <Play className="w-5 h-5 ml-1" />
-                </div>
-                <span>Watch Demo</span>
-              </button>
-            </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              className="flex items-center space-x-3 py-4 px-8 rounded-full border border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all"
+            >
+              <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                <Play className="w-3 h-3 fill-white text-white ml-0.5" />
+              </div>
+              <span className="font-bold">See How It Works</span>
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Floating Elements */}
-        <div className="absolute top-20 left-10 w-20 h-20 bg-purple-500/10 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-32 h-32 bg-pink-500/10 rounded-full blur-xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-20 w-16 h-16 bg-purple-500/10 rounded-full blur-xl animate-pulse delay-500"></div>
+        {/* Hero Visual */}
+        <motion.div
+          initial={{ opacity: 0, y: 100 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="mt-20 px-6 w-full max-w-6xl relative"
+        >
+          <div className="aspect-[16/9] rounded-2xl border border-white/10 bg-gradient-to-b from-white/10 to-transparent p-2 backdrop-blur-sm shadow-2xl relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 via-transparent to-blue-500/10" />
+            <div className="w-full h-full rounded-xl bg-[#0a0a12] border border-white/5 flex items-center justify-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(147,51,234,0.1),transparent_70%)]" />
+              <div className="flex flex-col items-center space-y-4">
+                <div className="size-20 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center animate-pulse">
+                  <Brain className="size-10 text-purple-400" />
+                </div>
+                <div className="space-y-2 text-center">
+                  <div className="h-2 w-48 bg-white/10 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ x: '-100%' }}
+                      animate={{ x: '100%' }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                      className="h-full w-1/2 bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)]"
+                    />
+                  </div>
+                  <p className="text-[10px] font-bold text-slate-500 tracking-[0.3em] uppercase">AI Engine Initializing</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Floating UI Elements */}
+            <motion.div
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 4, repeat: Infinity }}
+              className="absolute top-10 left-10 p-4 rounded-xl bg-white/5 backdrop-blur-xl border border-white/10 hidden lg:block"
+            >
+              <div className="flex items-center gap-3">
+                <div className="size-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                  <TrendingUp className="size-4 text-emerald-400" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] text-slate-400 font-bold">SENTIMENT</p>
+                  <p className="text-xs font-bold text-emerald-400">BULLISH • 84%</p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              animate={{ y: [0, 10, 0] }}
+              transition={{ duration: 5, repeat: Infinity }}
+              className="absolute bottom-10 right-10 p-4 rounded-xl bg-white/5 backdrop-blur-xl border border-white/10 hidden lg:block"
+            >
+              <div className="flex items-center gap-3">
+                <div className="size-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                  <ArrowRight className="size-4 text-purple-400" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] text-slate-400 font-bold">NEXT MOVE</p>
+                  <p className="text-xs font-bold text-purple-400">ACCUMULATE ZONE</p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-black/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <section className="py-24 relative overflow-hidden border-y border-white/5 bg-white/[0.02]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
             {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-white mb-2">{stat.number}</div>
-                <div className="text-gray-400">{stat.label}</div>
-              </div>
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="text-center group"
+              >
+                <div className="inline-flex items-center justify-center p-3 rounded-full bg-white/5 border border-white/5 mb-4 group-hover:bg-purple-500/20 group-hover:border-purple-500/30 transition-all duration-500">
+                  <div className="text-purple-400 group-hover:scale-110 transition-transform">{stat.icon}</div>
+                </div>
+                <div className="text-4xl md:text-5xl font-black text-white mb-2 tracking-tighter">{stat.number}</div>
+                <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{stat.label}</div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Why Choose <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Nunno</span>?
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Designed specifically for beginners, Nunno makes financial literacy approachable and engaging
-            </p>
+      <section id="features" className="py-32 bg-black relative">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col lg:flex-row justify-between items-end mb-24 gap-8">
+            <div className="max-w-2xl">
+              <h2 className="text-4xl md:text-6xl font-black mb-8 leading-tight italic">
+                CRAFTED FOR THE <br />
+                <span className="text-purple-500">NEXT GENERATION.</span>
+              </h2>
+              <p className="text-lg text-slate-400 font-medium">
+                We've combined deep technical intelligence with a human-first interface. No jargon, no gatekeeping—just pure financial empowerment.
+              </p>
+            </div>
+            <div className="flex space-x-2">
+              <div className="size-2 rounded-full bg-purple-500" />
+              <div className="size-2 rounded-full bg-white/10" />
+              <div className="size-2 rounded-full bg-white/10" />
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
             {features.map((feature, index) => (
-              <div
+              <motion.div
                 key={index}
-                className="group bg-gradient-to-b from-slate-800/50 to-slate-900/50 p-6 rounded-2xl border border-slate-700/50 hover:border-purple-500/50 transition-all duration-300 hover:transform hover:scale-105"
+                variants={itemVariants}
+                whileHover={{ y: -8 }}
+                className="group relative p-8 rounded-3xl bg-white/[0.03] border border-white/5 hover:border-purple-500/50 transition-all duration-500 overflow-hidden"
               >
-                <div className="text-purple-400 mb-4 group-hover:scale-110 transition-transform">
-                  {feature.icon}
+                <div className={cn("absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-5 transition-opacity duration-500", feature.color)} />
+                <div className="relative z-10">
+                  <div className="size-14 rounded-2xl bg-white/5 flex items-center justify-center mb-10 group-hover:scale-110 transition-transform ring-1 ring-white/10 group-hover:ring-purple-500/50">
+                    <div className="text-purple-400 group-hover:text-white transition-colors">
+                      {feature.icon}
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-4 italic uppercase tracking-tight">{feature.title}</h3>
+                  <p className="text-slate-400 leading-relaxed font-medium">{feature.description}</p>
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
-                <p className="text-gray-300 leading-relaxed">{feature.description}</p>
-              </div>
+
+                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <ArrowRight size={20} className="text-purple-500" />
+                </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-20 bg-black/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              How <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Nunno</span> Works
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Three simple steps to start your financial education journey
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                step: "01",
-                title: "Ask Questions",
-                description: "Chat naturally with our AI about any financial concept or crypto investment"
-              },
-              {
-                step: "02",
-                title: "Learn Instantly",
-                description: "Get beginner-friendly explanations with real-world analogies and visual aids"
-              },
-              {
-                step: "03",
-                title: "Practice Safely",
-                description: "Apply knowledge with simulated trading and educational insights"
-              }
-            ].map((item, index) => (
-              <div key={index} className="text-center group">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white text-xl font-bold mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  {item.step}
-                </div>
-                <h3 className="text-2xl font-semibold text-white mb-4">{item.title}</h3>
-                <p className="text-gray-300 leading-relaxed">{item.description}</p>
+      {/* Intelligence Showcase */}
+      <section className="py-32 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <div className="inline-flex items-center px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-[10px] font-black uppercase tracking-widest mb-6">
+                Live Analysis
               </div>
-            ))}
+              <h2 className="text-4xl md:text-6xl font-black mb-8 italic leading-tight uppercase">
+                Markets <br />
+                <span className="text-emerald-400">Unveiled.</span>
+              </h2>
+              <div className="space-y-6">
+                {[
+                  { icon: <Lock className="size-5" />, title: "Secure Insights", text: "Enterprise-grade data security for all your analysis." },
+                  { icon: <Globe className="size-5" />, title: "Global Context", text: "News and sentiment from every corner of the financial web." },
+                  { icon: <Rocket className="size-5" />, title: "Instant Alpha", text: "Get ahead of trends with AI-detected market shifts." }
+                ].map((item, i) => (
+                  <div key={i} className="flex gap-4 p-4 rounded-2xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 group">
+                    <div className="size-10 rounded-xl bg-slate-800 flex items-center justify-center shrink-0 group-hover:bg-emerald-500 group-hover:text-black transition-all">
+                      {item.icon}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-lg mb-1 italic uppercase tracking-tight">{item.title}</h4>
+                      <p className="text-slate-400 font-medium">{item.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
+              whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <div className="aspect-square rounded-[3rem] bg-gradient-to-tr from-purple-600/20 to-indigo-600/20 p-px">
+                <div className="w-full h-full rounded-[3rem] bg-[#0c0c14] overflow-hidden flex items-center justify-center p-12">
+                  {/* Abstract UI Representation */}
+                  <div className="w-full space-y-6">
+                    {[85, 42, 68].map((val, i) => (
+                      <div key={i} className="space-y-2">
+                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
+                          <span>Metric 0{i + 1}</span>
+                          <span>{val}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            whileInView={{ width: `${val}%` }}
+                            transition={{ duration: 1, delay: i * 0.2 }}
+                            className={cn("h-full rounded-full shadow-[0_0_15px_rgba(255,255,255,0.1)]", i === 0 ? "bg-purple-500" : i === 1 ? "bg-emerald-500" : "bg-blue-500")}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    <div className="pt-8 grid grid-cols-2 gap-4">
+                      <div className="p-4 rounded-3xl bg-white/5 border border-white/10 text-center">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Bias</p>
+                        <p className="text-xl font-black text-purple-400 italic">LONG</p>
+                      </div>
+                      <div className="p-4 rounded-3xl bg-white/5 border border-white/10 text-center">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Risk</p>
+                        <p className="text-xl font-black text-emerald-400 italic">LOW</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Glow effect */}
+              <div className="absolute -inset-10 bg-purple-500/20 blur-[100px] -z-10 rounded-full" />
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section id="testimonials" className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Loved by <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Beginners</span>
+      <section id="reviews" className="py-32 bg-[#050508]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-6xl font-black mb-6 italic uppercase tracking-tighter">
+              The Peer <span className="text-purple-500">Echo.</span>
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Hear from people who transformed their financial understanding with Nunno
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto font-medium">
+              Join thousands of individuals who have unlocked their financial potential with Nunno.
             </p>
           </div>
 
-          <div className="relative max-w-4xl mx-auto">
-            <div className="bg-gradient-to-b from-slate-800/50 to-slate-900/50 p-8 md:p-12 rounded-3xl border border-slate-700/50">
-              <div className="flex items-center mb-6">
-                {[...Array(testimonials[activeTestimonial].rating)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                ))}
-              </div>
-              <blockquote className="text-xl text-gray-300 mb-6 leading-relaxed">
-                "{testimonials[activeTestimonial].content}"
-              </blockquote>
-              <div className="flex items-center">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold mr-4">
-                  {testimonials[activeTestimonial].name.charAt(0)}
+          <div className="max-w-5xl mx-auto">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTestimonial}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="relative p-12 md:p-20 rounded-[3rem] bg-white/[0.02] border border-white/5 backdrop-blur-lg overflow-hidden"
+              >
+                <div className="absolute top-10 left-10 text-purple-500/20">
+                  <Zap size={120} weight="fill" />
                 </div>
-                <div>
-                  <div className="text-white font-semibold">{testimonials[activeTestimonial].name}</div>
-                  <div className="text-gray-400">{testimonials[activeTestimonial].role}</div>
-                </div>
-              </div>
-            </div>
 
-            <div className="flex justify-center mt-8 space-x-2">
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <div className="flex gap-1 mb-10">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star key={s} size={16} className="fill-purple-500 text-purple-500" />
+                    ))}
+                  </div>
+
+                  <blockquote className="text-2xl md:text-4xl font-bold mb-12 italic leading-snug tracking-tight">
+                    "{testimonials[activeTestimonial].content}"
+                  </blockquote>
+
+                  <div className="flex items-center space-x-4">
+                    <div className="size-14 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center font-black text-white text-xl italic shadow-lg">
+                      {testimonials[activeTestimonial].initials}
+                    </div>
+                    <div className="text-left">
+                      <div className="text-lg font-black italic uppercase tracking-tight">{testimonials[activeTestimonial].name}</div>
+                      <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{testimonials[activeTestimonial].role}</div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+
+            <div className="flex justify-center mt-12 space-x-3">
               {testimonials.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setActiveTestimonial(index)}
-                  className={`w-3 h-3 rounded-full transition-colors ${index === activeTestimonial ? 'bg-purple-500' : 'bg-gray-600'
-                    }`}
+                  className={cn(
+                    "h-1.5 transition-all duration-500 rounded-full",
+                    index === activeTestimonial ? "w-12 bg-purple-500" : "w-3 bg-white/10 hover:bg-white/20"
+                  )}
                 />
               ))}
             </div>
@@ -288,48 +498,83 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-purple-900/50 to-pink-900/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Ready to Start Your Financial Journey?
-          </h2>
-          <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            Join thousands of beginners who learned to invest and trade with confidence using Nunno
-          </p>
-          <a
-            href="/dashboard"
-            className="group bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 mx-auto"
+      <section className="py-40 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-600/5 to-transparent" />
+        <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="p-16 md:p-32 rounded-[4rem] bg-gradient-to-b from-white/10 to-transparent border border-white/10 backdrop-blur-md relative overflow-hidden group shadow-2xl"
           >
-            <span>Start Learning Today</span>
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </a>
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(147,51,234,0.15),transparent_70%)]" />
+
+            <h2 className="text-5xl md:text-8xl font-black mb-8 italic italic tracking-tighter leading-[0.85] uppercase">
+              Ready to <br />
+              <span className="text-purple-500">Unleash Alpha?</span>
+            </h2>
+            <p className="text-xl text-slate-400 mb-16 max-w-2xl mx-auto font-medium">
+              Join the financial elite. Start your journey with Nunno today for free.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+              <a
+                href="/dashboard"
+                className="py-5 px-12 bg-white text-black rounded-full font-black text-lg hover:bg-purple-500 hover:text-white transition-all transform hover:scale-105 shadow-2xl uppercase tracking-tight"
+              >
+                Join the Waitlist
+              </a>
+              <a
+                href="/dashboard"
+                className="py-5 px-12 bg-black text-white rounded-full font-black text-lg border border-white/10 hover:bg-white/10 transition-all uppercase tracking-tight"
+              >
+                Enter the Lab
+              </a>
+            </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-slate-700/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <NunnoLogo size="sm" />
-              <span className="text-white text-xl font-bold">Nunno</span>
+      <footer className="py-20 border-t border-white/5 bg-[#020205]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid md:grid-cols-4 gap-12 md:gap-8 mb-20">
+            <div className="col-span-2">
+              <div className="flex items-center space-x-3 mb-8">
+                <NunnoLogo size="md" />
+                <span className="text-3xl font-black tracking-tighter italic uppercase underline decoration-purple-500 underline-offset-4">Nunno</span>
+              </div>
+              <p className="text-slate-500 font-medium max-w-sm leading-relaxed italic">
+                Democratizing financial intelligence through empathetic AI since 2024. Building a world where everyone speaks money.
+              </p>
             </div>
-
-            <div className="flex items-center space-x-6 text-gray-400">
-              <a href="#" className="hover:text-white transition-colors">
-                <Github className="w-5 h-5" />
-              </a>
-              <a href="#" className="hover:text-white transition-colors">
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a href="#" className="hover:text-white transition-colors">
-                <ExternalLink className="w-5 h-5" />
-              </a>
+            <div>
+              <h4 className="font-bold mb-6 italic uppercase tracking-widest text-xs text-white">Laboratory</h4>
+              <ul className="space-y-4 text-slate-500 font-medium text-sm italic">
+                <li><a href="#" className="hover:text-purple-400 transition-colors">Neural Charts</a></li>
+                <li><a href="#" className="hover:text-purple-400 transition-colors">Sentiment Engine</a></li>
+                <li><a href="#" className="hover:text-purple-400 transition-colors">Academy</a></li>
+                <li><a href="#" className="hover:text-purple-400 transition-colors">Pricing</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold mb-6 italic uppercase tracking-widest text-xs text-white">Connect</h4>
+              <div className="flex space-x-4">
+                {[Github, Twitter, ExternalLink, Globe].map((Icon, i) => (
+                  <a key={i} href="#" className="size-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-purple-500 hover:border-purple-500 transition-all">
+                    <Icon size={18} />
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="mt-8 pt-8 border-t border-slate-700/50 text-center text-gray-400">
-            <p>&copy; 2024 Nunno Finance. Built with ❤️ to make finance accessible for everyone.</p>
+          <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p className="text-slate-600 text-xs font-bold uppercase tracking-[0.2em]">&copy; 2024 NUNNO FINANCE. ALL RIGHTS RESERVED.</p>
+            <div className="flex space-x-8 text-[10px] font-black uppercase tracking-widest text-slate-500 italic">
+              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+              <a href="#" className="hover:text-white transition-colors">Risk Disclosure</a>
+            </div>
           </div>
         </div>
       </footer>

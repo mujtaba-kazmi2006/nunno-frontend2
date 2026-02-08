@@ -61,7 +61,11 @@ export default function useBinanceWebSocket(symbols = []) {
                         setPrices(prev => {
                             const newPrices = { ...prev }
                             updates.forEach(symbol => {
-                                newPrices[symbol] = pendingUpdates[symbol]
+                                // Merge the new update with the previous data for this symbol
+                                newPrices[symbol] = {
+                                    ...(prev[symbol] || {}),
+                                    ...pendingUpdates[symbol]
+                                }
                             })
                             return newPrices
                         })
@@ -79,14 +83,18 @@ export default function useBinanceWebSocket(symbols = []) {
                         const { symbol, data, history } = message
 
                         // Store in pending updates buffer
-                        pendingUpdates[symbol] = {
+                        const update = {
                             current_price: data.price,
                             percent_change: data.percent_change,
                             high_24h: data.high_24h,
                             low_24h: data.low_24h,
                             volume_24h: data.volume_24h,
-                            last_update: data.last_update,
-                            history: history.map(h => ({
+                            last_update: data.last_update
+                        }
+
+                        // Only update history if provided in the message
+                        if (history) {
+                            update.history = history.map(h => ({
                                 time: new Date(h.time).toLocaleTimeString('en-US', {
                                     hour: '2-digit',
                                     minute: '2-digit'
@@ -94,6 +102,8 @@ export default function useBinanceWebSocket(symbols = []) {
                                 price: h.price
                             }))
                         }
+
+                        pendingUpdates[symbol] = update
                     }
                 } catch (err) {
                     console.error('Error parsing WebSocket message:', err)
