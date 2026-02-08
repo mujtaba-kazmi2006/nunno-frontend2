@@ -207,6 +207,8 @@ body::before {
     /* Force GPU Layer */
     animation: float 45s ease-in-out infinite;
     will-change: transform;
+    backface-visibility: hidden;
+    perspective: 1000px;
 }
 
 body::after {
@@ -224,6 +226,8 @@ body::after {
     /* Force GPU Layer */
     animation: float-alt 60s ease-in-out infinite;
     will-change: transform;
+    backface-visibility: hidden;
+    perspective: 1000px;
 }
 
 .dark body::before {
@@ -504,9 +508,6 @@ body::after {
 
 .message-text {
     background: var(--glass-bg);
-    backdrop-filter: blur(8px);
-    /* Reduced from 12px */
-    -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--glass-border);
     padding: var(--spacing-md) var(--spacing-lg);
     border-radius: var(--radius-lg);
@@ -582,7 +583,6 @@ body::after {
     gap: var(--spacing-sm);
     padding: var(--spacing-sm) var(--spacing-md);
     background: var(--glass-bg);
-    backdrop-filter: blur(8px);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
     cursor: pointer;
@@ -605,8 +605,7 @@ body::after {
     border-top: 1px solid var(--glass-border);
     display: flex;
     gap: var(--spacing-md);
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
+    background: var(--bg-primary);
 }
 
 .input-container input {
@@ -696,7 +695,6 @@ body::after {
     box-shadow: var(--shadow-xl);
     z-index: 50;
     animation: slideUp 0.2s ease-out;
-    backdrop-filter: blur(12px);
 }
 
 .action-menu-item {

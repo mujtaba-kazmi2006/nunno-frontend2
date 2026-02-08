@@ -49,11 +49,11 @@ const MessageItem = memo(({ message }) => {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 25 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
             className={cn(
-                "flex flex-col gap-3 mb-12 w-full",
+                "flex flex-col gap-3 mb-12 w-full will-change-transform",
                 isAssistant ? "items-start" : "items-end"
             )}
         >
@@ -465,25 +465,24 @@ export default function ChatInterface({ userAge }) {
             <AnimatePresence>
                 {isInitialState && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.05 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="absolute inset-x-0 top-[30%] sm:top-[8%] flex flex-col items-center gap-6 sm:gap-8 px-4 sm:px-6 z-10"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 1.02 }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                        className="absolute inset-x-0 top-[15%] sm:top-[12%] flex flex-col items-center gap-4 sm:gap-8 px-4 sm:px-6 z-10"
                     >
                         <div className="text-center space-y-4 sm:space-y-6 max-w-full">
                             <motion.div
-                                initial={{ y: 20, opacity: 0 }}
+                                initial={{ y: 10, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.2 }}
-                                className="inline-flex items-center gap-2 px-4 sm:px-6 py-1.5 sm:py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] shadow-[0_0_20px_rgba(168,85,247,0.1)]"
+                                transition={{ delay: 0.2, duration: 0.4 }}
+                                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.3em]"
                             >
-                                <Sparkles size={12} className="animate-pulse sm:w-[14px] sm:h-[14px]" />
+                                <Sparkles size={12} className="animate-pulse" />
                                 <span>Neural Engine Active</span>
                             </motion.div>
-
-                            <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-slate-800 dark:text-white tracking-tighter leading-none italic uppercase max-w-[95vw] sm:max-w-full px-2">
-                                FINANCE, <br />
+                            <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-slate-800 dark:text-white tracking-tighter leading-none italic uppercase max-w-[95vw] sm:max-w-full px-2 lg:mt-4">
+                                FINANCE, <br className="sm:hidden" />
                                 <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent underline decoration-purple-500/30 underline-offset-4 sm:underline-offset-8">SIMPLIFIED.</span>
                             </h1>
 

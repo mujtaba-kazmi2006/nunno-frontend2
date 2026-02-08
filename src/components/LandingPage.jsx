@@ -161,8 +161,8 @@ const LandingPage = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center px-6 max-w-5xl"
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-center px-6 max-w-5xl will-change-transform"
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -213,8 +213,8 @@ const LandingPage = () => {
         <motion.div
           initial={{ opacity: 0, y: 100 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.5 }}
-          className="mt-20 px-6 w-full max-w-6xl relative"
+          transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
+          className="mt-20 px-6 w-full max-w-6xl relative will-change-transform"
         >
           <div className="aspect-[16/9] rounded-2xl border border-white/10 bg-gradient-to-b from-white/10 to-transparent p-2 shadow-2xl relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 via-transparent to-blue-500/10" />
