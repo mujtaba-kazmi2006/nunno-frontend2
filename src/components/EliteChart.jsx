@@ -65,7 +65,7 @@ const EliteChart = () => {
     const [searchParams] = useSearchParams();
     const [chartData, setChartData] = useState([]);
     const [symbol, setSymbol] = useState(searchParams.get('ticker') || 'BTCUSDT');
-    const [interval, setInterval] = useState('1m');
+    const [interval, setInterval] = useState(searchParams.get('interval') || '1m');
     const [isStreaming, setIsStreaming] = useState(true);
     const [currentPrice, setCurrentPrice] = useState(0);
     const [priceChange, setPriceChange] = useState(0);
@@ -75,6 +75,42 @@ const EliteChart = () => {
         const ticker = searchParams.get('ticker');
         if (ticker) {
             setSymbol(ticker.toUpperCase());
+        }
+
+        const indicators = searchParams.get('indicators');
+        if (indicators) {
+            const indicatorList = indicators.split(',');
+            setSelectedIndicators(prev => {
+                const newState = { ...prev };
+                indicatorList.forEach(ind => {
+                    const trimmed = ind.trim().toLowerCase();
+                    // Map lowercase URL params to camelCase state keys
+                    const mapping = {
+                        'rsi': 'rsi',
+                        'macd': 'macd',
+                        'ema9': 'ema9',
+                        'ema21': 'ema21',
+                        'ema50': 'ema50',
+                        'ema100': 'ema100',
+                        'ema200': 'ema200',
+                        'bollingerbands': 'bollingerBands',
+                        'supportresistance': 'supportResistance',
+                        'atr': 'atr',
+                        'candlestickpatterns': 'candlestickPatterns'
+                    };
+
+                    const stateKey = mapping[trimmed];
+                    if (stateKey && newState.hasOwnProperty(stateKey)) {
+                        newState[stateKey] = true;
+                    }
+                });
+                return newState;
+            });
+        }
+
+        const urlInterval = searchParams.get('interval');
+        if (urlInterval) {
+            setInterval(urlInterval);
         }
     }, [searchParams]);
 

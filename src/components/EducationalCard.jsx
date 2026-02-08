@@ -1,10 +1,12 @@
-import { TrendingUp, TrendingDown, AlertCircle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { TrendingUp, TrendingDown, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Maximize2 } from 'lucide-react'
 import PredictionChart from './PredictionChart'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 
 export default function EducationalCard({ data }) {
-    const [showAllIndicators, setShowAllIndicators] = useState(false)
+    const [showAllIndicators] = useState(false)
+    const navigate = useNavigate();
 
     if (!data) return null
 
@@ -14,18 +16,18 @@ export default function EducationalCard({ data }) {
     // Handle error case
     if (data.error) {
         return (
-            <div className="educational-card error bg-red-50/50 dark:bg-red-900/10 border-red-200 dark:border-red-900/30">
-                <div className="card-header border-red-100 dark:border-red-900/20">
+            <div className="educational-card error bg-red-50/50 dark:bg-red-900/10 border-red-200 dark:border-red-900/30 rounded-[2rem]">
+                <div className="card-header border-red-100 dark:border-red-900/20 p-6 flex items-center gap-4">
                     <div className="card-icon text-red-500">
                         <AlertCircle size={24} />
                     </div>
                     <div className="card-title">
-                        <h4 className="text-red-900 dark:text-red-400">Analysis Error</h4>
-                        <span className="card-subtitle text-red-600 dark:text-red-500/70">{data.ticker}</span>
+                        <h4 className="text-red-900 dark:text-red-400 font-black">Analysis Error</h4>
+                        <span className="card-subtitle text-red-600 dark:text-red-500/70 text-xs font-bold">{data.ticker}</span>
                     </div>
                 </div>
                 <div className="card-body">
-                    <p className="text-red-700 dark:text-red-400/80 p-4 font-medium">{data.message || data.error}</p>
+                    <p className="text-red-700 dark:text-red-400/80 p-6 font-medium">{data.message || data.error}</p>
                 </div>
             </div>
         )
@@ -50,6 +52,41 @@ export default function EducationalCard({ data }) {
         return 'neutral'
     }
 
+    const handleLaunchChart = () => {
+        if (!data.ticker) return;
+
+        // Map confluences to chart indicators
+        const indicators = [];
+        const confluences = [...(data.signals || []),
+        ...(data.confluences?.bullish_signals || []),
+        ...(data.confluences?.bearish_signals || [])];
+
+        const signalNames = confluences.map(s => (typeof s === 'object' ? s.indicator : s).toLowerCase());
+
+        if (signalNames.some(s => s.includes('rsi'))) indicators.push('rsi');
+        if (signalNames.some(s => s.includes('macd'))) indicators.push('macd');
+        if (signalNames.some(s => s.includes('ema'))) {
+            // Check specific EMAs
+            if (signalNames.some(s => s.includes('9'))) indicators.push('ema9');
+            if (signalNames.some(s => s.includes('21'))) indicators.push('ema21');
+            if (signalNames.some(s => s.includes('50'))) indicators.push('ema50');
+            if (signalNames.some(s => s.includes('100'))) indicators.push('ema100');
+            if (signalNames.some(s => s.includes('200'))) indicators.push('ema200');
+            // If just generic EMA, turn on 21 and 50
+            if (indicators.filter(i => i.startsWith('ema')).length === 0) {
+                indicators.push('ema21', 'ema50');
+            }
+        }
+        if (signalNames.some(s => s.includes('bollinger'))) indicators.push('bollingerBands');
+        if (signalNames.some(s => s.includes('support') || s.includes('resistance') || s.includes('level'))) indicators.push('supportResistance');
+        if (signalNames.some(s => s.includes('candle') || s.includes('pattern') || s.includes('pinbar') || s.includes('engulfing'))) indicators.push('candlestickPatterns');
+
+        const indicatorsParam = indicators.length > 0 ? `&indicators=${indicators.join(',')}` : '';
+        const intervalParam = data.interval ? `&interval=${data.interval}` : '';
+
+        navigate(`/elite-chart?ticker=${data.ticker}${intervalParam}${indicatorsParam}`);
+    };
+
     // Combine all signals from confluences
     const safeConfluences = data.confluences || {}
     const allSignals = [
@@ -60,7 +97,7 @@ export default function EducationalCard({ data }) {
 
     // Fallback to old signals array if confluences not available
     const displaySignals = allSignals.length > 0 ? allSignals : (data.signals || [])
-    const signalsToShow = showAllIndicators ? displaySignals : displaySignals.slice(0, 6)
+    const signalsToShow = displaySignals // Show all by default to keep chart cleaner? No, follow original design
 
     return (
         <div className={`educational-card ${getBiasClass(safeBias)} border border-white/10 bg-white/[0.04] rounded-[2.5rem] overflow-hidden shadow-2xl`}>
@@ -71,15 +108,23 @@ export default function EducationalCard({ data }) {
                     </div>
                     <div className="card-title">
                         <h4 className="text-xl font-black italic uppercase tracking-tighter dark:text-white">{data.ticker} <span className="text-purple-500">Analysis</span></h4>
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{data.interval} timeframe intelligence</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{data.interval || '1h'} timeframe intelligence</span>
                     </div>
                 </div>
+
+                <button
+                    onClick={handleLaunchChart}
+                    className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-purple-500/20 active:scale-95 group"
+                >
+                    <Maximize2 size={12} className="group-hover:scale-110 transition-transform" />
+                    <span>Focus Chart</span>
+                </button>
             </div>
 
             <div className="card-body p-6 space-y-8">
                 {/* Price Chart */}
                 {Array.isArray(data.price_history) && data.price_history.length > 0 && (
-                    <div className="rounded-3xl overflow-hidden border border-white/5 bg-black/20 p-2">
+                    <div className="rounded-3xl overflow-hidden border border-white/5 bg-black/20 p-2 relative group">
                         <PredictionChart
                             data={data.price_history}
                             support={data.key_levels?.support}
@@ -88,6 +133,13 @@ export default function EducationalCard({ data }) {
                             bias={safeBias}
                             supportResistance={data.support_resistance || []}
                         />
+                        {/* Mobile Overlay Button for Chart */}
+                        <button
+                            onClick={handleLaunchChart}
+                            className="sm:hidden absolute bottom-4 right-4 p-3 rounded-full bg-purple-600 text-white shadow-xl active:scale-90"
+                        >
+                            <Maximize2 size={18} />
+                        </button>
                     </div>
                 )}
 
@@ -158,25 +210,6 @@ export default function EducationalCard({ data }) {
                             )
                         })}
                     </div>
-
-                    {displaySignals.length > 6 && (
-                        <button
-                            className="w-full py-2 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 hover:bg-white/10 hover:text-white transition-all italic flex items-center justify-center gap-2"
-                            onClick={() => setShowAllIndicators(!showAllIndicators)}
-                        >
-                            {showAllIndicators ? (
-                                <>
-                                    <ChevronUp size={14} />
-                                    Collapse Data
-                                </>
-                            ) : (
-                                <>
-                                    <ChevronDown size={14} />
-                                    Reveal {displaySignals.length - 6} Hidden Signals
-                                </>
-                            )}
-                        </button>
-                    )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -195,11 +228,19 @@ export default function EducationalCard({ data }) {
                 </div>
             </div>
 
-            <div className="card-footer bg-black/40 p-6 border-t border-white/5">
+            <div className="card-footer bg-black/40 p-6 border-t border-white/5 space-y-6">
                 <div className="flex flex-col gap-2">
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400 italic">Neural Interpretation:</span>
                     <p className="text-sm text-slate-400 leading-relaxed font-medium">{data.explanation}</p>
                 </div>
+
+                <button
+                    onClick={handleLaunchChart}
+                    className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-purple-500/20 active:scale-[0.98] group"
+                >
+                    <Maximize2 size={16} className="group-hover:scale-110 group-hover:rotate-12 transition-transform" />
+                    Launch Elite Analysis
+                </button>
             </div>
         </div>
     )
