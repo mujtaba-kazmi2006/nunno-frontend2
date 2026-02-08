@@ -1,10 +1,10 @@
-import { TrendingUp, TrendingDown, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Maximize2 } from 'lucide-react'
+import { TrendingUp, TrendingDown, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Maximize2, Brain } from 'lucide-react'
 import PredictionChart from './PredictionChart'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 
-export default function EducationalCard({ data }) {
+export default function EducationalCard({ data, onDeepAnalysis }) {
     const [showAllIndicators] = useState(false)
     const navigate = useNavigate();
 
@@ -228,19 +228,29 @@ export default function EducationalCard({ data }) {
                 </div>
             </div>
 
-            <div className="card-footer bg-black/40 p-6 border-t border-white/5 space-y-6">
-                <div className="flex flex-col gap-2">
+            <div className="card-footer bg-black/40 p-6 border-t border-white/5 space-y-3">
+                <div className="flex flex-col gap-2 pb-4">
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400 italic">Neural Interpretation:</span>
                     <p className="text-sm text-slate-400 leading-relaxed font-medium">{data.explanation}</p>
                 </div>
 
-                <button
-                    onClick={handleLaunchChart}
-                    className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-purple-500/20 active:scale-[0.98] group"
-                >
-                    <Maximize2 size={16} className="group-hover:scale-110 group-hover:rotate-12 transition-transform" />
-                    Launch Elite Analysis
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                        onClick={handleLaunchChart}
+                        className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] group"
+                    >
+                        <Maximize2 size={14} className="group-hover:scale-110 transition-transform" />
+                        Full Chart
+                    </button>
+
+                    <button
+                        onClick={() => onDeepAnalysis?.(data.ticker)}
+                        className="flex-[2] flex items-center justify-center gap-3 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-purple-500/20 active:scale-[0.98] group"
+                    >
+                        <Brain size={16} className="group-hover:scale-110 transition-transform text-purple-200" />
+                        Deep Lab Breakdown
+                    </button>
+                </div>
             </div>
         </div>
     )

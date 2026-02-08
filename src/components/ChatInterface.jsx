@@ -43,7 +43,7 @@ function formatMessageContent(content) {
 }
 
 // Redesigned Message Component - Simple Text Mode
-const MessageItem = memo(({ message }) => {
+const MessageItem = memo(({ message, onDeepAnalysis }) => {
     const isAssistant = message.role === 'assistant';
     const timestamp = message.timestamp || new Date();
 
@@ -89,9 +89,13 @@ const MessageItem = memo(({ message }) => {
                         animate={{ opacity: 1, x: 0 }}
                         className="mb-8 max-w-2xl"
                     >
-                        <EducationalCard data={message.dataUsed.technical} />
+                        <EducationalCard
+                            data={message.dataUsed.technical}
+                            onDeepAnalysis={onDeepAnalysis}
+                        />
                     </motion.div>
                 )}
+
 
                 {/* Determine if we should show message text */}
                 {(message.content || (!message.dataUsed?.technical)) && (
@@ -203,6 +207,11 @@ export default function ChatInterface({ userAge }) {
         }
         setIsLoading(false)
         setLoadingStatus('Stopped manually.')
+    }
+
+    const handleDeepAnalysis = (ticker) => {
+        if (!ticker) return;
+        handleSend(`Provide a highly detailed, professional analysis of ${ticker}. Focus on indicators and technical sentiment.`);
     }
 
     useEffect(() => {
@@ -506,7 +515,7 @@ export default function ChatInterface({ userAge }) {
                 <div className="max-w-4xl mx-auto pt-10 pb-20">
                     <AnimatePresence mode="popLayout">
                         {messages.slice(1).map((message, index) => (
-                            <MessageItem key={index} message={message} />
+                            <MessageItem key={index} message={message} onDeepAnalysis={handleDeepAnalysis} />
                         ))}
                     </AnimatePresence>
 
