@@ -211,7 +211,7 @@ export default function ChatInterface({ userAge }) {
 
     const handleDeepAnalysis = (ticker) => {
         if (!ticker) return;
-        handleSend(`Provide a highly detailed, professional analysis of ${ticker}. Focus on indicators and technical sentiment.`);
+        handleSend(`Provide a Deep Lab Breakdown for ${ticker}. Focus on high-level technical intent and structural sentiment.`);
     }
 
     useEffect(() => {
