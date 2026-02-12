@@ -78,7 +78,6 @@ export const getMarketHighlights = async () => {
 }
 
 // Stream message with callback for chunks
-// Stream message with callback for chunks
 export async function streamMessage({ message, conversationId, userAge, onChunk, signal }) {
     const token = localStorage.getItem('token');
     try {

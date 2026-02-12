@@ -20,6 +20,11 @@ export function MarketDataProvider({ children }) {
     // Persistent WebSocket connection for major coins
     const { prices } = useBinanceWebSocket(['BTCUSDT', 'ETHUSDT']);
 
+    // AI Summary Persistence
+    const [cachedReport, setCachedReport] = useState('');
+    const [cachedNewsHeadlines, setCachedNewsHeadlines] = useState([]);
+    const [cachedMacroSummary, setCachedMacroSummary] = useState('');
+
     // Helper to fetch sentiment
     const fetchSentiment = async () => {
         try {
@@ -61,7 +66,13 @@ export function MarketDataProvider({ children }) {
     const value = {
         ...marketData,
         prices, // Expose live prices
-        refreshData
+        refreshData,
+        cachedReport,
+        setCachedReport,
+        cachedNewsHeadlines,
+        setCachedNewsHeadlines,
+        cachedMacroSummary,
+        setCachedMacroSummary
     };
 
     return (

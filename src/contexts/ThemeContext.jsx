@@ -18,17 +18,33 @@ export const ThemeProvider = ({ children }) => {
     }, [theme]);
 
     const toggleTheme = (e) => {
+        const newTheme = theme === 'light' ? 'dark' : 'light';
+
         if (!document.startViewTransition) {
-            setTheme(prev => prev === 'light' ? 'dark' : 'light');
+            setTheme(newTheme);
             return;
         }
+
+        // Calculate transition starting point from the event
+        const x = e?.clientX ?? window.innerWidth / 2;
+        const y = e?.clientY ?? window.innerHeight / 2;
+        const right = window.innerWidth - x;
+        const top = y;
+
+        // Pass coordinates to CSS
+        document.documentElement.style.setProperty('--transition-x', `${x}px`);
+        document.documentElement.style.setProperty('--transition-y', `${y}px`);
+        document.documentElement.style.setProperty('--transition-right', `${right}px`);
+        document.documentElement.style.setProperty('--transition-top', `${top}px`);
 
         // Add a class to indicate a theme transition is in progress
         document.documentElement.classList.add('theme-transitioning');
 
-        document.startViewTransition(() => {
-            setTheme(prev => prev === 'light' ? 'dark' : 'light');
-        }).finished.finally(() => {
+        const transition = document.startViewTransition(() => {
+            setTheme(newTheme);
+        });
+
+        transition.finished.finally(() => {
             document.documentElement.classList.remove('theme-transitioning');
         });
     };

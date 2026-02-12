@@ -13,7 +13,9 @@ import {
     UserPlus,
     TrendingUp,
     Sun,
-    Moon
+    Moon,
+    Newspaper,
+    GraduationCap
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -21,6 +23,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import LoginSignup from './LoginSignup';
 import MarketTemperature from './MarketTemperature';
 import CryptoPriceCard from './CryptoPriceCard';
+import ThemeSwitch from './ThemeSwitch';
 import { cn } from '../utils/cn';
 
 export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
@@ -43,6 +46,7 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
     const menuItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
         { icon: TrendingUp, label: 'Elite Chart', path: '/elite-chart' },
+        { icon: GraduationCap, label: 'Nunno Academy', path: '/academy' },
         { icon: CreditCard, label: 'Pricing', path: '/pricing' },
         { icon: History, label: 'Prediction History', path: '/history' },
         { icon: HelpCircle, label: 'Help & Support', path: '/support' },
@@ -58,7 +62,7 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
     const MobileOverlay = () => (
         isMobile && !isCollapsed && (
             <div
-                className="fixed inset-0 bg-black/60 z-[190]"
+                className="fixed inset-0 bg-black/60 z-[1190]"
                 onClick={() => setIsCollapsed(true)}
             />
         )
@@ -69,7 +73,7 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
             <MobileOverlay />
             <div
                 className={cn(
-                    "flex flex-col h-screen transition-[width,transform] duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] z-[200] relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.3)] will-change-[width,transform]",
+                    "flex flex-col h-screen transition-[width,transform] duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] z-[1200] relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.3)] will-change-[width,transform]",
                     isMobile ? "fixed inset-y-0 left-0" : "relative",
                     isCollapsed ? (isMobile ? "-translate-x-full" : "w-24") : "w-[300px]",
                     theme === 'dark' ? "bg-[#0c0c14] border-r border-white/5" : "bg-white border-r border-slate-200"
@@ -131,6 +135,16 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                             </div>
                         )}
                     </div>
+
+                    {/* Mobile Close Button */}
+                    {isMobile && !isCollapsed && (
+                        <button
+                            onClick={() => setIsCollapsed(true)}
+                            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-500 hover:text-white transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 18 18" /></svg>
+                        </button>
+                    )}
                 </div>
 
                 {/* Navigation */}
@@ -250,21 +264,18 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                         </Link>
                     ))}
 
-                    <button
-                        onClick={toggleTheme}
-                        className={cn(
-                            "w-full flex items-center px-4 py-3.5 rounded-2xl transition-all duration-300 group",
-                            theme === 'dark' ? "text-amber-400 hover:bg-amber-400/10" : "text-slate-600 hover:bg-slate-100",
-                            isCollapsed && !isMobile ? "justify-center" : "gap-4"
-                        )}
-                    >
-                        {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                    {/* Custom Theme Switch */}
+                    <div className={cn(
+                        "flex items-center justify-center transition-all duration-300",
+                        isCollapsed && !isMobile ? "opacity-100" : "px-4"
+                    )}>
+                        <ThemeSwitch />
                         {!isCollapsed && (
-                            <span className="text-xs font-black uppercase tracking-[0.15em] italic">
-                                {theme === 'dark' ? 'SOLAR MODE' : 'LUNAR MODE'}
+                            <span className="ml-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 italic">
+                                {theme === 'dark' ? 'Lunar' : 'Solar'} System
                             </span>
                         )}
-                    </button>
+                    </div>
                 </div>
 
                 {/* Footer Component */}

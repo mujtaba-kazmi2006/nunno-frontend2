@@ -1,4 +1,4 @@
-/* Nunno Finance - Polished Educational UI */
+﻿/* Nunno Finance - Polished Educational UI */
 
 * {
     margin: 0;
@@ -41,11 +41,11 @@
 
 @keyframes circular-wipe-in {
     from {
-        clip-path: circle(0% at 90% 5%);
+        clip-path: circle(0% at var(--transition-x) var(--transition-y));
     }
 
     to {
-        clip-path: circle(150% at 90% 5%);
+        clip-path: circle(150% at var(--transition-x) var(--transition-y));
     }
 }
 
@@ -248,7 +248,7 @@ body::after {
 }
 
 .app {
-    height: 100vh;
+    height: 100dvh;
     /* Strict viewport height */
     overflow: hidden;
     /* Prevent page scroll */
@@ -1996,4 +1996,247 @@ body::after {
 .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+}
+
+/* 3D Neural Cube Loader */
+.neural-cube-loader {
+    width: 44px;
+    height: 44px;
+    animation: spinner-cube 2s infinite ease;
+    transform-style: preserve-3d;
+}
+
+.neural-cube-loader>div {
+    background-color: rgba(139, 92, 246, 0.2);
+    height: 100%;
+    position: absolute;
+    width: 100%;
+    border: 2px solid #a855f7;
+}
+
+.neural-cube-loader div:nth-of-type(1) {
+    transform: translateZ(-22px) rotateY(180deg);
+}
+
+.neural-cube-loader div:nth-of-type(2) {
+    transform: rotateY(-270deg) translateX(50%);
+    transform-origin: top right;
+}
+
+.neural-cube-loader div:nth-of-type(3) {
+    transform: rotateY(270deg) translateX(-50%);
+    transform-origin: center left;
+}
+
+.neural-cube-loader div:nth-of-type(4) {
+    transform: rotateX(90deg) translateY(-50%);
+    transform-origin: top center;
+}
+
+.neural-cube-loader div:nth-of-type(5) {
+    transform: rotateX(-90deg) translateY(50%);
+    transform-origin: bottom center;
+}
+
+.neural-cube-loader div:nth-of-type(6) {
+    transform: translateZ(22px);
+}
+
+@keyframes spinner-cube {
+    0% {
+        transform: rotate(45deg) rotateX(-25deg) rotateY(25deg);
+    }
+
+    50% {
+        transform: rotate(45deg) rotateX(-385deg) rotateY(25deg);
+    }
+
+    100% {
+        transform: rotate(45deg) rotateX(-385deg) rotateY(385deg);
+    }
+}
+
+/* Custom Theme Switch */
+.theme-switch {
+    font-size: 17px;
+    position: relative;
+    display: inline-block;
+    width: 3.5em;
+    height: 2em;
+    cursor: pointer;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.theme-switch .slider {
+    --background: #20262c;
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--background);
+    transition: 0.5s;
+    border-radius: 30px;
+}
+
+.theme-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 1.4em;
+    width: 1.4em;
+    border-radius: 50%;
+    left: 10%;
+    bottom: 15%;
+    box-shadow: inset 8px -4px 0px 0px #ececd9, -4px 1px 4px 0px #dadada;
+    background: var(--background);
+    transition: 0.5s;
+}
+
+.theme-switch .decoration {
+    position: absolute;
+    content: "";
+    height: 2px;
+    width: 2px;
+    border-radius: 50%;
+    right: 20%;
+    top: 15%;
+    background: #e5f041e6;
+    backdrop-filter: blur(10px);
+    transition: all 0.5s;
+    box-shadow: -7px 10px 0 #e5f041e6, 8px 15px 0 #e5f041e6, -17px 1px 0 #e5f041e6,
+        -20px 10px 0 #e5f041e6, -7px 23px 0 #e5f041e6, -15px 25px 0 #e5f041e6;
+}
+
+.theme-switch input:checked~.decoration {
+    transform: translateX(-20px);
+    width: 10px;
+    height: 10px;
+    background: white;
+    box-shadow: -12px 0 0 white, -6px 0 0 1.6px white, 5px 15px 0 1px white,
+        1px 17px 0 white, 10px 17px 0 white;
+}
+
+.theme-switch input:checked+.slider {
+    background-color: #5494de;
+}
+
+.theme-switch input:checked+.slider:before {
+    transform: translateX(100%);
+    box-shadow: inset 15px -4px 0px 15px #efdf2b, 0 0 10px 0px #efdf2b;
+}
+
+/* Light mode overrides for the switch */
+.dark .theme-switch .slider {
+    --background: #20262c;
+}
+
+div:not(.dark) .theme-switch .slider {
+    /* background-color: #5494de; */
+}
+
+/* 3D Segmented Control (Purple Theme) */
+.market-tab-container {
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+
+.market-tab-pane {
+    outline: 2px solid #8b5cf6;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.3), inset 0 0 10px rgba(139, 92, 246, 0.3);
+    height: 2.5rem;
+    width: 15rem;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    transition: 0.7s ease;
+    background: rgba(12, 12, 20, 0.8);
+    display: flex;
+}
+
+.market-tab-pane .input {
+    display: none;
+}
+
+.market-tab-pane .label {
+    height: 2.5rem;
+    width: 5rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    font-size: 11px;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+    color: #8b5cf6;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.market-tab-pane .selection {
+    display: none;
+    position: absolute;
+    height: 2.5rem;
+    width: 5rem;
+    z-index: 0;
+    left: 0;
+    top: 0;
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+    transition: 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.market-tab-pane .label:has(input:checked) {
+    color: #ffffff;
+}
+
+.market-tab-pane:has(.label:nth-child(1):hover) {
+    transform: rotateY(-15deg);
+}
+
+.market-tab-pane:has(.label:nth-child(3):hover) {
+    transform: rotateY(15deg);
+}
+
+.market-tab-pane .label:has(input:checked)~.selection {
+    background-color: #8b5cf6;
+    display: inline-block;
+}
+
+.market-tab-pane .label:nth-child(1):has(input:checked)~.selection {
+    transform: translateX(0);
+}
+
+.market-tab-pane .label:nth-child(2):has(input:checked)~.selection {
+    transform: translateX(5rem);
+}
+
+.market-tab-pane .label:nth-child(3):has(input:checked)~.selection {
+    transform: translateX(10rem);
+}
+
+/* Light mode overrides */
+:not(.dark) .market-tab-pane {
+    background: white;
+    outline: 2px solid #8b5cf6;
+}
+
+
+/* Responsive adjustments for small mobile screens (360px) */
+@media (max-width: 480px) {
+    .message-text {
+        padding: var(--spacing-sm) var(--spacing-md) !important;
+        font-size: 0.875rem !important;
+    }
+
+    .input-container {
+        padding: var(--spacing-md) var(--spacing-md) !important;
+    }
 }

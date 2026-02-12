@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, memo } from 'react'
+import { useState, useRef, useEffect, memo, forwardRef } from 'react'
 import { Send, Loader, Sparkles, TrendingUp, DollarSign, BookOpen, Square, Zap, Plus, PieChart, Info, Bot, User as UserIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import EducationalCard from './EducationalCard'
@@ -43,12 +43,13 @@ function formatMessageContent(content) {
 }
 
 // Redesigned Message Component - Simple Text Mode
-const MessageItem = memo(({ message, onDeepAnalysis }) => {
+const MessageItem = memo(forwardRef(({ message, onDeepAnalysis }, ref) => {
     const isAssistant = message.role === 'assistant';
     const timestamp = message.timestamp || new Date();
 
     return (
         <motion.div
+            ref={ref}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
@@ -84,16 +85,24 @@ const MessageItem = memo(({ message, onDeepAnalysis }) => {
             )}>
                 {/* Render Educational Cards if data exists */}
                 {isAssistant && message.dataUsed?.technical && (
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="mb-8 max-w-2xl"
-                    >
-                        <EducationalCard
-                            data={message.dataUsed.technical}
-                            onDeepAnalysis={onDeepAnalysis}
-                        />
-                    </motion.div>
+                    <div className="flex flex-col gap-6 mb-8 max-w-2xl">
+                        {(Array.isArray(message.dataUsed.technical)
+                            ? message.dataUsed.technical
+                            : [message.dataUsed.technical]
+                        ).map((data, idx) => (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: idx * 0.1 }}
+                            >
+                                <EducationalCard
+                                    data={data}
+                                    onDeepAnalysis={onDeepAnalysis}
+                                />
+                            </motion.div>
+                        ))}
+                    </div>
                 )}
 
 
@@ -130,15 +139,14 @@ const MessageItem = memo(({ message, onDeepAnalysis }) => {
                 )}
             </div>
         </motion.div>
-    )
-}
-    , (prevProps, nextProps) => {
-        return (
-            prevProps.message.content === nextProps.message.content &&
-            prevProps.message.dataUsed === nextProps.message.dataUsed &&
-            prevProps.message.toolCalls === nextProps.message.toolCalls
-        );
-    });
+    );
+}), (prevProps, nextProps) => {
+    return (
+        prevProps.message.content === nextProps.message.content &&
+        prevProps.message.dataUsed === nextProps.message.dataUsed &&
+        prevProps.message.toolCalls === nextProps.message.toolCalls
+    );
+});
 
 export default function ChatInterface({ userAge }) {
     const { user, refreshUser } = useAuth()
@@ -490,8 +498,8 @@ export default function ChatInterface({ userAge }) {
                                 <Sparkles size={12} className="animate-pulse" />
                                 <span>Neural Engine Active</span>
                             </motion.div>
-                            <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-slate-800 dark:text-white tracking-tighter leading-none italic uppercase max-w-[95vw] sm:max-w-full px-2 lg:mt-4">
-                                FINANCE, <br className="sm:hidden" />
+                            <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-slate-800 dark:text-white tracking-tighter leading-none italic uppercase max-w-[95vw] sm:max-w-full px-2 lg:mt-4">
+                                FINANCE, <br className="block sm:hidden" />
                                 <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent underline decoration-purple-500/30 underline-offset-4 sm:underline-offset-8">SIMPLIFIED.</span>
                             </h1>
 
@@ -506,7 +514,7 @@ export default function ChatInterface({ userAge }) {
             {/* Messages Area - Fades in and occupies space above input */}
             <div
                 className={cn(
-                    "w-full flex-1 overflow-y-auto px-4 md:px-12 py-6 space-y-12 custom-scrollbar transition-opacity duration-1000",
+                    "w-full flex-1 overflow-y-auto px-4 sm:px-8 md:px-12 py-6 space-y-12 custom-scrollbar transition-opacity duration-1000",
                     isInitialState ? "opacity-0 pointer-events-none" : "opacity-100 mt-20"
                 )}
                 ref={messagesContainerRef}
@@ -543,7 +551,7 @@ export default function ChatInterface({ userAge }) {
                 <div
                     className={cn(
                         "relative w-full transition-[background-color,border-color,box-shadow,transform] duration-700",
-                        isInitialState ? "max-w-5xl bg-white dark:bg-[#0c0c14] rounded-[2rem] sm:rounded-[3rem] p-3 sm:p-6 md:p-16 border border-white/10 shadow-2xl" : "max-w-5xl bg-transparent"
+                        isInitialState ? "max-w-5xl bg-white dark:bg-[#0c0c14] rounded-[2rem] sm:rounded-[3rem] p-3 sm:p-6 md:p-8 lg:p-16 border border-white/10 shadow-2xl" : "max-w-5xl bg-transparent"
                     )}
                 >
                     {isInitialState && (
@@ -597,8 +605,8 @@ export default function ChatInterface({ userAge }) {
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyPress={handleKeyPress}
-                                placeholder="Enter market query or instruction..."
-                                className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 text-slate-700 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 font-medium text-base sm:text-lg py-2 sm:py-3 outline-none italic"
+                                placeholder="Enter market query..."
+                                className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 text-slate-700 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 font-medium text-sm sm:text-base lg:text-lg py-2 sm:py-3 outline-none italic"
                                 autoFocus
                                 disabled={isLoading}
                             />
@@ -631,7 +639,7 @@ export default function ChatInterface({ userAge }) {
                     </div>
 
                     {isInitialState && (
-                        <div className="mt-6 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div className="mt-6 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-full">
                             {suggestions.map((s, i) => (
                                 <motion.button
                                     key={i}
