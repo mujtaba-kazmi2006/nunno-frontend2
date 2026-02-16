@@ -26,26 +26,26 @@ const LandingPage = () => {
   const features = [
     {
       icon: <Brain className="w-7 h-7" />,
-      title: "Empathetic AI Educator",
-      description: "Learn finance like you're 15 with real-world analogies and beginner-friendly explanations.",
+      title: "AI Learning Helper",
+      description: "Learn finance like you're talking to a friend, with simple stories and beginner-friendly explanations.",
       color: "from-purple-500 to-indigo-500"
     },
     {
       icon: <TrendingUp className="w-7 h-7" />,
-      title: "Elite Analysis",
-      description: "Real-time crypto insights with actionable confidence indicators tailored for newcomers.",
+      title: "Simple Market Analysis",
+      description: "Real-time crypto insights with easy-to-follow tips tailored for newcomers.",
       color: "from-emerald-500 to-teal-500"
     },
     {
       icon: <Sparkles className="w-7 h-7" />,
       title: "Interactive Learning",
-      description: "Click any financial term to see simple definitions and analogies instantly.",
+      description: "Click any word you don't know to see a simple definition instantly.",
       color: "from-amber-500 to-orange-500"
     },
     {
       icon: <Zap className="w-7 h-7" />,
-      title: "Smart Execution",
-      description: "AI automatically coordinates tools for price analysis and market sentiment research.",
+      title: "Smart Answers",
+      description: "Our AI automatically finds the best data and news to answer your questions.",
       color: "from-blue-500 to-cyan-500"
     }
   ];
@@ -171,7 +171,7 @@ const LandingPage = () => {
             className="inline-flex items-center px-4 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-300 text-xs font-bold uppercase tracking-widest mb-10 shadow-[0_0_20px_rgba(168,85,247,0.15)]"
           >
             <Sparkles className="w-3.5 h-3.5 mr-2" />
-            The Future of Financial Literacy
+            The Future of Learning About Money
           </motion.div>
 
           <h1 className="text-6xl md:text-8xl lg:text-9xl font-black text-white mb-8 tracking-tighter leading-[0.9]">
@@ -182,7 +182,7 @@ const LandingPage = () => {
           </h1>
 
           <p className="text-lg md:text-xl text-slate-400 mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
-            Stop guessing. Start knowing. Nunno turns complexity into clarity with empathetic AI designed to make you a confident investor.
+            Stop guessing. Start knowing. Nunno turns confusing charts into clear answers designed to make you a confident investor.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
@@ -308,7 +308,7 @@ const LandingPage = () => {
                 <span className="text-purple-500">NEXT GENERATION.</span>
               </h2>
               <p className="text-lg text-slate-400 font-medium">
-                We've combined deep technical intelligence with a human-first interface. No jargon, no gatekeeping—just pure financial empowerment.
+                We've combined deep market data with a simple, friendly interface. No confusing talk, no gatekeeping—just pure knowledge.
               </p>
             </div>
             <div className="flex space-x-2">
@@ -511,12 +511,12 @@ const LandingPage = () => {
           >
             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(147,51,234,0.15),transparent_70%)]" />
 
-            <h2 className="text-5xl md:text-8xl font-black mb-8 italic italic tracking-tighter leading-[0.85] uppercase">
+            <h2 className="text-5xl md:text-8xl font-black mb-8 italic tracking-tighter leading-[0.85] uppercase">
               Ready to <br />
-              <span className="text-purple-500">Unleash Alpha?</span>
+              <span className="text-purple-500">Master Your Money?</span>
             </h2>
             <p className="text-xl text-slate-400 mb-16 max-w-2xl mx-auto font-medium">
-              Join the financial elite. Start your journey with Nunno today for free.
+              Start your journey with Nunno today for free.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <a
@@ -529,7 +529,7 @@ const LandingPage = () => {
                 href="/dashboard"
                 className="py-5 px-12 bg-black text-white rounded-full font-black text-lg border border-white/10 hover:bg-white/10 transition-all uppercase tracking-tight"
               >
-                Enter the Lab
+                Launch Dashboard
               </a>
             </div>
           </motion.div>

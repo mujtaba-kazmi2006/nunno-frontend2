@@ -131,7 +131,12 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                                 )}>
                                     NUNNO <span className="text-purple-500">LABS</span>
                                 </h1>
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 italic">Neural Intelligence</span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 italic">Financial Helper</span>
+                                <div className="mt-1 flex gap-1">
+                                    <span className="px-1.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-[8px] font-bold text-purple-500 uppercase tracking-widest leading-none">
+                                        Urdu Available
+                                    </span>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -284,32 +289,67 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                     theme === 'dark' ? "border-white/5 bg-white/[0.02]" : "border-slate-100 bg-slate-50"
                 )}>
                     {isAuthenticated ? (
-                        <div className={cn("flex items-center", isCollapsed ? "justify-center" : "gap-4")}>
-                            <div className="size-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-lg font-black italic shadow-xl group/avatar cursor-pointer hover:rotate-6 transition-transform">
-                                {user?.name?.charAt(0) || 'U'}
-                            </div>
-
+                        <div className="flex flex-col gap-6">
+                            {/* Neural Usage Trackers */}
                             {!isCollapsed && (
-                                <div className="flex-1 overflow-hidden">
-                                    <h4 className={cn(
-                                        "text-xs font-black uppercase tracking-tight mb-0.5 transition-colors",
-                                        theme === 'dark' ? "text-white" : "text-slate-900"
-                                    )}>{user?.name || 'OPERATIVE'}</h4>
-                                    <div className="flex items-center gap-2">
-                                        <div className="size-1.5 rounded-full bg-emerald-500" />
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 italic truncate">LVL. 4 {user?.tier} CLASSIFIED</span>
+                                <div className="space-y-4">
+                                    {/* Daily Tokens */}
+                                    <div className="space-y-1.5">
+                                        <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-slate-500">
+                                            <span>Daily Limit</span>
+                                            <span className="text-purple-400">{((user?.tokens_used_today || 0) / (user?.limits?.daily_token_limit || 15000) * 100).toFixed(0)}%</span>
+                                        </div>
+                                        <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-1000"
+                                                style={{ width: `${Math.min(100, ((user?.tokens_used_today || 0) / (user?.limits?.daily_token_limit || 15000) * 100))}%` }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Daily Searches */}
+                                    <div className="space-y-1.5">
+                                        <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-slate-500">
+                                            <span>Market Scans</span>
+                                            <span className="text-emerald-400">{user?.searches_today || 0}/{user?.limits?.daily_searches || 10}</span>
+                                        </div>
+                                        <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-emerald-500 transition-all duration-1000"
+                                                style={{ width: `${Math.min(100, ((user?.searches_today || 0) / (user?.limits?.daily_searches || 10) * 100))}%` }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             )}
 
-                            {!isCollapsed && (
-                                <button
-                                    onClick={logout}
-                                    className="p-2 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
-                                >
-                                    <LogOut size={18} />
-                                </button>
-                            )}
+                            <div className={cn("flex items-center", isCollapsed ? "justify-center" : "gap-4")}>
+                                <div className="size-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-lg font-black italic shadow-xl group/avatar cursor-pointer hover:rotate-6 transition-transform">
+                                    {user?.name?.charAt(0) || 'U'}
+                                </div>
+
+                                {!isCollapsed && (
+                                    <div className="flex-1 overflow-hidden">
+                                        <h4 className={cn(
+                                            "text-xs font-black uppercase tracking-tight mb-0.5 transition-colors",
+                                            theme === 'dark' ? "text-white" : "text-slate-900"
+                                        )}>{user?.name || 'Member'}</h4>
+                                        <div className="flex items-center gap-2">
+                                            <div className="size-1.5 rounded-full bg-emerald-500" />
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 italic truncate">Level 4 {user?.tier} Member</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {!isCollapsed && (
+                                    <button
+                                        onClick={logout}
+                                        className="p-2 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                                    >
+                                        <LogOut size={18} />
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     ) : (
                         <div className={cn("flex flex-col gap-3", isCollapsed ? "items-center" : "")}>
@@ -319,7 +359,7 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                                     className="w-full py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest italic hover:bg-purple-600 hover:text-white transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-3"
                                 >
                                     <LogIn size={18} />
-                                    <span>AUTHORIZE</span>
+                                    <span>SIGN IN</span>
                                 </button>
                             ) : (
                                 <button
@@ -331,7 +371,13 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                             )}
                         </div>
                     )}
-                </div>
+                </div >
+            </div >
+
+            <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity">
+                <span className="text-[8px] font-black uppercase tracking-[0.4em] text-slate-500 italic">
+                    Developed by the Nunno Team
+                </span>
             </div>
 
             {/* Login/Signup Modal */}

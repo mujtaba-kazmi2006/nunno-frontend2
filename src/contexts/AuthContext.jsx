@@ -62,6 +62,22 @@ export function AuthProvider({ children }) {
         }
     };
 
+    const googleLogin = async (googleToken) => {
+        try {
+            const response = await axios.post('/api/auth/google', { token: googleToken });
+            setToken(response.data.token);
+            setUser(response.data.user);
+            localStorage.setItem('token', response.data.token);
+            axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+            return { success: true };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data?.detail || 'Google login failed'
+            };
+        }
+    };
+
     const logout = () => {
         setToken(null);
         setUser(null);
@@ -86,6 +102,7 @@ export function AuthProvider({ children }) {
             token,
             login,
             signup,
+            googleLogin,
             logout,
             loading,
             refreshUser,

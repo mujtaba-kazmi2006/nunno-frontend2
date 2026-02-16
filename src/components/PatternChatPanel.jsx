@@ -3,6 +3,7 @@ import { Send, Loader2, Sparkles, TrendingUp, TrendingDown, Layers, Square, User
 import { streamMessage } from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
 import ThinkingLoader from './ThinkingLoader';
+import { analytics } from '../utils/analytics';
 
 const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000, interval = '1d', getTechnicalContext }) => {
     const [messages, setMessages] = useState([
@@ -97,6 +98,9 @@ INSTRUCTION: You are given direct "live feed" access to the user's chart technic
         setIsLoading(true);
         setLoadingStatus('Feeding AI Data Matrix...');
 
+        // Track GA4 event
+        analytics.trackScan(context.symbol, context.interval);
+
         try {
             if (abortController.current) abortController.current.abort();
             abortController.current = new AbortController();
@@ -154,6 +158,9 @@ INSTRUCTION: You are given direct "live feed" access to the user's chart technic
         setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
         setIsLoading(true);
         setLoadingStatus('Checking patterns...');
+
+        // Track GA4 event
+        analytics.trackAIChat(userMessage.length);
 
         try {
             let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';

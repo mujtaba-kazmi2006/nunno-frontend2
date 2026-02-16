@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, memo, forwardRef } from 'react'
-import { Send, Loader, Sparkles, TrendingUp, DollarSign, BookOpen, Square, Zap, Plus, PieChart, Info, Bot, User as UserIcon } from 'lucide-react'
+import { Send, Loader, Sparkles, TrendingUp, DollarSign, BookOpen, Square, Zap, Plus, PieChart, Info, Bot, User as UserIcon, Flame, AlertOctagon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import EducationalCard from './EducationalCard'
 import NunnoLogo from './NunnoLogo'
@@ -8,10 +8,11 @@ import { useTheme } from '../contexts/ThemeContext'
 import { useChat } from '../contexts/ChatContext'
 import { cn } from '../utils/cn'
 import ThinkingLoader from './ThinkingLoader'
+import { analytics } from '../utils/analytics'
 
 // Extracted utility outside component to avoid recreation
 function formatMessageContent(content) {
-    const safeContent = content || '';
+    const safeContent = (content || '').replace(/\[NAVIGATE:[^\]]+\]/g, '');
     const lines = safeContent.split('\n')
 
     return lines.map((line, i) => {
@@ -72,7 +73,7 @@ const MessageItem = memo(forwardRef(({ message, onDeepAnalysis }, ref) => {
                     "text-[10px] font-black uppercase tracking-[0.3em] italic",
                     isAssistant ? "text-purple-600 dark:text-purple-400" : "text-slate-400 dark:text-slate-500"
                 )}>
-                    {isAssistant ? "Nunno Intelligence" : "Protocol User"}
+                    {isAssistant ? "Nunno Intelligence" : "You"}
                 </span>
                 <span className="text-[10px] text-gray-400 dark:text-slate-600 font-bold">
                     {new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -239,6 +240,9 @@ export default function ChatInterface({ userAge }) {
         setShowSuggestions(false)
         setLoadingStatus('Thinking...')
 
+        // Track GA4 event
+        analytics.trackAIChat(userMessage.length);
+
         const userMsgObj = { role: 'user', content: userMessage, timestamp: new Date() };
         setMessages(prev => [...prev, userMsgObj])
         setIsLoading(true)
@@ -258,10 +262,13 @@ export default function ChatInterface({ userAge }) {
 
         try {
             const { streamMessage } = await import('../services/api');
+            const { useNeuralAction } = await import('../contexts/NeuralActionContext');
+
             let fullContent = '';
             let currentToolCalls = [];
             let currentDataUsed = {};
             let lastUpdateTime = 0;
+            let handledActions = new Set();
 
             await streamMessage({
                 message: userMessage,
@@ -271,6 +278,25 @@ export default function ChatInterface({ userAge }) {
                     if (chunk.type === 'text') {
                         setLoadingStatus('');
                         fullContent += chunk.content;
+
+                        // Check for [NAVIGATE] actions in the text
+                        const actionMatch = fullContent.match(/\[NAVIGATE:[^\]]+\]/g);
+                        if (actionMatch) {
+                            actionMatch.forEach(actionStr => {
+                                if (!handledActions.has(actionStr)) {
+                                    // Dynamically handle the action
+                                    import('../contexts/NeuralActionContext').then(({ useNeuralAction }) => {
+                                        // This is a bit tricky inside onChunk without a hook access, 
+                                        // but we can pass it as a prop or use a window event as a fallback.
+                                        // Better: Use a separate useEffect or a ref-based trigger.
+                                        const event = new CustomEvent('neural-action', { detail: actionStr });
+                                        window.dispatchEvent(event);
+                                    });
+                                    handledActions.add(actionStr);
+                                }
+                            });
+                        }
+
                         const now = Date.now();
                         if (now - lastUpdateTime > 120) {
                             setMessages(prev => {
@@ -496,7 +522,7 @@ export default function ChatInterface({ userAge }) {
                                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.3em]"
                             >
                                 <Sparkles size={12} className="animate-pulse" />
-                                <span>Neural Engine Active</span>
+                                <span>Intelligence Center Active</span>
                             </motion.div>
                             <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-slate-800 dark:text-white tracking-tighter leading-none italic uppercase max-w-[95vw] sm:max-w-full px-2 lg:mt-4">
                                 FINANCE, <br className="block sm:hidden" />
@@ -504,7 +530,7 @@ export default function ChatInterface({ userAge }) {
                             </h1>
 
                             <p className="hidden md:block text-slate-500 dark:text-slate-400 text-base lg:text-lg max-w-xl mx-auto font-medium leading-relaxed italic px-4">
-                                Your premium AI gateway to market intelligence and financial empowerment.
+                                Your premium AI gateway to market knowledge and simple investing.
                             </p>
                         </div>
                     </motion.div>
@@ -531,7 +557,7 @@ export default function ChatInterface({ userAge }) {
                         <div className="flex items-center gap-3 mb-10 pl-4 py-2 opacity-80">
                             <ThinkingLoader />
                             <span className="text-[10px] font-black text-purple-400 dark:text-purple-500/60 uppercase tracking-[0.4em] italic animate-pulse">
-                                {loadingStatus || 'Processing Neural Paths...'}
+                                {loadingStatus || 'Thinking...'}
                             </span>
                         </div>
                     )}
@@ -595,6 +621,20 @@ export default function ChatInterface({ userAge }) {
                                             <div className="flex flex-col items-start">
                                                 <span className="italic uppercase tracking-tight">Portfolio Analysis</span>
                                                 <span className="text-[10px] text-slate-500 font-medium">Neural asset breakdown</span>
+                                            </div>
+                                        </button>
+                                        <button onClick={() => { handleSuggestionClick("Roast this coin: BTCUSDT"); setIsActionMenuOpen(false); }} className="w-full flex items-center gap-4 p-4 hover:bg-purple-50 dark:hover:bg-white/5 rounded-2xl text-slate-700 dark:text-slate-200 text-sm font-bold transition-all group">
+                                            <div className="size-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform"><Flame size={20} /></div>
+                                            <div className="flex flex-col items-start">
+                                                <span className="italic uppercase tracking-tight">Roast My Coin</span>
+                                                <span className="text-[10px] text-slate-500 font-medium">Brutal reality check</span>
+                                            </div>
+                                        </button>
+                                        <button onClick={() => { handleSuggestionClick("Check FOMO signals for BTCUSDT, ETHUSDT, SOLUSDT"); setIsActionMenuOpen(false); }} className="w-full flex items-center gap-4 p-4 hover:bg-purple-50 dark:hover:bg-white/5 rounded-2xl text-slate-700 dark:text-slate-200 text-sm font-bold transition-all group">
+                                            <div className="size-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform"><AlertOctagon size={20} /></div>
+                                            <div className="flex flex-col items-start">
+                                                <span className="italic uppercase tracking-tight">FOMO Killer</span>
+                                                <span className="text-[10px] text-slate-500 font-medium">Don't buy the top!</span>
                                             </div>
                                         </button>
                                     </motion.div>

@@ -1,57 +1,76 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, ChevronLeft, HelpCircle, ArrowRight } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, Zap, Target, BookOpen, MessageSquare, TrendingUp, Sparkles } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useChat } from '../contexts/ChatContext';
 
 const tutorialSteps = [
     {
+        id: 'welcome',
         title: "Welcome to Nunno! 👋",
-        description: "I'm Nunno, your personal AI financial educator. I'm here to help you understand the markets without the jargon.",
+        description: "I'm Nunno, your AI helper. I'll help you understand how to grow your money without all the confusing math.",
         path: "/dashboard",
-        target: "body",
-        position: "center"
+        position: "center",
+        action: null
     },
     {
-        title: "AI Chat Interface 💬",
-        description: "Ask me anything about crypto, stocks, or financial concepts. I'll explain things in 'Easy Mode' just for you.",
+        id: 'chat_intro',
+        title: "How to use the Chat 🔍",
+        description: "The market changes fast. Ask me anything, or pick one of the learning paths below.",
         path: "/dashboard",
-        target: ".chat-container",
-        position: "right"
+        position: "bottom-right",
+        action: null
     },
     {
-        title: "Market Pulse 💓",
-        description: "See the current market temperature. We track sentiment and volatility to give you a quick read on the market mood.",
+        id: 'roast_demo',
+        title: "Check for Risks 🔥",
+        description: "Let's check if Bitcoin is a safe choice right now. This helps you avoid losing money to hype.",
         path: "/dashboard",
-        target: ".sidebar",
-        position: "left"
+        position: "bottom-right",
+        action: "Explain the risks of buying Bitcoin right now",
+        actionLabel: "Analyze Risks"
     },
     {
-        title: "Elite Charting 📈",
-        description: "Deep dive into any asset with our Elite Chart. It uses AI to recognize patterns and simulate future price possibilities.",
+        id: 'price_forecast',
+        title: "Predicting the Future 🔮",
+        description: "I'll look at historical trends to guess where the price might go next.",
+        path: "/dashboard",
+        position: "bottom-right",
+        action: "What do you think the price of BTC will be tomorrow?",
+        actionLabel: "Predict Price"
+    },
+    {
+        id: 'market_scan',
+        title: "Finding Opportunities 📡",
+        description: "I can scan the market to find good coins that most people haven't noticed yet.",
+        path: "/dashboard",
+        position: "bottom-right",
+        action: "Find some good coins with strong potential for growth",
+        actionLabel: "Find Gems"
+    },
+    {
+        id: 'academy_intro',
+        title: "Learning Center 🎓",
+        description: "This is the Academy. You can practice trading here using fake money until you feel confident.",
+        path: "/academy",
+        position: "bottom-right",
+        action: null
+    },
+    {
+        id: 'elite_chart',
+        title: "The Chart Room 📈",
+        description: "This is a advanced chart where you can see exactly where the money is flowing.",
         path: "/elite-chart",
-        target: "body",
-        position: "center"
+        position: "bottom-right",
+        action: null
     },
     {
-        title: "Pattern Recognition 🧠",
-        description: "Our AI automatically detects technical patterns like Head & Shoulders or Triangles to help you learn charting.",
-        path: "/elite-chart",
-        target: ".pattern-controls",
-        position: "bottom"
-    },
-    {
-        title: "Your Account ⚙️",
-        description: "Track your AI token usage and manage your subscription level here.",
-        path: "/settings",
-        target: "body",
-        position: "center"
-    },
-    {
+        id: 'final',
         title: "You're All Set! 🚀",
-        description: "You're now ready to explore. Remember, I'm always here in the chat if you have any questions!",
+        description: "The tutorial is over. You're ready to start your journey. Let's make some smart choices!",
         path: "/dashboard",
-        target: "body",
-        position: "center"
+        position: "center",
+        action: null
     }
 ];
 
@@ -59,25 +78,24 @@ export default function TutorialOverlay({ isOpen, onClose, experienceLevel }) {
     const [currentStep, setCurrentStep] = useState(0);
     const navigate = useNavigate();
     const location = useLocation();
-
-    // Only show for beginners who haven't finished it
-    const isBeginner = experienceLevel === 'beginner';
-
-    useEffect(() => {
-        if (isOpen && tutorialSteps[currentStep]) {
-            const step = tutorialSteps[currentStep];
-            if (location.pathname !== step.path) {
-                navigate(step.path);
-            }
-        }
-    }, [currentStep, isOpen]);
-
-    if (!isOpen || !isBeginner) return null;
+    const { setPendingMessage } = useChat();
 
     const step = tutorialSteps[currentStep];
     const isLastStep = currentStep === tutorialSteps.length - 1;
 
+    useEffect(() => {
+        if (isOpen && step) {
+            if (location.pathname !== step.path) {
+                navigate(step.path);
+            }
+        }
+    }, [currentStep, isOpen, step, location.pathname, navigate]);
+
     const handleNext = () => {
+        if (step.action) {
+            setPendingMessage(step.action);
+        }
+
         if (isLastStep) {
             onClose();
         } else {
@@ -91,136 +109,112 @@ export default function TutorialOverlay({ isOpen, onClose, experienceLevel }) {
         }
     };
 
+    const handleSkip = () => {
+        onClose();
+    };
+
+    const isCenter = step?.position === 'center';
+
     return (
         <AnimatePresence>
-            <div className="fixed inset-0 z-[9999] pointer-events-none">
-                {/* Backdrop with hole (Simplified for now, just a darkened overlay) */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="absolute inset-0 bg-black/40 backdrop-blur-[2px] pointer-events-auto"
-                    onClick={onClose}
-                />
+            {isOpen && step && (
+                <div className="fixed inset-0 z-[9999] pointer-events-none">
+                    {/* Visual context backdrop - subtle */}
+                    {isCenter && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-md pointer-events-auto"
+                            onClick={handleSkip}
+                        />
+                    )}
 
-                {/* Tutorial Card */}
-                <div className="absolute inset-0 flex items-center justify-center p-4">
-                    <motion.div
-                        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                        animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                        className="bg-white dark:bg-[#1e2030] rounded-3xl shadow-2xl w-full max-w-md overflow-hidden pointer-events-auto border border-purple-100 dark:border-slate-800"
-                    >
-                        {/* Progress bar */}
-                        <div className="h-1.5 w-full bg-gray-100 dark:bg-slate-800">
-                            <motion.div
-                                className="h-full bg-gradient-to-r from-purple-500 to-indigo-500"
-                                initial={{ width: 0 }}
-                                animate={{ width: `${((currentStep + 1) / tutorialSteps.length) * 100}%` }}
-                            />
-                        </div>
-
-                        <div className="p-6 sm:p-8">
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center">
-                                    <HelpCircle className="text-purple-600 dark:text-purple-400" size={24} />
-                                </div>
-                                <button
-                                    onClick={onClose}
-                                    className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors text-gray-400"
-                                >
-                                    <X size={20} />
-                                </button>
+                    {/* Corner Tutorial Card - Ultra Compact */}
+                    <div className={`absolute inset-0 flex p-4 sm:p-10 pointer-events-none items-end ${isCenter ? 'items-center justify-center' : 'justify-center sm:justify-end'}`}>
+                        <motion.div
+                            key={step.id}
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            className={`pointer-events-auto bg-[#0a0a0f] border border-purple-500/50 rounded-[2rem] shadow-[0_0_50px_rgba(139,92,246,0.3)] w-full ${isCenter ? 'max-w-md' : 'max-w-xs sm:max-w-sm'} overflow-hidden relative ring-1 ring-white/10`}
+                        >
+                            {/* Status bar */}
+                            <div className="h-1 w-full bg-white/5">
+                                <motion.div
+                                    className="h-full bg-purple-500 shadow-[0_0_10px_rgba(139,92,246,0.8)]"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${((currentStep + 1) / tutorialSteps.length) * 100}%` }}
+                                />
                             </div>
 
-                            <motion.h2
-                                key={`title-${currentStep}`}
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="text-2xl font-bold text-gray-800 dark:text-white mb-3"
-                            >
-                                {step.title}
-                            </motion.h2>
+                            <div className="p-5 sm:p-7 relative z-10">
+                                {/* Header */}
+                                <div className="flex justify-between items-center mb-4">
+                                    <span className="flex items-center gap-2">
+                                        <div className="size-2 bg-purple-500 rounded-full animate-pulse" />
+                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-400 italic">
+                                            Tutorial: Step {currentStep + 1}
+                                        </span>
+                                    </span>
+                                    <button
+                                        onClick={handleSkip}
+                                        className="p-1.5 hover:bg-white/5 rounded-lg text-slate-500 hover:text-white transition-colors"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </div>
 
-                            <motion.p
-                                key={`desc-${currentStep}`}
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.1 }}
-                                className="text-gray-600 dark:text-slate-400 leading-relaxed mb-8"
-                            >
-                                {step.description}
-                            </motion.p>
+                                {/* Icon & Title */}
+                                <div className="flex items-start gap-4 mb-5">
+                                    <div className="size-11 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0 text-purple-400">
+                                        {step.id === 'welcome' && <span className="text-xl">👋</span>}
+                                        {step.id === 'chat_intro' && <MessageSquare size={20} />}
+                                        {step.id === 'roast_demo' && <Zap size={20} />}
+                                        {step.id === 'price_forecast' && <Sparkles size={20} />}
+                                        {step.id === 'market_scan' && <Target size={20} />}
+                                        {step.id === 'market_pulse' && <TrendingUp size={20} />}
+                                        {step.id === 'academy_intro' && <BookOpen size={20} />}
+                                        {step.id === 'elite_chart' && <span className="text-xl">📈</span>}
+                                        {step.id === 'final' && <span className="text-xl">🚀</span>}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm sm:text-lg font-black text-white italic uppercase tracking-tight leading-tight">
+                                            {step.title}
+                                        </h3>
+                                    </div>
+                                </div>
 
-                            <div className="flex items-center justify-between">
-                                <button
-                                    onClick={onClose}
-                                    className="text-sm font-medium text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 transition-colors"
-                                >
-                                    Skip Tutorial
-                                </button>
+                                {/* Description */}
+                                <p className="text-slate-400 text-xs sm:text-sm leading-relaxed mb-6 font-medium">
+                                    {step.description}
+                                </p>
 
-                                <div className="flex gap-3">
+                                {/* UI Controls */}
+                                <div className="flex items-center gap-2">
                                     {currentStep > 0 && (
                                         <button
                                             onClick={handleBack}
-                                            className="p-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all"
+                                            className="p-3 sm:p-4 rounded-2xl border border-white/5 text-slate-500 hover:bg-white/5 transition-colors"
                                         >
-                                            <ChevronLeft size={20} />
+                                            <ChevronLeft size={16} />
                                         </button>
                                     )}
+
                                     <button
                                         onClick={handleNext}
-                                        className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-lg shadow-purple-200 dark:shadow-none transition-all flex items-center gap-2 group"
+                                        className="flex-1 py-3 sm:py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-black uppercase tracking-widest italic text-[10px] sm:text-xs shadow-lg shadow-purple-500/20 transition-all flex items-center justify-center gap-2 group"
                                     >
-                                        {isLastStep ? 'Get Started' : 'Next'}
-                                        {!isLastStep && <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />}
+                                        {step.actionLabel || (isLastStep ? 'Finish' : 'Next')}
+                                        <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                                     </button>
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Step indicator */}
-                        <div className="px-8 pb-6 flex justify-center gap-1.5">
-                            {tutorialSteps.map((_, i) => (
-                                <div
-                                    key={i}
-                                    className={`h-1.5 rounded-full transition-all duration-300 ${i === currentStep ? 'w-6 bg-purple-500' : 'w-1.5 bg-gray-200 dark:bg-slate-800'
-                                        }`}
-                                />
-                            ))}
-                        </div>
-                    </motion.div>
+                        </motion.div>
+                    </div>
                 </div>
-
-                {/* Arrow Pointer (Conditional based on position) */}
-                {step.target !== "body" && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        key={`arrow-${currentStep}`}
-                        className="absolute hidden md:block"
-                        style={{
-                            // This is a simplified positioning logic
-                            // In a real app we would use getBoundingClientRect
-                            ...(step.position === 'right' ? { left: '30%', top: '50%' } : {}),
-                            ...(step.position === 'left' ? { right: '30%', top: '50%' } : {}),
-                            ...(step.position === 'bottom' ? { left: '50%', top: '30%' } : {}),
-                        }}
-                    >
-                        <div className="relative">
-                            <motion.div
-                                animate={{ x: [0, 10, 0] }}
-                                transition={{ repeat: Infinity, duration: 1.5 }}
-                                className="bg-purple-600 text-white p-3 rounded-full shadow-xl"
-                            >
-                                <ArrowRight size={24} className={step.position === 'left' ? 'rotate-180' : step.position === 'bottom' ? 'rotate-90' : ''} />
-                            </motion.div>
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-purple-400/30 rounded-full animate-ping" />
-                        </div>
-                    </motion.div>
-                )}
-            </div>
+            )}
         </AnimatePresence>
     );
 }

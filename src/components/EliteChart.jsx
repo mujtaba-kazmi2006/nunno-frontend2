@@ -13,6 +13,7 @@ import {
     Layers,
     ChevronLeft,
     ChevronRight,
+    User,
     Eye,
     EyeOff,
     Camera,
@@ -36,7 +37,8 @@ import {
     Ghost,
     Droplets,
     Loader2,
-    Microscope
+    Microscope,
+    LogIn
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -49,7 +51,11 @@ import {
     getCurrentValue
 } from '../utils/technicalIndicators';
 import PatternChatPanel from './PatternChatPanel';
+import LoginSignup from './LoginSignup';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
+import { analytics } from '../utils/analytics';
 
 const EliteChart = () => {
     // Chart refs
@@ -182,6 +188,32 @@ const EliteChart = () => {
     const [blueprintVerdict, setBlueprintVerdict] = useState(null);
     const [showDetailedVerdict, setShowDetailedVerdict] = useState(false);
     const [isJudging, setIsJudging] = useState(false);
+    const [showLoginModal, setShowLoginModal] = useState(false);
+
+    // Auth & Limits
+    const { user, isAuthenticated, refreshUser } = useAuth();
+
+    const checkSearchLimit = () => {
+        if (!isAuthenticated) {
+            setShowLoginModal(true);
+            return false;
+        }
+
+        if (user?.searches_today >= (user?.limits?.daily_searches || 10)) {
+            setSimulationError("SYSTEM OVERLOAD: DAILY SCAN LIMIT REACHED. REFRESH IN 24H.");
+            return false;
+        }
+        return true;
+    };
+
+    const logSearchToBackend = async () => {
+        try {
+            await axios.post('/api/v1/log-search');
+            refreshUser(); // Sync the UI
+        } catch (e) {
+            console.error("Failed to log search:", e);
+        }
+    };
 
     // UI Enhancement state
     const [focusMode, setFocusMode] = useState(false);
@@ -446,13 +478,19 @@ const EliteChart = () => {
         }
     };
 
-    const judgeTrade = () => {
+    const judgeTrade = async () => {
+        if (!checkSearchLimit()) return;
+
         if (!blueprintPrices.entry || !blueprintPrices.target || !blueprintPrices.stop) {
             alert('Please set all markers (Entry, Target, Stop) on the chart first.');
             return;
         }
 
         setIsJudging(true);
+        await logSearchToBackend();
+
+        // Track GA4 event
+        analytics.trackTradeJudge(symbol, 'analyzing');
 
         // Simulate deep analysis delay for "WOW" factor
         setTimeout(() => {
@@ -1059,12 +1097,15 @@ const EliteChart = () => {
     };
 
     const runMonteCarloSimulation = async () => {
+        if (!checkSearchLimit()) return;
         if (!chartData || chartData.length < 10) return;
         const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         setIsSimulatingBackend(true);
         setSimulationError(null);
         setSimulationStatus('Initializing Probability Engine...');
         clearSimulationArtifacts();
+
+        await logSearchToBackend();
 
         try {
             setSimulationStatus('Fetching 1,000+ Market Paths...');
@@ -1289,12 +1330,15 @@ const EliteChart = () => {
     };
 
     const runRegimeSimulation = async (injectType) => {
+        if (!checkSearchLimit()) return;
         if (!chartData || chartData.length < 10) return;
         const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         setIsSimulatingBackend(true);
         setSimulationError(null);
         setSimulationStatus(`Injecting ${injectType.replace('_', ' ')}...`);
         clearSimulationArtifacts();
+
+        await logSearchToBackend();
 
         try {
             setSimulationStatus('Calculating Injected Trajectory...');
@@ -1556,6 +1600,12 @@ const EliteChart = () => {
             setScenarioData(scenario);
             setSimulationActive(true);
             setSimulationMode(type);
+
+            // Standard scenarios also count as a tactical scan
+            logSearchToBackend();
+
+            // Track GA4 event
+            analytics.trackScan(symbol, type);
         }
     };
 
@@ -2472,6 +2522,9 @@ const EliteChart = () => {
                         />
                     )}
                 </main>
+
+                {/* Login Modal */}
+                {showLoginModal && <LoginSignup onClose={() => setShowLoginModal(false)} />}
 
                 <aside
                     className={`h-full border-l transition-[width,opacity] duration-500 ease-in-out flex flex-col flex-shrink-0 z-[100] will-change-[width,opacity] ${focusMode

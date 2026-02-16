@@ -4,6 +4,9 @@ import { Mail, Lock, User, Eye, EyeOff, LogIn, UserPlus, X, Sparkles, ChevronRig
 import { motion, AnimatePresence } from 'framer-motion';
 import NunnoLogo from './NunnoLogo';
 import { cn } from '../utils/cn';
+import { analytics } from '../utils/analytics';
+import { useNavigate } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google';
 
 export default function LoginSignup({ onClose }) {
     const [isLogin, setIsLogin] = useState(true);
@@ -17,7 +20,24 @@ export default function LoginSignup({ onClose }) {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const { login, signup } = useAuth();
+    const { login, signup, googleLogin } = useAuth();
+    const navigate = useNavigate();
+
+    const handleGoogleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            setLoading(true);
+            const result = await googleLogin(tokenResponse.access_token);
+            setLoading(false);
+            if (result.success) {
+                analytics.trackLogin('google');
+                onClose();
+                navigate('/dashboard');
+            } else {
+                setError(result.error);
+            }
+        },
+        onError: () => setError('Google Login Failed')
+    });
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -36,7 +56,15 @@ export default function LoginSignup({ onClose }) {
         setLoading(false);
 
         if (result.success) {
+            // Track GA4 event
+            if (isLogin) {
+                analytics.trackLogin('email');
+            } else {
+                analytics.trackSignup('email');
+            }
             onClose();
+            // Force tutorial for new signups or specific tests
+            navigate('/dashboard?tutorial=force');
         } else {
             setError(result.error);
         }
@@ -93,13 +121,13 @@ export default function LoginSignup({ onClose }) {
                                 transition={{ delay: 0.1 }}
                                 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none mb-2"
                             >
-                                {isLogin ? 'Mission' : 'Enlist'}<br />
+                                {isLogin ? 'Welcome' : 'Join'}<br />
                                 <span className="text-purple-500 underline decoration-purple-500/30 underline-offset-4">
-                                    {isLogin ? 'Control' : 'Protocol'}
+                                    {isLogin ? 'Back' : 'Nunno'}
                                 </span>
                             </motion.h2>
                             <p className="text-slate-400 text-xs font-medium italic">
-                                {isLogin ? 'Access your financial intelligence node' : 'Initiate your neural market training'}
+                                {isLogin ? 'Sign in to your account' : 'Start learning about money today'}
                             </p>
                         </div>
 
@@ -118,6 +146,25 @@ export default function LoginSignup({ onClose }) {
                             )}
                         </AnimatePresence>
 
+                        {/* Google Login Button */}
+                        <div className="mb-6">
+                            <button
+                                type="button"
+                                onClick={() => handleGoogleLogin()}
+                                className="w-full flex items-center justify-center gap-3 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all active:scale-[0.98]"
+                            >
+                                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                                {isLogin ? 'Sign in with Google' : 'Sign up with Google'}
+                            </button>
+
+                            <div className="relative my-6 text-center">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-white/5"></div>
+                                </div>
+                                <span className="relative z-10 px-4 bg-[#0c0c14]/10 text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] italic">Or use email</span>
+                            </div>
+                        </div>
+
                         {/* Form */}
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <AnimatePresence mode="popLayout">
@@ -128,7 +175,7 @@ export default function LoginSignup({ onClose }) {
                                         exit={{ opacity: 0, x: 20 }}
                                         className="space-y-2"
                                     >
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] pl-4 italic">Neural Identity</label>
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] pl-4 italic">Full Name</label>
                                         <div className="relative group/input">
                                             <User className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/input:text-purple-400 transition-colors" size={18} />
                                             <input
@@ -138,7 +185,7 @@ export default function LoginSignup({ onClose }) {
                                                 onChange={handleChange}
                                                 required={!isLogin}
                                                 className="w-full pl-14 pr-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all font-medium"
-                                                placeholder="OPERATIVE NAME"
+                                                placeholder="YOUR FULL NAME"
                                             />
                                         </div>
                                     </motion.div>
@@ -146,7 +193,7 @@ export default function LoginSignup({ onClose }) {
                             </AnimatePresence>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] pl-4 italic">Comm Channel</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] pl-4 italic">Email Address</label>
                                 <div className="relative group/input">
                                     <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/input:text-purple-400 transition-colors" size={18} />
                                     <input
@@ -156,13 +203,13 @@ export default function LoginSignup({ onClose }) {
                                         onChange={handleChange}
                                         required
                                         className="w-full pl-14 pr-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all font-medium"
-                                        placeholder="EMAIL@PROTOCOL.COM"
+                                        placeholder="YOU@EMAIL.COM"
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] pl-4 italic">Security Key</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] pl-4 italic">Password</label>
                                 <div className="relative group/input">
                                     <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/input:text-purple-400 transition-colors" size={18} />
                                     <input
@@ -192,7 +239,7 @@ export default function LoginSignup({ onClose }) {
                                         exit={{ opacity: 0, y: -10 }}
                                         className="space-y-3"
                                     >
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] pl-4 italic">Operative Level</label>
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] pl-4 italic">Experience Level</label>
                                         <div className="grid grid-cols-2 gap-4">
                                             <button
                                                 type="button"
@@ -205,7 +252,7 @@ export default function LoginSignup({ onClose }) {
                                                 )}
                                             >
                                                 <Sparkles size={16} className={formData.experienceLevel === 'beginner' ? "animate-pulse" : ""} />
-                                                <span className="text-[10px] font-black uppercase tracking-widest italic">Recruit</span>
+                                                <span className="text-[10px] font-black uppercase tracking-widest italic">Beginner</span>
                                             </button>
                                             <button
                                                 type="button"
@@ -218,7 +265,7 @@ export default function LoginSignup({ onClose }) {
                                                 )}
                                             >
                                                 <ChevronRight size={16} />
-                                                <span className="text-[10px] font-black uppercase tracking-widest italic">Veteran</span>
+                                                <span className="text-[10px] font-black uppercase tracking-widest italic">Experienced</span>
                                             </button>
                                         </div>
                                     </motion.div>
@@ -237,7 +284,7 @@ export default function LoginSignup({ onClose }) {
                                     ) : (
                                         <>
                                             {isLogin ? <LogIn size={20} /> : <UserPlus size={20} />}
-                                            {isLogin ? 'AUTHORIZE ACCESS' : 'INITIALIZE PROTOCOL'}
+                                            {isLogin ? 'SIGN IN' : 'CREATE ACCOUNT'}
                                         </>
                                     )}
                                 </span>
@@ -246,7 +293,7 @@ export default function LoginSignup({ onClose }) {
 
                         <div className="mt-6 text-center pt-6 border-t border-white/5">
                             <p className="text-[11px] font-medium text-slate-500 italic">
-                                {isLogin ? "New Operative?" : "Already Authorized?"}
+                                {isLogin ? "New here?" : "Already have an account?"}
                                 <button
                                     onClick={() => {
                                         setIsLogin(!isLogin);
@@ -255,7 +302,7 @@ export default function LoginSignup({ onClose }) {
                                     }}
                                     className="ml-2 text-white font-black uppercase tracking-widest hover:text-purple-400 transition-colors"
                                 >
-                                    {isLogin ? 'ENLIST' : 'LOGIN'}
+                                    {isLogin ? 'SIGN UP' : 'LOGIN'}
                                 </button>
                             </p>
                         </div>

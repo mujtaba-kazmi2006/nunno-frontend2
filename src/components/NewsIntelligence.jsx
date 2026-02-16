@@ -5,6 +5,7 @@ import api from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
 import { useChat } from '../contexts/ChatContext';
 import { cn } from '../utils/cn';
+import { analytics } from '../utils/analytics';
 
 const NewsIntelligence = () => {
     const { theme } = useTheme();
@@ -25,6 +26,8 @@ const NewsIntelligence = () => {
                 const response = await api.get('/api/v1/news/BTCUSDT');
                 if (response.data && response.data.headlines) {
                     setNews(response.data.headlines.slice(0, 8));
+                    // Track GA4 event
+                    analytics.trackNewsCheck('BTCUSDT');
                 }
 
                 // Fetch Macro Summary

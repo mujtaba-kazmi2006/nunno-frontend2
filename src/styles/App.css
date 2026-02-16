@@ -2239,4 +2239,4 @@ div:not(.dark) .theme-switch .slider {
     .input-container {
         padding: var(--spacing-md) var(--spacing-md) !important;
     }
-}
+}@layer utilities { .dot-grid { background-image: radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px); background-size: 26px 26px; } .animate-float { animation: float 6s ease-in-out infinite; } @keyframes float { 0%, 100% { transform: translateY(-10px); } 50% { transform: translateY(10px); } } }

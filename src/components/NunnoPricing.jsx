@@ -1,10 +1,127 @@
-import React, { useState } from 'react';
-import { Check, Zap, TrendingUp, Crown, Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Check, Zap, TrendingUp, Crown, Sparkles, Brain, Activity, Wallet, Newspaper } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
+import { analytics } from '../utils/analytics';
+
+const ComingSoonOverlay = () => {
+    const [email, setEmail] = useState('');
+    const [joined, setJoined] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    const handleJoin = async (e) => {
+        e.preventDefault();
+        if (!email) return;
+        setLoading(true);
+
+        try {
+            await axios.post('/api/v1/waitlist', {
+                email,
+                source: 'pricing'
+            });
+            // Persist to local "database" for Investor Metrics page
+            const existing = JSON.parse(localStorage.getItem('nunno_waitlist') || '[]');
+            const updated = [{ email, timestamp: new Date().toISOString() }, ...existing];
+            localStorage.setItem('nunno_waitlist', JSON.stringify(updated));
+            setJoined(true);
+        } catch (error) {
+            console.error('Pricing Waitlist Error:', error);
+            setJoined(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[1100] flex flex-col items-center justify-center p-6 text-center bg-black/60 backdrop-blur-[20px] overflow-hidden pointer-events-auto">
+            {/* Ambient Background Glows */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse" />
+            </div>
+
+            <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="max-w-2xl relative z-10 w-full px-4"
+            >
+                <div className="mb-8 inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">Phase 2: Global Expansion</span>
+                </div>
+
+                <h2 className="text-5xl sm:text-7xl lg:text-8xl font-black italic uppercase tracking-tighter text-white mb-6 leading-[0.9] drop-shadow-2xl overflow-visible pr-4 md:pr-8">
+                    FREE <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">UNFOLD</span>
+                </h2>
+
+                <p className="text-slate-300 text-sm md:text-lg font-medium max-w-md mx-auto mb-10 leading-relaxed opacity-80">
+                    Paid subscriptions are coming soon. All premium intelligence nodes are UNLOCKED for everyone during our global debut.
+                </p>
+
+                <AnimatePresence mode="wait">
+                    {!joined ? (
+                        <motion.form
+                            key="pricing-waitlist"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            onSubmit={handleJoin}
+                            className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto w-full"
+                        >
+                            <input
+                                type="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Reserve your trader handle (email)"
+                                className="w-full sm:flex-1 px-6 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all text-sm placeholder:text-slate-500"
+                            />
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full sm:w-auto px-10 py-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 text-white rounded-2xl font-black uppercase tracking-widest italic transition-all shadow-xl shadow-emerald-600/20 active:scale-95 text-xs whitespace-nowrap"
+                            >
+                                {loading ? 'Processing...' : 'Reserve Access'}
+                            </button>
+                        </motion.form>
+                    ) : (
+                        <motion.div
+                            key="pricing-success"
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="bg-emerald-500/10 border border-emerald-500/20 p-8 rounded-[2.5rem] backdrop-blur-md max-w-md mx-auto"
+                        >
+                            <div className="size-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl shadow-emerald-500/40">
+                                <Check size={32} className="text-white" strokeWidth={4} />
+                            </div>
+                            <h3 className="text-white font-black italic uppercase tracking-tighter text-xl mb-2">Priority Locked</h3>
+                            <p className="text-slate-400 text-sm font-medium">Your handle is reserved. You'll switch to the High-Limit node automatically upon launch.</p>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {!joined && (
+                    <button
+                        onClick={() => window.history.back()}
+                        className="mt-8 text-slate-500 hover:text-white text-[10px] font-black uppercase tracking-widest italic transition-all"
+                    >
+                        Return Home
+                    </button>
+                )}
+            </motion.div>
+        </div>
+    );
+};
 
 export default function NunnoPricing() {
     const { theme } = useTheme();
     const [billingCycle, setBillingCycle] = useState('monthly');
+
+    useEffect(() => {
+        analytics.trackPricingView();
+    }, []);
 
     const plans = [
         {
@@ -87,8 +204,9 @@ export default function NunnoPricing() {
     ];
 
     return (
-        <div className={`min-h-screen py-12 px-4 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-purple-50'}`}>
-            <div className="max-w-7xl mx-auto">
+        <div className={`min-h-screen py-12 px-4 transition-colors duration-500 relative overflow-hidden ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-purple-50'}`}>
+            <ComingSoonOverlay />
+            <div className="max-w-7xl mx-auto opacity-20 filter grayscale pointer-events-none">
                 {/* Header */}
                 <div className="text-center mb-16">
                     <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>

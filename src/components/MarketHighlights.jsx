@@ -60,11 +60,11 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
             <div className={`flex flex-col p-5 gap-4 border-b ${theme === 'dark' ? 'border-white/5' : 'border-slate-100'}`}>
                 <div className="flex items-center justify-between">
                     <h3 className={`text-[10px] font-black uppercase tracking-[0.3em] italic ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`}>
-                        Market Neural Feed
+                        Market Feed
                     </h3>
                     <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                        <span className="text-[10px] font-black uppercase tracking-tighter dark:text-emerald-400">Live Sync</span>
+                        <span className="text-[10px] font-black uppercase tracking-tighter dark:text-emerald-400">Live</span>
                     </div>
                 </div>
 
@@ -156,7 +156,7 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
                                             }`}
                                     >
                                         <Plus size={12} />
-                                        Intelligence
+                                        Market Data
                                     </button>
                                 </div>
                             </div>

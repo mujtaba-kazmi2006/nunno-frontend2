@@ -128,13 +128,28 @@ export default function AccountSettings() {
                                     </div>
                                 </div>
 
-                                <button
-                                    onClick={handleSave}
-                                    className={`flex items-center justify-center gap-2 px-6 py-3 text-white rounded-xl font-semibold transition-all shadow-md hover:shadow-lg w-full md:w-auto ${theme === 'dark' ? 'bg-purple-600 hover:bg-purple-700' : 'bg-purple-600 hover:bg-purple-700'}`}
-                                >
-                                    <Save size={20} />
-                                    Save Changes
-                                </button>
+                                <div className="flex flex-col md:flex-row gap-4">
+                                    <button
+                                        onClick={handleSave}
+                                        className={`flex items-center justify-center gap-2 px-6 py-3 text-white rounded-xl font-semibold transition-all shadow-md hover:shadow-lg w-full md:w-auto ${theme === 'dark' ? 'bg-purple-600 hover:bg-purple-700' : 'bg-purple-600 hover:bg-purple-700'}`}
+                                    >
+                                        <Save size={20} />
+                                        Save Changes
+                                    </button>
+
+                                    <button
+                                        onClick={() => {
+                                            if (user) {
+                                                localStorage.removeItem(`tutorial_seen_${user.id}`);
+                                                window.location.href = '/dashboard?tutorial=force';
+                                            }
+                                        }}
+                                        className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all border-2 ${theme === 'dark' ? 'border-purple-500/30 text-purple-400 hover:bg-purple-500/10' : 'border-purple-200 text-purple-600 hover:bg-purple-50'}`}
+                                    >
+                                        <Zap size={20} />
+                                        Restart Tutorial
+                                    </button>
+                                </div>
                             </div>
                         )}
 

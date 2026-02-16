@@ -13,6 +13,9 @@ import { useTheme } from './contexts/ThemeContext'
 import { useAuth } from './contexts/AuthContext'
 import { cn } from './utils/cn'
 import TutorialOverlay from './components/TutorialOverlay'
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
+const GOOGLE_CLIENT_ID = "311857309948-3ihs0cgoqbq93s91g24ul390vfugnf39.apps.googleusercontent.com";
 
 // Premium Production Error Boundary
 class ErrorBoundary extends React.Component {
@@ -26,10 +29,10 @@ class ErrorBoundary extends React.Component {
             return (
                 <div className="flex h-screen items-center justify-center bg-[#020205] text-white p-12 text-center">
                     <div className="max-w-md">
-                        <h1 className="text-4xl font-black text-purple-500 mb-4 tracking-tighter">NEURAL_STABILITY_GATE_ACTVATED</h1>
+                        <h1 className="text-4xl font-black text-purple-500 mb-4 tracking-tighter">APP_STABILITY_MODE</h1>
                         <p className="text-slate-400 mb-8 italic">"Even in chaos, there is opportunity." - Nunno</p>
-                        <p className="text-sm text-slate-500 mb-8">A technical disruption occurred. Our neural nodes are stabilizing. Your portfolio remains safe.</p>
-                        <button onClick={() => window.location.reload()} className="px-8 py-3 bg-purple-600 hover:bg-purple-500 rounded-full font-bold transition-all transform active:scale-95 shadow-[0_0_20px_rgba(139,92,246,0.3)]">REBOOT_NEURAL_LINK</button>
+                        <p className="text-sm text-slate-500 mb-8">A technical disruption occurred. We are working on fixing it now. Your data remains safe.</p>
+                        <button onClick={() => window.location.reload()} className="px-8 py-3 bg-purple-600 hover:bg-purple-500 rounded-full font-bold transition-all transform active:scale-95 shadow-[0_0_20px_rgba(139,92,246,0.3)]">RELOAD_PAGE</button>
                     </div>
                 </div>
             );
@@ -44,6 +47,7 @@ const AccountSettings = lazy(() => import('./components/AccountSettings'))
 const ChatHistory = lazy(() => import('./components/ChatHistory'))
 const HelpSupport = lazy(() => import('./components/HelpSupport'))
 const NunnoAcademy = lazy(() => import('./components/NunnoAcademy'))
+const InvestorMetrics = lazy(() => import('./components/InvestorMetrics'))
 
 // Loading fallback component
 function LoadingFallback() {
@@ -58,14 +62,25 @@ import MiniWidgets from './components/MiniWidgets'
 import MarketHighlights from './components/MarketHighlights'
 import NewsIntelligence from './components/NewsIntelligence'
 
+import { NeuralActionProvider, useNeuralAction } from './contexts/NeuralActionContext'
+
 function Dashboard({ userAge }) {
     const navigate = useNavigate();
+    const location = useLocation();
     const { theme } = useTheme();
     const { setPendingMessage, messages } = useChat();
     const [isMarketOpen, setIsMarketOpen] = useState(false);
     const [isNewsOpen, setIsNewsOpen] = useState(false);
-    // Add state to track screen size for conditional rendering/styling if needed
-    // But CSS media queries are preferred for performance
+
+    // Neural Integration: Handle URL parameters for tabs
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const tab = params.get('tab');
+        if (tab === 'market') setIsMarketOpen(true);
+        if (tab === 'news') setIsNewsOpen(true);
+        if (tab === 'fomo') setIsMarketOpen(true); // Fomo is in market sidebar
+        if (tab === 'roast') setIsMarketOpen(true); // Roast is also in market sidebar
+    }, [location.search]);
 
     const handleAnalyzeChart = (ticker) => {
         navigate(`/elite-chart?ticker=${ticker}`);
@@ -78,23 +93,15 @@ function Dashboard({ userAge }) {
     // Determine if we should show the floating intro or the chat
     const isInitial = messages.length <= 1;
 
-    // Close sidebars on mobile navigation (optional future enhancement)
-
     return (
         <div className="flex flex-col h-full overflow-hidden relative">
             <div className="main-container relative h-full flex flex-row overflow-hidden">
-
-                {/* Main Content Area (Chat) 
-                    - xl:mr-* ensures content is only pushed on extra large screens.
-                    - On smaller screens, sidebars will overlay content without shrinking it.
-                */}
                 <main className={cn(
                     "flex-1 h-full relative transition-all duration-500 ease-in-out overflow-hidden will-change-[margin] dashboard-container",
                     (isMarketOpen || isNewsOpen) && !isInitial
                         ? (isMarketOpen && isNewsOpen ? "xl:mr-[640px]" : "xl:mr-80")
                         : "mr-0"
                 )}>
-                    {/* Backdrop for smaller screens when sidebars are open */}
                     {((isMarketOpen || isNewsOpen) && !isInitial) && (
                         <div
                             className="xl:hidden absolute inset-0 bg-black/40 z-30 transition-opacity duration-300"
@@ -105,7 +112,6 @@ function Dashboard({ userAge }) {
                     <ChatInterface userAge={userAge} />
                 </main>
 
-                {/* Right Collapsible News Sidebar */}
                 {!isInitial && (
                     <aside className={cn(
                         "fixed top-0 right-0 h-full transition-transform duration-500 ease-in-out z-40 flex flex-col will-change-transform shadow-2xl",
@@ -113,13 +119,8 @@ function Dashboard({ userAge }) {
                             ? "bg-[#0c0c14] border-l border-white/5"
                             : "bg-white border-l border-purple-100/50",
                         isNewsOpen ? "translate-x-0" : "translate-x-full",
-                        // On mobile/tablet, it's just a drawer. On desktop (xl), if market is also open, it shifts.
-                        // But since we want News AND Market side-by-side, we need to handle their positioning relative to each other.
-                        // If Market is open, News needs to be at right-80? No, current logic places them.
-                        // Wait, current logic: "isMarketOpen && isNewsOpen && 'mr-80'" on the ASIDE.
-                        // This implies News is to the LEFT of Market sidebar? 
                         isMarketOpen && isNewsOpen ? "mr-80" : "mr-0",
-                        "w-80" // Fixed width
+                        "w-80"
                     )}>
                         <button
                             onClick={() => setIsNewsOpen(!isNewsOpen)}
@@ -148,7 +149,6 @@ function Dashboard({ userAge }) {
                     </aside>
                 )}
 
-                {/* Right Collapsible Market Sidebar */}
                 {!isInitial && (
                     <aside className={cn(
                         "fixed top-0 right-0 h-full transition-transform duration-500 ease-in-out z-50 flex flex-col will-change-transform shadow-2xl",
@@ -158,7 +158,6 @@ function Dashboard({ userAge }) {
                         isMarketOpen ? "translate-x-0" : "translate-x-full",
                         "w-80"
                     )}>
-                        {/* Toggle Button - Offset from News Toggle */}
                         <button
                             onClick={() => setIsMarketOpen(!isMarketOpen)}
                             className={cn(
@@ -172,7 +171,6 @@ function Dashboard({ userAge }) {
                         >
                             {isMarketOpen ? <ChevronRight size={24} strokeWidth={3} /> : <ChevronLeft size={24} strokeWidth={3} />}
                         </button>
-
 
                         <div className="flex-1 flex flex-col p-6 overflow-y-auto no-scrollbar">
                             <header className="mb-8 mt-12 flex items-center justify-between">
@@ -212,8 +210,7 @@ function Dashboard({ userAge }) {
 
 function MainLayout({ children }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const { theme, toggleTheme } = useTheme();
-
+    const { theme } = useTheme();
     const location = useLocation();
     const isLandingPage = location.pathname === '/';
 
@@ -224,120 +221,111 @@ function MainLayout({ children }) {
     return (
         <div className={cn(
             "flex h-screen overflow-hidden relative selection:bg-purple-500/30 main-layout",
-            theme === 'dark'
-                ? 'bg-[#020205]' // Deeper black for premium feel
-                : 'bg-gradient-to-br from-purple-50 via-white to-purple-50/30'
+            theme === 'dark' ? 'bg-[#020205]' : 'bg-gradient-to-br from-purple-50 via-white to-purple-50/30'
         )}>
-            {/* Radical Optimization: Solid Gradients, No Blur Filters */}
             <div className={cn(
                 "absolute top-[-5%] right-[-5%] w-[70%] h-[70%] rounded-full pointer-events-none transition-all duration-1000 will-change-transform opacity-30",
-                theme === 'dark'
-                    ? "bg-[radial-gradient(circle,rgba(139,92,246,0.15),transparent_70%)] animate-float"
-                    : "bg-[radial-gradient(circle,rgba(139,92,246,0.05),transparent_70%)]"
+                theme === 'dark' ? "bg-[radial-gradient(circle,rgba(139,92,246,0.15),transparent_70%)] animate-float" : "bg-[radial-gradient(circle,rgba(139,92,246,0.05),transparent_70%)]"
             )} />
             <div className={cn(
                 "absolute bottom-[-5%] left-[-5%] w-[70%] h-[70%] rounded-full pointer-events-none transition-all duration-1000 will-change-transform opacity-20",
-                theme === 'dark'
-                    ? "bg-[radial-gradient(circle,rgba(79,70,229,0.15),transparent_70%)] animate-float-alt"
-                    : "bg-[radial-gradient(circle,rgba(79,70,229,0.05),transparent_70%)]"
+                theme === 'dark' ? "bg-[radial-gradient(circle,rgba(79,70,229,0.15),transparent_70%)] animate-float-alt" : "bg-[radial-gradient(circle,rgba(79,70,229,0.05),transparent_70%)]"
             )} />
 
-            <CollapsibleSidebar
-                isCollapsed={isCollapsed}
-                setIsCollapsed={setIsCollapsed}
-            />
+            <CollapsibleSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
-                {/* Top Navigation Bar - Removed Blur Filters */}
-                <div className="absolute top-0 left-0 right-0 h-20 items-center justify-between px-6 flex pointer-events-none z-[1000]">
-                    {/* Mobile Menu Trigger */}
-                    <div className="md:hidden pointer-events-auto">
-                        <button
-                            onClick={() => setIsCollapsed(false)}
-                            className={cn(
-                                "p-3 rounded-2xl shadow-lg transition-all active:scale-95 border",
-                                theme === 'dark'
-                                    ? 'bg-[#0c0c14] text-purple-400 border-white/10'
-                                    : 'bg-white text-slate-600 border-purple-100'
-                            )}
-                        >
-                            <Menu size={22} strokeWidth={3} />
-                        </button>
-                    </div>
-
-                    <div className="flex-1" />
-
-                    {/* Theme Toggle Removed - Now in Sidebar */}
-                    <div className="pointer-events-auto w-10" />
+                <div className="fixed top-8 left-8 md:hidden z-[1000]">
+                    <button
+                        onClick={() => setIsCollapsed(false)}
+                        className={cn(
+                            "transition-all active:scale-90",
+                            theme === 'dark' ? 'text-purple-400' : 'text-purple-600'
+                        )}
+                    >
+                        <Menu size={28} strokeWidth={3} className="drop-shadow-lg" />
+                    </button>
                 </div>
-
-
-
-                {/* Content Area */}
-                <main className="flex-1 overflow-hidden">
-                    {children}
-                </main>
+                <main className="flex-1 overflow-hidden">{children}</main>
             </div>
         </div>
     )
 }
 
-function App() {
-    const [userAge, setUserAge] = useState(18)
+// Separate component to handle tutorial logic inside the Router context
+function TutorialController() {
     const { user } = useAuth();
+    const location = useLocation();
     const [showTutorial, setShowTutorial] = useState(false);
 
     useEffect(() => {
         if (user) {
-            // Priority 1: Tutorial for beginners
-            if (user.experience_level === 'beginner') {
-                const hasSeenTutorial = localStorage.getItem(`tutorial_seen_${user.id}`);
-                if (!hasSeenTutorial) {
-                    setShowTutorial(true);
-                    return;
-                }
-            }
+            const hasSeenTutorial = localStorage.getItem(`tutorial_seen_${user.id}`);
+            const isForced = location.search.includes('tutorial=force');
 
+            if (!hasSeenTutorial || isForced) {
+                // Short delay to ensure basic UI is loaded
+                const timer = setTimeout(() => {
+                    setShowTutorial(true);
+                }, 500);
+                return () => clearTimeout(timer);
+            } else {
+                setShowTutorial(false);
+            }
+        } else {
+            setShowTutorial(false);
         }
-    }, [user]);
+    }, [user, location.search, location.pathname]);
 
     const handleCloseTutorial = () => {
         setShowTutorial(false);
-        if (user) {
-            localStorage.setItem(`tutorial_seen_${user.id}`, 'true');
-        }
+        if (user) localStorage.setItem(`tutorial_seen_${user.id}`, 'true');
     };
+
+    if (!user) return null;
+
+    return (
+        <TutorialOverlay
+            isOpen={showTutorial}
+            onClose={handleCloseTutorial}
+            experienceLevel={user.experience_level}
+        />
+    );
+}
+
+function App() {
+    const [userAge] = useState(18);
 
     return (
         <ErrorBoundary>
-            <BrowserRouter>
-                <MarketDataProvider>
-                    <ChatProvider>
-                        <MainLayout>
-                            <Suspense fallback={<LoadingFallback />}>
-                                <Routes>
-                                    <Route path="/" element={<LandingPage />} />
-                                    <Route path="/dashboard" element={<Dashboard userAge={userAge} />} />
-                                    <Route path="/elite-chart" element={<EliteChart />} />
-                                    <Route path="/academy" element={<NunnoAcademy />} />
-                                    <Route path="/pricing" element={<NunnoPricing />} />
-                                    <Route path="/settings" element={<AccountSettings />} />
-                                    <Route path="/history" element={<ChatHistory />} />
-                                    <Route path="/support" element={<HelpSupport />} />
-                                    <Route path="*" element={<Navigate to="/" replace />} />
-                                </Routes>
-                            </Suspense>
-                            {user && (
-                                <TutorialOverlay
-                                    isOpen={showTutorial}
-                                    onClose={handleCloseTutorial}
-                                    experienceLevel={user.experience_level}
-                                />
-                            )}
-                        </MainLayout>
-                    </ChatProvider>
-                </MarketDataProvider>
-            </BrowserRouter>
+            <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+                <BrowserRouter>
+                    <MarketDataProvider>
+                        <ChatProvider>
+                            <NeuralActionProvider>
+                                <MainLayout>
+                                    <Suspense fallback={<LoadingFallback />}>
+                                        <Routes>
+                                            <Route path="/" element={<LandingPage />} />
+                                            <Route path="/dashboard" element={<Dashboard userAge={userAge} />} />
+                                            <Route path="/elite-chart" element={<EliteChart />} />
+                                            <Route path="/academy" element={<NunnoAcademy />} />
+                                            <Route path="/pricing" element={<NunnoPricing />} />
+                                            <Route path="/settings" element={<AccountSettings />} />
+                                            <Route path="/history" element={<ChatHistory />} />
+                                            <Route path="/support" element={<HelpSupport />} />
+                                            <Route path="/traction-core" element={<InvestorMetrics />} />
+                                            <Route path="*" element={<Navigate to="/" replace />} />
+                                        </Routes>
+                                    </Suspense>
+                                </MainLayout>
+
+                                <TutorialController />
+                            </NeuralActionProvider>
+                        </ChatProvider>
+                    </MarketDataProvider>
+                </BrowserRouter>
+            </GoogleOAuthProvider>
         </ErrorBoundary>
     )
 }
