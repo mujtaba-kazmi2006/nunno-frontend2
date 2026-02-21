@@ -52,6 +52,7 @@ import {
 } from '../utils/technicalIndicators';
 import PatternChatPanel from './PatternChatPanel';
 import LoginSignup from './LoginSignup';
+import LiquidityHeatmap from './LiquidityHeatmap';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
@@ -75,6 +76,33 @@ const EliteChart = () => {
     const [isStreaming, setIsStreaming] = useState(true);
     const [currentPrice, setCurrentPrice] = useState(0);
     const [priceChange, setPriceChange] = useState(0);
+
+    // Initial highlighting state
+    const [highlightedLevels, setHighlightedLevels] = useState({ support: null, resistance: null });
+    const highlightedPriceLinesRef = useRef([]);
+    const hasBlinkedRef = useRef(false);
+
+    // Indicators state
+    const [selectedIndicators, setSelectedIndicators] = useState({
+        ema9: false,
+        ema21: false,
+        ema50: false,
+        ema100: false,
+        ema200: false,
+        rsi: false,
+        macd: false,
+        bollingerBands: false,
+        supportResistance: true,
+        atr: false,
+        candlestickPatterns: false
+    });
+    const [calculatedIndicators, setCalculatedIndicators] = useState({});
+    const [candlestickMarkers, setCandlestickMarkers] = useState([]);
+    const [activeCandlePatterns, setActiveCandlePatterns] = useState(['all']);
+    const [showCandlePatternsDropdown, setShowCandlePatternsDropdown] = useState(false);
+
+    // Ticker search ref
+    const tickerMenuRef = useRef(null);
 
     // Update symbol if URL parameter changes
     useEffect(() => {
@@ -118,6 +146,17 @@ const EliteChart = () => {
         if (urlInterval) {
             setInterval(urlInterval);
         }
+
+        const support = searchParams.get('support');
+        const resistance = searchParams.get('resistance');
+        const highlight = searchParams.get('highlight');
+        if (highlight === 'true' && (support || resistance)) {
+            setHighlightedLevels({
+                support: support ? parseFloat(support) : null,
+                resistance: resistance ? parseFloat(resistance) : null
+            });
+            hasBlinkedRef.current = false;
+        }
     }, [searchParams]);
 
     // UI state
@@ -127,6 +166,74 @@ const EliteChart = () => {
     const [showIndicatorsDropdown, setShowIndicatorsDropdown] = useState(false);
     const [showAIChat, setShowAIChat] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
+    // Level Highlighting Animation (Blinking)
+    useEffect(() => {
+        if (!mainSeriesRef.current || (!highlightedLevels.support && !highlightedLevels.resistance)) return;
+        if (chartData.length === 0 || hasBlinkedRef.current) return;
+
+        hasBlinkedRef.current = true;
+        // Clear existing highlighted lines
+        highlightedPriceLinesRef.current.forEach(line => {
+            try { mainSeriesRef.current.removePriceLine(line); } catch (e) { }
+        });
+        highlightedPriceLinesRef.current = [];
+
+        const newLines = [];
+        if (highlightedLevels.support) {
+            const line = mainSeriesRef.current.createPriceLine({
+                price: highlightedLevels.support,
+                color: '#00ff88', // Neon Mint
+                lineWidth: 4,
+                lineStyle: 0,
+                axisLabelVisible: true,
+                title: 'NEURAL SUPPORT'
+            });
+            newLines.push({ line, baseColor: '#00ff88', pulseColor: '#00cc66' });
+        }
+        if (highlightedLevels.resistance) {
+            const line = mainSeriesRef.current.createPriceLine({
+                price: highlightedLevels.resistance,
+                color: '#ff3399', // Neon Magenta
+                lineWidth: 4,
+                lineStyle: 0,
+                axisLabelVisible: true,
+                title: 'NEURAL RESISTANCE'
+            });
+            newLines.push({ line, baseColor: '#ff3399', pulseColor: '#cc0066' });
+        }
+
+        highlightedPriceLinesRef.current = newLines.map(nl => nl.line);
+
+        // Neon Pulse Animation loop
+        let step = 0;
+        const maxSteps = 30; // 3 seconds (100ms * 30)
+
+        const pulseInterval = window.setInterval(() => {
+            const width = 2 + Math.abs(Math.sin(step * 0.4) * 5); // Oscillate width between 2 and 7
+
+            newLines.forEach(item => {
+                item.line.applyOptions({
+                    lineWidth: width,
+                    color: step % 2 === 0 ? item.baseColor : item.pulseColor
+                });
+            });
+
+            step++;
+            if (step >= maxSteps) {
+                window.clearInterval(pulseInterval);
+                // Permanent cleanup: Remove the lines completely after the highlight
+                newLines.forEach(item => {
+                    try { mainSeriesRef.current.removePriceLine(item.line); } catch (e) { }
+                });
+                highlightedPriceLinesRef.current = [];
+            }
+        }, 100);
+
+        return () => {
+            window.clearInterval(pulseInterval);
+        };
+    }, [highlightedLevels, chartData]); // Re-run when chartData fills or levels change
 
     // Watch for window resize to handle responsiveness
     useEffect(() => {
@@ -155,24 +262,7 @@ const EliteChart = () => {
         };
     }, []);
 
-    // Indicators state
-    const [selectedIndicators, setSelectedIndicators] = useState({
-        ema9: false,
-        ema21: false,
-        ema50: false,
-        ema100: false,
-        ema200: false,
-        rsi: false,
-        macd: false,
-        bollingerBands: false,
-        supportResistance: true,
-        atr: false,
-        candlestickPatterns: false
-    });
-    const [calculatedIndicators, setCalculatedIndicators] = useState({});
-    const [candlestickMarkers, setCandlestickMarkers] = useState([]);
-    const [activeCandlePatterns, setActiveCandlePatterns] = useState(['all']);
-    const [showCandlePatternsDropdown, setShowCandlePatternsDropdown] = useState(false);
+
 
 
     // Simulation state
@@ -220,7 +310,6 @@ const EliteChart = () => {
     const [indicatorCategory, setIndicatorCategory] = useState('all'); // 'all', 'trend', 'momentum', 'volatility'
     const [isTickerMenuOpen, setIsTickerMenuOpen] = useState(false);
     const [tickerSearch, setTickerSearch] = useState('');
-    const tickerMenuRef = useRef(null);
 
     // Simulation 2.0 State
     const [monteCarloFan, setMonteCarloFan] = useState(null);
@@ -233,8 +322,12 @@ const EliteChart = () => {
     const [showLabDeepDive, setShowLabDeepDive] = useState(false);
     const fanSeriesRefs = useRef([]);
 
+    // Liquidity Heatmap state
+    const [showLiquidityHeatmap, setShowLiquidityHeatmap] = useState(false);
+
     // WebSocket ref
     const wsRef = useRef(null);
+    const reconnectTimerRef = useRef(null);
 
     // Token options
     const tokenOptions = [
@@ -705,6 +798,12 @@ const EliteChart = () => {
     const connectWebSocket = () => {
         if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
+        // Clear any existing reconnection timeout
+        if (reconnectTimerRef.current) {
+            clearTimeout(reconnectTimerRef.current);
+            reconnectTimerRef.current = null;
+        }
+
         try {
             const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             let apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -714,6 +813,7 @@ const EliteChart = () => {
             const wsHost = apiBaseUrl.replace('http://', '').replace('https://', '');
             const wsUrl = `${wsProtocol}//${wsHost}/ws/prices`;
 
+            console.log(`📡 Connecting to ${wsUrl}...`);
             const ws = new WebSocket(wsUrl);
 
             ws.onopen = () => {
@@ -731,7 +831,7 @@ const EliteChart = () => {
                     if (message.type === 'kline_update' && message.symbol.toUpperCase() === symbol) {
                         const kline = message.kline;
                         const newCandle = {
-                            time: parseInt(kline.T) / 1000,
+                            time: parseInt(kline.t) / 1000,
                             open: parseFloat(kline.o),
                             high: parseFloat(kline.h),
                             low: parseFloat(kline.l),
@@ -742,7 +842,11 @@ const EliteChart = () => {
                         // Update chart
                         if (mainSeriesRef.current) {
                             if (chartType === 'candlestick') {
-                                mainSeriesRef.current.update(newCandle);
+                                try {
+                                    mainSeriesRef.current.update(newCandle);
+                                } catch (e) {
+                                    console.warn('Chart update failed:', e);
+                                }
                             } else {
                                 mainSeriesRef.current.update({
                                     time: newCandle.time,
@@ -781,19 +885,41 @@ const EliteChart = () => {
                 }
             };
 
-            ws.onerror = (error) => console.error('WebSocket error:', error);
-            ws.onclose = () => {
-                console.log('WebSocket disconnected');
+            ws.onerror = (error) => {
+                console.error('❌ WebSocket error:', error);
+            };
+
+            ws.onclose = (event) => {
+                console.log(`🔌 WebSocket disconnected (reason: ${event.reason || 'none'}). Retrying in 5s...`);
+                wsRef.current = null;
+                // Attempt to reconnect after 5 seconds
+                if (!reconnectTimerRef.current) {
+                    reconnectTimerRef.current = setTimeout(() => {
+                        console.log('🔄 Attempting WebSocket reconnection...');
+                        connectWebSocket();
+                    }, 5000);
+                }
             };
 
             wsRef.current = ws;
         } catch (error) {
             console.error('Failed to connect WebSocket:', error);
+            // Attempt to reconnect after 5 seconds on fail
+            if (!reconnectTimerRef.current) {
+                reconnectTimerRef.current = setTimeout(() => {
+                    connectWebSocket();
+                }, 5000);
+            }
         }
     };
 
     // Disconnect WebSocket
     const disconnectWebSocket = () => {
+        if (reconnectTimerRef.current) {
+            clearTimeout(reconnectTimerRef.current);
+            reconnectTimerRef.current = null;
+        }
+
         if (wsRef.current) {
             // Only send unsubscribe if the connection is actually open
             if (wsRef.current.readyState === WebSocket.OPEN) {
@@ -1090,6 +1216,7 @@ const EliteChart = () => {
         setSimulationMode(null);
         setScenarioData(null);
         setBlueprintVerdict(null);
+        setHighlightedLevels({ support: null, resistance: null });
         setSimulationStatus('');
         setSimulationError(null);
         setShowSimulationDetails(false);
@@ -1663,6 +1790,23 @@ const EliteChart = () => {
         clearSimulationArtifacts();
     };
 
+    const handleTickerChange = (newSymbol) => {
+        const symbolStr = typeof newSymbol === 'string' ? newSymbol : newSymbol.symbol;
+        let finalSymbol = symbolStr.toUpperCase();
+        if (!finalSymbol.endsWith('USDT')) finalSymbol += 'USDT';
+
+        setSymbol(finalSymbol);
+        setIsTickerMenuOpen(false);
+        setTickerSearch('');
+
+        // Switch back to "Price View": clear simulations, heatmaps, and rest focus/type
+        clearSimulationArtifacts();
+        setShowLiquidityHeatmap(false);
+        setIsBlueprintMode(false);
+        setFocusMode(false);
+        setChartType('candlestick');
+    };
+
     // Cleanup on unmount
     useEffect(() => {
         return () => {
@@ -1676,9 +1820,9 @@ const EliteChart = () => {
             <header className={`z-[70] transition-all duration-500 relative border-b ${theme === 'dark' ? 'bg-[#1e2030]/80 border-slate-700/50' : 'bg-white/80 border-slate-200'} backdrop-blur-md`}>
                 <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between px-4 md:px-8 py-3 md:py-4 gap-4">
                     {/* Left: Ticker & Timeframe */}
-                    <div className="flex items-center gap-4 md:gap-8">
+                    <div className="flex items-center gap-4 md:gap-8 pl-14 md:pl-0">
                         <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-2xl shadow-inner ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-slate-100'}`}>
+                            <div className={`hidden md:flex p-2 rounded-2xl shadow-inner ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-slate-100'}`}>
                                 <TrendingUp className="text-purple-500" size={28} />
                             </div>
                             <div className="flex flex-col">
@@ -1706,10 +1850,7 @@ const EliteChart = () => {
                                                         onChange={(e) => setTickerSearch(e.target.value.toUpperCase())}
                                                         onKeyDown={(e) => {
                                                             if (e.key === 'Enter' && tickerSearch) {
-                                                                const finalTicker = tickerSearch.endsWith('USDT') ? tickerSearch : `${tickerSearch}USDT`;
-                                                                setSymbol(finalTicker);
-                                                                setIsTickerMenuOpen(false);
-                                                                setTickerSearch('');
+                                                                handleTickerChange(tickerSearch);
                                                             }
                                                         }}
                                                         className={`w-full px-4 py-2 rounded-xl text-sm font-bold border outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-white focus:border-purple-500' : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-purple-400'}`}
@@ -1726,9 +1867,7 @@ const EliteChart = () => {
                                                         <button
                                                             key={token.symbol}
                                                             onClick={() => {
-                                                                setSymbol(token.symbol);
-                                                                setIsTickerMenuOpen(false);
-                                                                setTickerSearch('');
+                                                                handleTickerChange(token.symbol);
                                                             }}
                                                             className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all ${symbol === token.symbol
                                                                 ? (theme === 'dark' ? 'bg-purple-600/20 text-purple-400 border border-purple-500/30' : 'bg-purple-50 text-purple-600 border border-purple-100')
@@ -1750,10 +1889,7 @@ const EliteChart = () => {
                                                 ) : (
                                                     <button
                                                         onClick={() => {
-                                                            const finalTicker = tickerSearch.endsWith('USDT') ? tickerSearch : `${tickerSearch}USDT`;
-                                                            setSymbol(finalTicker);
-                                                            setIsTickerMenuOpen(false);
-                                                            setTickerSearch('');
+                                                            handleTickerChange(tickerSearch);
                                                         }}
                                                         className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${theme === 'dark' ? 'text-purple-400 bg-purple-600/10 hover:bg-purple-600/20' : 'text-purple-600 bg-purple-50 hover:bg-purple-100'}`}
                                                     >
@@ -1861,6 +1997,18 @@ const EliteChart = () => {
                                     }`}
                             >
                                 {focusMode ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+                            </button>
+
+                            {/* Liquidity Heatmap Toggle */}
+                            <button
+                                onClick={() => setShowLiquidityHeatmap(!showLiquidityHeatmap)}
+                                className={`p-2.5 rounded-xl border transition-all ${showLiquidityHeatmap
+                                    ? 'bg-cyan-500 text-white border-cyan-400 shadow-lg shadow-cyan-500/20'
+                                    : theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50' : 'bg-white border-slate-200 text-slate-600 hover:text-cyan-600'
+                                    }`}
+                                title="Liquidity Heatmap — Real Order Book"
+                            >
+                                <Droplets size={20} />
                             </button>
 
                             <button
@@ -2495,7 +2643,16 @@ const EliteChart = () => {
                     <div
                         ref={chartContainerRef}
                         className={`w-full h-full relative z-10 ${isBlueprintMode ? 'cursor-crosshair' : ''}`}
-                    />
+                    >
+                        {/* Liquidity Heatmap Canvas Overlay */}
+                        <LiquidityHeatmap
+                            chartRef={chartRef}
+                            containerRef={chartContainerRef}
+                            symbol={symbol}
+                            isVisible={showLiquidityHeatmap}
+                            currentPrice={currentPrice}
+                        />
+                    </div>
 
                     {/* Floating Utils - Hidden when AI Chat is open to avoid clutter */}
                     <div className={`absolute bottom-6 right-6 flex flex-col gap-3 z-[150] transition-all duration-500 ${showAIChat ? 'opacity-0 pointer-events-none translate-y-10' : 'opacity-100'}`}>
@@ -2532,34 +2689,39 @@ const EliteChart = () => {
                         : showAIChat
                             ? isMobile ? 'fixed inset-0 w-full' : 'relative w-[450px] xl:w-[550px] min-w-[450px] xl:min-w-[550px] opacity-100'
                             : 'w-0 border-none overflow-hidden opacity-0 pointer-events-none'
-                        } ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-slate-200'}`}
+                        } ${theme === 'dark' ? 'bg-[#0f111a] border-white/5 shadow-2xl' : 'bg-white border-slate-200 shadow-xl'}`}
                 >
                     {showAIChat && !focusMode && (
                         <div className="flex flex-col h-full w-full">
-                            <header className={`flex items-center justify-between p-6 border-b sticky top-0 z-10 ${theme === 'dark' ? 'bg-[#1e2030]/90 border-slate-700/50 backdrop-blur-md' : 'bg-white/90 border-slate-200 backdrop-blur-md'}`}>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-2xl bg-purple-600/10 flex items-center justify-center">
-                                        <Brain size={24} className="text-purple-600" />
+                            <header className={`flex items-center justify-between p-6 border-b sticky top-0 z-10 ${theme === 'dark' ? 'bg-[#0f111a]/80 border-white/5 backdrop-blur-xl' : 'bg-white/90 border-slate-200 backdrop-blur-md'}`}>
+                                <div className="flex items-center gap-4">
+                                    <div className="relative">
+                                        <div className="w-11 h-11 rounded-2xl bg-[#0f111a] flex items-center justify-center shadow-lg border border-white/5 overflow-hidden">
+                                            <img src="/logo.png" alt="Nunno Logo" className="w-8 h-8 object-contain" />
+                                        </div>
+                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#0f111a] flex items-center justify-center">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                        </div>
                                     </div>
                                     <div>
-                                        <h3 className={`font-black tracking-tight ${theme === 'dark' ? 'text-slate-100' : 'text-slate-800'}`}>Nunno AI</h3>
-                                        <div className="flex items-center gap-1">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                            <span className="text-[10px] font-bold text-emerald-500">READY TO ASSIST</span>
+                                        <h3 className={`font-black tracking-tight text-lg ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Nunno Intel</h3>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Neural Link Active</span>
                                         </div>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => setShowAIChat(false)}
-                                    className={`p-2 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-slate-700 text-slate-500' : 'hover:bg-slate-100 text-slate-400'}`}
+                                    className={`p-2.5 rounded-xl transition-all active:scale-90 ${theme === 'dark' ? 'hover:bg-white/5 text-slate-500' : 'hover:bg-slate-100 text-slate-400'}`}
                                 >
-                                    <X size={20} />
+                                    <X size={22} />
                                 </button>
                             </header>
 
                             <div className="flex-1 overflow-hidden">
                                 <PatternChatPanel
                                     onPatternGenerated={handleAIPattern}
+                                    onUnauthorized={() => setShowLoginModal(true)}
                                     currentPrice={currentPrice}
                                     interval={interval}
                                     getTechnicalContext={() => {

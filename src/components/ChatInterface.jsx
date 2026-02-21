@@ -9,6 +9,8 @@ import { useChat } from '../contexts/ChatContext'
 import { cn } from '../utils/cn'
 import ThinkingLoader from './ThinkingLoader'
 import { analytics } from '../utils/analytics'
+import LoginSignup from './LoginSignup'
+import NeuralPersistenceHUD from './NeuralPersistenceHUD'
 
 // Extracted utility outside component to avoid recreation
 function formatMessageContent(content) {
@@ -64,10 +66,14 @@ const MessageItem = memo(forwardRef(({ message, onDeepAnalysis }, ref) => {
                 isAssistant ? "flex-row" : "flex-row-reverse"
             )}>
                 <div className={cn(
-                    "flex items-center justify-center size-6 rounded-lg",
-                    isAssistant ? "bg-purple-600 text-white" : "bg-slate-200 dark:bg-white/10 text-slate-500"
+                    "flex items-center justify-center size-7 rounded-full overflow-hidden transition-transform hover:scale-110",
+                    isAssistant ? "bg-white/10" : "bg-slate-200 dark:bg-white/10 text-slate-500"
                 )}>
-                    {isAssistant ? <Sparkles size={12} /> : <UserIcon size={12} />}
+                    {isAssistant ? (
+                        <img src="/logo.png" alt="Nunno" className="size-full object-contain p-1" />
+                    ) : (
+                        <UserIcon size={14} />
+                    )}
                 </div>
                 <span className={cn(
                     "text-[10px] font-black uppercase tracking-[0.3em] italic",
@@ -150,8 +156,9 @@ const MessageItem = memo(forwardRef(({ message, onDeepAnalysis }, ref) => {
 });
 
 export default function ChatInterface({ userAge }) {
-    const { user, refreshUser } = useAuth()
+    const { user, isAuthenticated, refreshUser } = useAuth()
     const { theme } = useTheme()
+    const [showLoginModal, setShowLoginModal] = useState(false)
     const {
         messages,
         setMessages,
@@ -231,6 +238,10 @@ export default function ChatInterface({ userAge }) {
     }, [pendingMessage, isLoading]);
 
     const handleSend = async (messageOverride = null) => {
+        if (!isAuthenticated) {
+            setShowLoginModal(true);
+            return;
+        }
         const overrideText = typeof messageOverride === 'string' ? messageOverride : null;
         const messageToSend = (overrideText || input).trim()
         if (!messageToSend || isLoading) return
@@ -279,24 +290,7 @@ export default function ChatInterface({ userAge }) {
                         setLoadingStatus('');
                         fullContent += chunk.content;
 
-                        // Check for [NAVIGATE] actions in the text
-                        const actionMatch = fullContent.match(/\[NAVIGATE:[^\]]+\]/g);
-                        if (actionMatch) {
-                            actionMatch.forEach(actionStr => {
-                                if (!handledActions.has(actionStr)) {
-                                    // Dynamically handle the action
-                                    import('../contexts/NeuralActionContext').then(({ useNeuralAction }) => {
-                                        // This is a bit tricky inside onChunk without a hook access, 
-                                        // but we can pass it as a prop or use a window event as a fallback.
-                                        // Better: Use a separate useEffect or a ref-based trigger.
-                                        const event = new CustomEvent('neural-action', { detail: actionStr });
-                                        window.dispatchEvent(event);
-                                    });
-                                    handledActions.add(actionStr);
-                                }
-                            });
-                        }
-
+                        // Periodic UI update for smoother streaming
                         const now = Date.now();
                         if (now - lastUpdateTime > 120) {
                             setMessages(prev => {
@@ -381,6 +375,10 @@ export default function ChatInterface({ userAge }) {
     }
 
     const handleFeedNunno = async () => {
+        if (!isAuthenticated) {
+            setShowLoginModal(true);
+            return;
+        }
         if (isLoading) return
         setShowSuggestions(false)
         setLoadingStatus('Feeding Nunno...')
@@ -488,6 +486,10 @@ export default function ChatInterface({ userAge }) {
     }
 
     const handleSuggestionClick = (suggestion) => {
+        if (!isAuthenticated) {
+            setShowLoginModal(true);
+            return;
+        }
         setInput(suggestion)
         setShowSuggestions(false)
     }
@@ -514,6 +516,8 @@ export default function ChatInterface({ userAge }) {
                         transition={{ duration: 0.6, ease: "easeOut" }}
                         className="absolute inset-x-0 top-[15%] sm:top-[12%] flex flex-col items-center gap-4 sm:gap-8 px-4 sm:px-6 z-10"
                     >
+                        <NeuralPersistenceHUD isInitialState={isInitialState} />
+
                         <div className="text-center space-y-4 sm:space-y-6 max-w-full">
                             <motion.div
                                 initial={{ y: 10, opacity: 0 }}
@@ -521,7 +525,7 @@ export default function ChatInterface({ userAge }) {
                                 transition={{ delay: 0.2, duration: 0.4 }}
                                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.3em]"
                             >
-                                <Sparkles size={12} className="animate-pulse" />
+                                <img src="/logo.png" alt="" className="size-3.5 object-contain" />
                                 <span>Intelligence Center Active</span>
                             </motion.div>
                             <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-slate-800 dark:text-white tracking-tighter leading-none italic uppercase max-w-[95vw] sm:max-w-full px-2 lg:mt-4">
@@ -529,7 +533,7 @@ export default function ChatInterface({ userAge }) {
                                 <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent underline decoration-purple-500/30 underline-offset-4 sm:underline-offset-8">SIMPLIFIED.</span>
                             </h1>
 
-                            <p className="hidden md:block text-slate-500 dark:text-slate-400 text-base lg:text-lg max-w-xl mx-auto font-medium leading-relaxed italic px-4">
+                            <p className="hidden md:block text-slate-500 dark:text-slate-400 text-base lg:text-lg max-w-xl mx-auto font-medium leading-relaxed italic px-4 text-center">
                                 Your premium AI gateway to market knowledge and simple investing.
                             </p>
                         </div>
@@ -577,7 +581,7 @@ export default function ChatInterface({ userAge }) {
                 <div
                     className={cn(
                         "relative w-full transition-[background-color,border-color,box-shadow,transform] duration-700",
-                        isInitialState ? "max-w-5xl bg-white dark:bg-[#0c0c14] rounded-[2rem] sm:rounded-[3rem] p-3 sm:p-6 md:p-8 lg:p-16 border border-white/10 shadow-2xl" : "max-w-5xl bg-transparent"
+                        isInitialState ? "max-w-5xl bg-white dark:bg-[#0c0c14]/30 rounded-[2rem] sm:rounded-[3rem] p-4 sm:p-6 md:p-10 lg:p-12 border border-white/10 shadow-2xl backdrop-blur-3xl" : "max-w-5xl bg-transparent"
                     )}
                 >
                     {isInitialState && (
@@ -645,6 +649,11 @@ export default function ChatInterface({ userAge }) {
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyPress={handleKeyPress}
+                                onFocus={() => {
+                                    if (!isAuthenticated) {
+                                        setShowLoginModal(true);
+                                    }
+                                }}
                                 placeholder="Enter market query..."
                                 className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 text-slate-700 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 font-medium text-sm sm:text-base lg:text-lg py-2 sm:py-3 outline-none italic"
                                 autoFocus
@@ -699,6 +708,8 @@ export default function ChatInterface({ userAge }) {
                     )}
                 </div>
             </motion.div>
+
+            {showLoginModal && <LoginSignup onClose={() => setShowLoginModal(false)} />}
         </div >
     )
 }

@@ -84,7 +84,12 @@ export default function EducationalCard({ data, onDeepAnalysis }) {
         const indicatorsParam = indicators.length > 0 ? `&indicators=${indicators.join(',')}` : '';
         const intervalParam = data.interval ? `&interval=${data.interval}` : '';
 
-        navigate(`/elite-chart?ticker=${data.ticker}${intervalParam}${indicatorsParam}`);
+        // Pass levels for highlighting
+        const supportParam = data.key_levels?.support ? `&support=${data.key_levels.support}` : '';
+        const resistanceParam = data.key_levels?.resistance ? `&resistance=${data.key_levels.resistance}` : '';
+        const highlightParam = (supportParam || resistanceParam) ? '&highlight=true' : '';
+
+        navigate(`/elite-chart?ticker=${data.ticker}${intervalParam}${indicatorsParam}${supportParam}${resistanceParam}${highlightParam}`);
     };
 
     // Combine all signals from confluences

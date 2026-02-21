@@ -91,7 +91,7 @@ export default function ChatHistory() {
         <div className={`min-h-screen py-8 px-4 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-purple-50'}`}>
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="mb-8">
+                <div className="mb-8 pl-14 md:pl-0">
                     <h1 className={`text-4xl font-bold mb-2 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>Prediction History</h1>
                     <p className={theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}>Track your AI-powered crypto predictions and their accuracy</p>
                 </div>

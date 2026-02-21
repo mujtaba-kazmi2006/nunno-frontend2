@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { analytics } from '../utils/analytics';
 
-const ComingSoonOverlay = () => {
+const ComingSoonOverlay = ({ onClose }) => {
     const [email, setEmail] = useState('');
     const [joined, setJoined] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -34,7 +34,10 @@ const ComingSoonOverlay = () => {
     };
 
     return (
-        <div className="fixed inset-0 z-[1100] flex flex-col items-center justify-center p-6 text-center bg-black/60 backdrop-blur-[20px] overflow-hidden pointer-events-auto">
+        <div
+            className="fixed inset-0 z-[2000] flex flex-col items-center justify-center p-6 text-center bg-[#0c0c14]/80 backdrop-blur-[20px] overflow-y-auto pointer-events-auto"
+            style={{ WebkitBackdropFilter: 'blur(20px)' }}
+        >
             {/* Ambient Background Glows */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse" />
@@ -104,10 +107,10 @@ const ComingSoonOverlay = () => {
 
                 {!joined && (
                     <button
-                        onClick={() => window.history.back()}
-                        className="mt-8 text-slate-500 hover:text-white text-[10px] font-black uppercase tracking-widest italic transition-all"
+                        onClick={onClose || (() => window.history.back())}
+                        className="mt-8 text-white/40 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] italic transition-all group border-b border-transparent hover:border-white/20 pb-1"
                     >
-                        Return Home
+                        {onClose ? 'CLOSE PREVIEW' : 'RETURN HOME'}
                     </button>
                 )}
             </motion.div>
@@ -115,7 +118,7 @@ const ComingSoonOverlay = () => {
     );
 };
 
-export default function NunnoPricing() {
+export default function NunnoPricing({ onClose }) {
     const { theme } = useTheme();
     const [billingCycle, setBillingCycle] = useState('monthly');
 
@@ -204,8 +207,8 @@ export default function NunnoPricing() {
     ];
 
     return (
-        <div className={`min-h-screen py-12 px-4 transition-colors duration-500 relative overflow-hidden ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-purple-50'}`}>
-            <ComingSoonOverlay />
+        <div className={`min-h-screen py-12 px-4 transition-colors duration-500 relative ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-purple-50'}`}>
+            <ComingSoonOverlay onClose={onClose} />
             <div className="max-w-7xl mx-auto opacity-20 filter grayscale pointer-events-none">
                 {/* Header */}
                 <div className="text-center mb-16">

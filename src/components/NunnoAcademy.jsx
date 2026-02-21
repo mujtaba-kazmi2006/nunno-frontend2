@@ -439,10 +439,10 @@ const NunnoAcademy = () => {
             <div className="max-w-7xl mx-auto w-full flex flex-col h-full opacity-20 filter grayscale pointer-events-none">
 
                 {/* Header */}
-                <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6 pl-14 md:pl-0">
                     <div className="space-y-1">
                         <div className="flex items-center gap-3">
-                            <GraduationCap className="text-purple-500" size={28} />
+                            <GraduationCap className="hidden md:block text-purple-500" size={28} />
                             <h1 className="text-4xl font-black italic uppercase tracking-tighter text-white">
                                 Nunno <span className="text-purple-500">Academy</span>
                             </h1>

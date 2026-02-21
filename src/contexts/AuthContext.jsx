@@ -96,6 +96,19 @@ export function AuthProvider({ children }) {
         }
     };
 
+    const updateProfile = async (data) => {
+        try {
+            const response = await axios.patch('/api/auth/profile', data);
+            setUser(prev => ({ ...prev, ...response.data.user }));
+            return { success: true };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data?.detail || 'Update context failed'
+            };
+        }
+    };
+
     return (
         <AuthContext.Provider value={{
             user,
@@ -106,6 +119,7 @@ export function AuthProvider({ children }) {
             logout,
             loading,
             refreshUser,
+            updateProfile,
             isAuthenticated: !!user
         }}>
             {children}

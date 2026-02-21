@@ -17,6 +17,7 @@ import {
     Newspaper,
     GraduationCap
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -73,7 +74,7 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
             <MobileOverlay />
             <div
                 className={cn(
-                    "flex flex-col h-screen transition-[width,transform] duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] z-[1200] relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.3)] will-change-[width,transform]",
+                    "flex flex-col h-screen transition-[width,transform] duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] z-[1200] relative shadow-[0_0_50px_rgba(0,0,0,0.3)] will-change-[width,transform]",
                     isMobile ? "fixed inset-y-0 left-0" : "relative",
                     isCollapsed ? (isMobile ? "-translate-x-full" : "w-24") : "w-[300px]",
                     theme === 'dark' ? "bg-[#0c0c14] border-r border-white/5" : "bg-white border-r border-slate-200"
@@ -87,22 +88,26 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                 )}
 
 
-                {/* Toggle Button - Redesigned */}
+                {/* Toggle Button - Redesigned & Fixed Clipping */}
                 {!isMobile && (
                     <button
                         onClick={() => setIsCollapsed(!isCollapsed)}
                         className={cn(
-                            "absolute -right-4 top-12 size-9 flex items-center justify-center rounded-xl z-50 transition-[transform,box-shadow] duration-500 border-2",
+                            "absolute translate-x-1/2 -right-0 top-12 size-8 flex items-center justify-center rounded-full z-[1300] transition-all duration-500 border",
                             theme === 'dark'
-                                ? "bg-white text-black border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)]"
-                                : "bg-white text-black border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_30px_rgba(0,0,0,0.2)]",
+                                ? "bg-[#16161f] text-purple-400 border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:border-purple-500/50"
+                                : "bg-white text-purple-600 border-slate-200 shadow-[0_4px_15px_rgba(0,0,0,0.1)] hover:border-purple-300",
                             "hover:scale-110 active:scale-95 group/toggle"
                         )}
                     >
-                        <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-purple-500 to-indigo-500 opacity-0 group-hover/toggle:opacity-15 transition-opacity" />
-                        <div className="relative z-10">
-                            {isCollapsed ? <ChevronRight size={18} strokeWidth={3} className="text-black" /> : <ChevronLeft size={18} strokeWidth={3} className="text-black" />}
-                        </div>
+                        <div className="absolute inset-0 rounded-full bg-purple-500/5 opacity-0 group-hover/toggle:opacity-100 transition-opacity" />
+                        <motion.div
+                            initial={false}
+                            animate={{ rotate: isCollapsed ? 180 : 0 }}
+                            className="relative z-10 flex items-center justify-center"
+                        >
+                            <ChevronLeft size={16} strokeWidth={3} />
+                        </motion.div>
                     </button>
                 )}
 
@@ -201,52 +206,6 @@ export default function CollapsibleSidebar({ isCollapsed, setIsCollapsed }) {
                     })}
                 </nav>
 
-                {/* Market Quick Glance - Mobile Only */}
-                {isMobile && !isCollapsed && (
-                    <div className="relative z-10 px-6 py-6 mt-4 border-t border-white/5 group/pulse">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 italic group-hover/pulse:text-purple-400 transition-colors">
-                                Vital Pulse
-                            </h3>
-                            <div className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                <span className="text-[10px] font-black italic text-emerald-500 uppercase tracking-tighter">Live Sync</span>
-                            </div>
-                        </div>
-
-                        <div className={cn(
-                            "h-1.5 w-full rounded-full overflow-hidden mb-6",
-                            theme === 'dark' ? "bg-white/5" : "bg-slate-200"
-                        )}>
-                            <div className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 w-[72%] animate-pulse" />
-                        </div>
-
-                        {/* Restored Crypto Widgets */}
-                        <div className="space-y-4">
-                            <div className={cn(
-                                "p-4 rounded-[2rem] border transition-all duration-500",
-                                theme === 'dark'
-                                    ? "bg-white/[0.03] border-white/5 hover:bg-white/[0.05]"
-                                    : "bg-slate-50 border-slate-200 hover:bg-slate-100"
-                            )}>
-                                <MarketTemperature variant="minimal" />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <CryptoPriceCard
-                                    ticker="BTCUSDT"
-                                    name="BTC"
-                                    variant="compact"
-                                />
-                                <CryptoPriceCard
-                                    ticker="ETHUSDT"
-                                    name="ETH"
-                                    variant="compact"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 <div className="mt-auto h-px bg-white/5 w-full relative z-10" />
 
