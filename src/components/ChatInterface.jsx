@@ -10,7 +10,6 @@ import { cn } from '../utils/cn'
 import ThinkingLoader from './ThinkingLoader'
 import { analytics } from '../utils/analytics'
 import LoginSignup from './LoginSignup'
-import NeuralPersistenceHUD from './NeuralPersistenceHUD'
 
 // Extracted utility outside component to avoid recreation
 function formatMessageContent(content) {
@@ -516,8 +515,6 @@ export default function ChatInterface({ userAge }) {
                         transition={{ duration: 0.6, ease: "easeOut" }}
                         className="absolute inset-x-0 top-[15%] sm:top-[12%] flex flex-col items-center gap-4 sm:gap-8 px-4 sm:px-6 z-10"
                     >
-                        <NeuralPersistenceHUD isInitialState={isInitialState} />
-
                         <div className="text-center space-y-4 sm:space-y-6 max-w-full">
                             <motion.div
                                 initial={{ y: 10, opacity: 0 }}
