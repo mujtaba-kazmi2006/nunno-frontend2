@@ -744,26 +744,10 @@ const EliteChart = () => {
     // Fetch initial data
     const fetchInitialData = async () => {
         try {
-            const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-            let data;
-
-            try {
-                // Primary: Try our backend proxy (handles geo-blocks and fallbacks)
-                const proxyResponse = await fetch(`${apiBaseUrl}/api/v1/market/klines?symbol=${symbol}&interval=${interval}&limit=500`);
-                if (proxyResponse.ok) {
-                    data = await proxyResponse.json();
-                    console.log("✅ Initial data fetched via Backend Proxy");
-                } else {
-                    throw new Error("Proxy failed");
-                }
-            } catch (e) {
-                // Secondary: Direct Binance fallback
-                console.warn("⚠️ Backend proxy failed, attempting direct Binance link...");
-                const directResponse = await fetch(
-                    `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=500`
-                );
-                data = await directResponse.json();
-            }
+            const response = await fetch(
+                `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=500`
+            );
+            const data = await response.json();
 
             const formattedData = data.map(k => ({
                 time: parseInt(k[0]) / 1000,
@@ -823,17 +807,13 @@ const EliteChart = () => {
         try {
             const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             let apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-
-            // Clean the API URL
             if (apiBaseUrl === 'your_key_here' || !apiBaseUrl.startsWith('http')) {
                 apiBaseUrl = 'http://localhost:8000';
             }
-
-            // Robustly extract host and remove trailing slashes
-            const wsHost = apiBaseUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+            const wsHost = apiBaseUrl.replace('http://', '').replace('https://', '');
             const wsUrl = `${wsProtocol}//${wsHost}/ws/prices`;
 
-            console.log(`📡 Attempting Neural Link to ${wsUrl}...`);
+            console.log(`📡 Connecting to ${wsUrl}...`);
             const ws = new WebSocket(wsUrl);
 
             ws.onopen = () => {
