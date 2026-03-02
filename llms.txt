@@ -1,0 +1,30 @@
+# Nunno Finance: AI-Powered Crypto Intelligence Platforms
+
+Nunno Finance is an advanced AI-driven crypto analysis and financial education platform tailored for beginners, particularly in South Asia (Pakistan). It combines real-time data with empathetic, multi-lingual AI to help users navigate the complex crypto market safely.
+
+## Core Features (Educational Context)
+
+- **AI Companion (Nunno)**: A multi-lingual (English, Urdu, Roman Urdu) AI that explains complex financial concepts using relatable analogies.
+- **Elite Charting**: Professional-grade candlestick charts with real-time WebSocket data, pattern recognition, and institutional-grade indicators.
+- **Monte Carlo Simulations**: Advanced probability modeling that visualizes 100+ potential future price paths using statistical distributions.
+- **Market Regime Detection**: AI-based classification of market states (Trending, Ranging, Volatile, Breakout) to help users adjust strategies.
+- **Roast My Coin**: A brutally honest risk-assessment tool that uses Roman Urdu and English to point out flaws in a coin's whitepaper, tokenomics, or market performance.
+- **FOMO Killer**: Real-time scanners that detect emotional buying/selling triggers and provide cooling-off advice based on overbought/oversold indicators.
+
+## Technical Architecture
+
+- **Frontend**: React (Vite) with TailwindCSS for a high-performance, glassmorphic UI.
+- **Backend**: FastAPI (Python) for high-concurrency request handling and real-time computation.
+- **Streaming**: WebSocket integration with Binance for millisecond-level price updates.
+- **AI Stack**: Utilizes OpenRouter for model orchestration (Llama 3, GPT-4, Nemotron).
+
+## Educational Modules
+
+- **Candlestick Academy**: Automated detection and explanation of 30+ chart patterns.
+- **Indicator Masterclass**: Simplified explanations of RSI, MACD, EMA, and Bollinger Bands.
+- **Risk Management 101**: Integrated VaR (Value at Risk) and Max Drawdown calculations for every coin.
+
+## More Information
+- [Full App Documentation](file://./NUNNO_APP_DOCUMENTATION.md)
+- [Community Hub Vision](file://./COMMUNITY_HUB_VISION.md)
+- [Deployment Guide](file://./backend/DEPLOYMENT.md)

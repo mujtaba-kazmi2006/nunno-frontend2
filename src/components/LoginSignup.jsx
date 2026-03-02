@@ -125,8 +125,8 @@ export default function LoginSignup({ onClose }) {
                                 animate={{ y: 0, opacity: 1 }}
                                 className="inline-flex justify-center mb-3 sm:mb-4 scale-[0.8] sm:scale-90"
                             >
-                                <div className="p-2.5 sm:p-3 rounded-2xl bg-white/5 border border-white/10 shadow-2xl">
-                                    <NunnoLogo size="lg" animated />
+                                <div className="p-3 sm:p-4 rounded-[2rem] bg-white/5 border border-white/10 shadow-2xl flex items-center justify-center">
+                                    <img src="/logo.png" alt="Nunno" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
                                 </div>
                             </motion.div>
 

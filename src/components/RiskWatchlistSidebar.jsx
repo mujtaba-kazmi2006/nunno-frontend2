@@ -68,8 +68,8 @@ const RiskCard = ({ symbol, onRemove }) => {
     if (loading && !data) {
         return (
             <div className={cn(
-                "p-5 rounded-[2rem] border animate-pulse",
-                theme === 'dark' ? "bg-white/[0.02] border-white/5" : "bg-white border-slate-100 shadow-sm"
+                "p-5 rounded-[2rem] animate-pulse",
+                theme === 'dark' ? "bg-white/[0.02]" : "bg-slate-50 shadow-sm"
             )}>
                 <div className="h-4 w-20 bg-slate-700/50 rounded mb-4" />
                 <div className="h-24 w-full bg-slate-700/50 rounded-2xl" />
@@ -88,10 +88,10 @@ const RiskCard = ({ symbol, onRemove }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
             className={cn(
-                "p-5 rounded-[2.5rem] border relative group transition-all duration-500 flex flex-col gap-4",
+                "p-5 rounded-[2.5rem] relative group transition-all duration-500 flex flex-col gap-4",
                 theme === 'dark'
-                    ? "bg-[#0c0c14]/40 backdrop-blur-xl border-white/5 hover:border-purple-500/20"
-                    : "bg-white border-slate-200 shadow-xl"
+                    ? "bg-white/[0.02] hover:bg-white/[0.04]"
+                    : "bg-slate-50 hover:bg-slate-100 shadow-sm"
             )}
         >
             {/* Remove button */}
@@ -159,8 +159,8 @@ const RiskCard = ({ symbol, onRemove }) => {
 
             {/* Roast Box */}
             <div className={cn(
-                "p-4 rounded-2xl border transition-colors",
-                theme === 'dark' ? "bg-black/40 border-white/5" : "bg-slate-50 border-slate-200"
+                "p-4 rounded-2xl transition-colors",
+                theme === 'dark' ? "bg-black/20" : "bg-white shadow-sm"
             )}>
                 <span className="text-[8px] font-black uppercase tracking-widest text-rose-500 block mb-2 italic">NUNNO'S REALITY ROAST:</span>
                 <p className={cn(
@@ -174,8 +174,8 @@ const RiskCard = ({ symbol, onRemove }) => {
             {/* Strategy Box */}
             {data.advice && (
                 <div className={cn(
-                    "p-4 rounded-2xl border-2 border-dashed",
-                    theme === 'dark' ? "bg-purple-500/5 border-purple-500/10" : "bg-purple-50/50 border-purple-100"
+                    "p-4 rounded-2xl",
+                    theme === 'dark' ? "bg-purple-500/5" : "bg-purple-50/50"
                 )}>
                     <span className="text-[8px] font-black uppercase tracking-widest text-purple-500 block mb-1">SAFE STRATEGY:</span>
                     <p className={cn(
@@ -240,10 +240,10 @@ const RiskWatchlistSidebar = () => {
                         if (!isSearching) setSearch('');
                     }}
                     className={cn(
-                        "p-2 rounded-xl transition-all shadow-xl border",
+                        "p-2 rounded-xl transition-all shadow-xl",
                         isSearching
-                            ? "bg-rose-500/10 border-rose-500/20 text-rose-500"
-                            : "bg-white/5 border-white/10 text-slate-400 hover:text-white"
+                            ? "bg-rose-500/10 text-rose-500"
+                            : "bg-white/5 text-slate-400 hover:text-white"
                     )}
                 >
                     {isSearching ? <X size={16} /> : <Search size={16} />}
@@ -266,10 +266,10 @@ const RiskWatchlistSidebar = () => {
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Search token (e.g. BTC, ETH)"
                                 className={cn(
-                                    "w-full pl-4 pr-10 py-3 rounded-2xl border-2 outline-none transition-all text-sm font-bold uppercase italic",
+                                    "w-full pl-4 pr-10 py-3 rounded-2xl outline-none transition-all text-sm font-bold uppercase italic",
                                     theme === 'dark'
-                                        ? "bg-[#16161e] border-white/5 text-white focus:border-purple-500/50"
-                                        : "bg-white border-slate-100 text-slate-900 focus:border-purple-500"
+                                        ? "bg-white/5 text-white focus:bg-white/10"
+                                        : "bg-slate-100 text-slate-900 focus:bg-slate-200"
                                 )}
                             />
                             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">
@@ -285,8 +285,8 @@ const RiskWatchlistSidebar = () => {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
                                     className={cn(
-                                        "absolute top-full left-0 right-0 mt-2 z-50 rounded-2xl border overflow-hidden shadow-2xl backdrop-blur-xl",
-                                        theme === 'dark' ? "bg-[#1a1a24]/95 border-white/10" : "bg-white/95 border-slate-200"
+                                        "absolute top-full left-0 right-0 mt-2 z-50 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl",
+                                        theme === 'dark' ? "bg-[#08080c]/95" : "bg-white/95"
                                     )}
                                 >
                                     <div className="max-h-48 overflow-y-auto no-scrollbar">
@@ -330,7 +330,7 @@ const RiskWatchlistSidebar = () => {
                 </AnimatePresence>
 
                 {watchlist.length === 0 && (
-                    <div className="text-center py-12 px-6 rounded-3xl border-2 border-dashed border-white/5">
+                    <div className="text-center py-12 px-6 rounded-3xl bg-white/5">
                         <Info className="w-8 h-8 text-slate-600 mx-auto mb-3 opacity-20" />
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
                             No tokens monitored. Tap search to select from high-liquidity assets.
@@ -340,7 +340,7 @@ const RiskWatchlistSidebar = () => {
             </div>
 
             {/* Disclaimer */}
-            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+            <div className="p-4 rounded-2xl bg-white/[0.02]">
                 <p className="text-[8px] font-bold text-slate-600 uppercase tracking-widest leading-relaxed">
                     RADAR STATUS: ACTIVE. Risk scores are generated via technical neural analysis of 500+ data points. Not financial advice.
                 </p>

@@ -3,6 +3,7 @@ import { User, Mail, Lock, Bell, CreditCard, Shield, Save, Camera, Zap, Info, Ac
 import { motion } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+import { cn } from '../utils/cn';
 
 export default function AccountSettings() {
     const { theme } = useTheme();
@@ -118,11 +119,21 @@ export default function AccountSettings() {
                                     <div className="text-center sm:text-left">
                                         <h3 className={`text-xl sm:text-2xl font-black italic uppercase tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-gray-950'}`}>{user?.name}</h3>
                                         <p className={`text-xs sm:text-sm font-medium ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>{user?.email}</p>
-                                        <div className="flex gap-2 items-center justify-center sm:justify-start mt-3">
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest italic ${theme === 'dark' ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-100 text-purple-700'}`}>
-                                                {user?.tier || 'Free'} Specialist
+                                        <div className="flex flex-wrap gap-2 items-center justify-center sm:justify-start mt-3">
+                                            <span className={cn(
+                                                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest italic",
+                                                user?.is_early_bird
+                                                    ? "bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-500/30"
+                                                    : (theme === 'dark' ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-100 text-purple-700')
+                                            )}>
+                                                {user?.is_early_bird ? "Early Bird Pro" : `${user?.tier || 'Free'} Specialist`}
                                             </span>
-                                            {user?.tier === 'whale' && <Zap size={14} className="text-amber-400 fill-amber-400 animate-pulse" />}
+                                            {user?.is_early_bird && (
+                                                <span className="px-2 py-1 rounded-full bg-white/10 text-slate-400 text-[8px] font-black uppercase tracking-widest">
+                                                    Pioneer Protocol Active
+                                                </span>
+                                            )}
+                                            {(user?.tier === 'whale' || user?.is_early_bird) && <Zap size={14} className="text-amber-400 fill-amber-400 animate-pulse" />}
                                         </div>
                                     </div>
                                 </div>
@@ -443,46 +454,76 @@ export default function AccountSettings() {
                         {/* Billing Tab */}
                         {activeTab === 'billing' && (
                             <div className="space-y-8">
-                                <div className={`border-2 p-6 sm:p-8 rounded-[2.5rem] transition-all relative overflow-hidden group ${user?.tier === 'free'
-                                    ? (theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-gray-50 border-gray-100')
-                                    : (theme === 'dark' ? 'bg-purple-600/10 border-purple-500/30' : 'bg-purple-50 border-purple-200')
-                                    }`}>
-                                    <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 blur-[100px] -translate-y-1/2 translate-x-1/2" />
+                                <div className={cn(
+                                    "border-2 p-6 sm:p-8 rounded-[2.5rem] transition-all relative overflow-hidden group shadow-2xl",
+                                    user?.is_early_bird
+                                        ? "bg-gradient-to-br from-purple-900/40 via-[#1e2030]/10 to-[#1e2030]/40 border-purple-500/40"
+                                        : user?.tier === 'free'
+                                            ? (theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-gray-50 border-gray-100')
+                                            : (theme === 'dark' ? 'bg-purple-600/10 border-purple-500/30' : 'bg-purple-50 border-purple-200')
+                                )}>
+                                    {user?.is_early_bird && (
+                                        <div className="absolute -top-4 -right-4 bg-amber-500 text-white px-8 py-4 rotate-12 font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl z-20">
+                                            LIFETIME EARLY BIRD
+                                        </div>
+                                    )}
+                                    <div className="absolute top-0 left-0 w-64 h-64 bg-purple-500/10 blur-[100px] -translate-y-1/2 -translate-x-1/2" />
 
                                     <div className="relative flex flex-col sm:flex-row items-center sm:items-start justify-between gap-8 sm:gap-4 mb-8">
                                         <div className="text-center sm:text-left">
                                             <div className="flex items-center justify-center sm:justify-start gap-4 mb-4">
-                                                <h3 className={`text-xl sm:text-2xl font-black italic uppercase tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-gray-950'}`}>Current Protocol</h3>
-                                                {user?.tier !== 'free' && (
-                                                    <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-emerald-500 text-white shadow-xl shadow-emerald-500/20`}>
-                                                        Active
-                                                    </span>
-                                                )}
+                                                <h3 className={`text-xl sm:text-2xl font-black italic uppercase tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-gray-950'}`}>
+                                                    {user?.is_early_bird ? "Pioneer Access Protocol" : "Current Protocol"}
+                                                </h3>
+                                                <span className={cn(
+                                                    "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest text-white shadow-xl",
+                                                    user?.is_early_bird ? "bg-amber-500 shadow-amber-500/20" : "bg-emerald-500 shadow-emerald-500/20"
+                                                )}>
+                                                    {user?.is_early_bird ? "Founder Status" : "Active"}
+                                                </span>
                                             </div>
-                                            <p className={`text-4xl font-black italic uppercase tracking-tighter sm:mb-2 ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`}>
-                                                {user?.tier || 'Free'} Specialist
+                                            <p className={cn(
+                                                "text-4xl font-black italic uppercase tracking-tighter sm:mb-2",
+                                                user?.is_early_bird ? "bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent" : "text-purple-400"
+                                            )}>
+                                                Elite Intelligence
                                             </p>
-                                            <p className={`text-[10px] font-black uppercase tracking-[0.2em] italic ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>Institutional Access Level</p>
+                                            <p className={`text-[10px] font-black uppercase tracking-[0.2em] italic ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>
+                                                {user?.is_early_bird ? "Limited Early Bird Soft Launch Account" : "Institutional Access Level"}
+                                            </p>
                                         </div>
                                         <div className="text-center sm:text-right flex flex-col items-center sm:items-end">
-                                            <div className={`text-5xl font-black italic tracking-tighter leading-none mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-950'}`}>
-                                                {user?.tier === 'free' ? '$0' : user?.tier === 'pro' ? '$10' : '$50'}
+                                            <div className={cn(
+                                                "text-5xl font-black italic tracking-tighter leading-none mb-2",
+                                                user?.is_early_bird ? "text-amber-500" : "text-white"
+                                            )}>
+                                                {user?.is_early_bird ? "$0" : user?.tier === 'free' ? '$0' : '$10'}
                                             </div>
-                                            <div className={`text-[10px] font-black uppercase tracking-widest bg-white/5 py-1 px-3 rounded-full italic ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>per month cycle</div>
+                                            <div className={`text-[10px] font-black uppercase tracking-widest bg-white/5 py-1 px-3 rounded-full italic ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>
+                                                {user?.is_early_bird ? "PIONEER SPONSORSHIP" : "per month cycle"}
+                                            </div>
                                         </div>
                                     </div>
 
                                     <div className="relative flex flex-col sm:flex-row gap-4">
-                                        <button
-                                            onClick={() => window.location.href = '/pricing'}
-                                            className={`px-8 py-4 text-white rounded-[1.25rem] font-black uppercase tracking-[.15em] italic text-xs transition-all shadow-2xl active:scale-95 w-full sm:w-auto ${theme === 'dark' ? 'bg-purple-600 hover:bg-purple-500' : 'bg-purple-600 hover:bg-purple-700'}`}
-                                        >
-                                            {user?.tier === 'free' ? 'Unlock Elite Access' : 'Switch Protocol'}
-                                        </button>
-                                        {user?.tier !== 'free' && (
-                                            <button className={`px-8 py-4 border-2 rounded-[1.25rem] font-black uppercase tracking-[.15em] italic text-[10px] sm:text-xs transition-all active:scale-95 w-full sm:w-auto ${theme === 'dark' ? 'bg-transparent border-white/10 text-slate-500 hover:text-rose-400 hover:border-rose-500/30' : 'bg-white text-gray-400 border-gray-100 hover:bg-gray-50 hover:text-rose-600'}`}>
-                                                Terminate Subscription
-                                            </button>
+                                        {user?.is_early_bird ? (
+                                            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-[11px] font-medium italic text-slate-400 max-w-lg leading-relaxed">
+                                                Your account has been upgraded to **PRO** for free during our soft launch phase. Enjoy unlimited market intelligence scans and deep pattern recognized chart features at zero cost.
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <button
+                                                    onClick={() => window.location.href = '/pricing'}
+                                                    className={`px-8 py-4 text-white rounded-[1.25rem] font-black uppercase tracking-[.15em] italic text-xs transition-all shadow-2xl active:scale-95 w-full sm:w-auto ${theme === 'dark' ? 'bg-purple-600 hover:bg-purple-500' : 'bg-purple-600 hover:bg-purple-700'}`}
+                                                >
+                                                    {user?.tier === 'free' ? 'Unlock Elite Access' : 'Switch Protocol'}
+                                                </button>
+                                                {user?.tier !== 'free' && (
+                                                    <button className={`px-8 py-4 border-2 rounded-[1.25rem] font-black uppercase tracking-[.15em] italic text-[10px] sm:text-xs transition-all active:scale-95 w-full sm:w-auto ${theme === 'dark' ? 'bg-transparent border-white/10 text-slate-500 hover:text-rose-400 hover:border-rose-500/30' : 'bg-white text-gray-400 border-gray-100 hover:bg-gray-50 hover:text-rose-600'}`}>
+                                                        Terminate Subscription
+                                                    </button>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 </div>

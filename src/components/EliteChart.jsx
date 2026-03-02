@@ -38,7 +38,8 @@ import {
     Droplets,
     Loader2,
     Microscope,
-    LogIn
+    LogIn,
+    Link2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -47,6 +48,7 @@ import {
     calculateMACD,
     calculateBollingerBands,
     calculateSupportResistance,
+    calculateEnhancedSupportResistance,
     calculateATR,
     getCurrentValue
 } from '../utils/technicalIndicators';
@@ -76,6 +78,13 @@ const EliteChart = () => {
     const [isStreaming, setIsStreaming] = useState(true);
     const [currentPrice, setCurrentPrice] = useState(0);
     const [priceChange, setPriceChange] = useState(0);
+    const [hoveredCandle, setHoveredCandle] = useState(null);
+    const chartDataRef = useRef([]);
+
+    // Update chartDataRef whenever chartData changes
+    useEffect(() => {
+        chartDataRef.current = chartData;
+    }, [chartData]);
 
     // Initial highlighting state
     const [highlightedLevels, setHighlightedLevels] = useState({ support: null, resistance: null });
@@ -94,12 +103,19 @@ const EliteChart = () => {
         bollingerBands: false,
         supportResistance: true,
         atr: false,
-        candlestickPatterns: false
+        candlestickPatterns: false,
+        onchainBias: false
     });
+    const [onchainData, setOnchainData] = useState(null);
+    const [onchainHistory, setOnchainHistory] = useState([]);
+    const [srEngine, setSrEngine] = useState('classic'); // 'classic' or 'enhanced'
+    const [srType, setSrType] = useState('area'); // 'level' or 'area'
+    const [srFilter, setSrFilter] = useState('all'); // 'all' or 'strong'
     const [calculatedIndicators, setCalculatedIndicators] = useState({});
     const [candlestickMarkers, setCandlestickMarkers] = useState([]);
     const [activeCandlePatterns, setActiveCandlePatterns] = useState(['all']);
     const [showCandlePatternsDropdown, setShowCandlePatternsDropdown] = useState(false);
+    const [showSRDropdown, setShowSRDropdown] = useState(false);
 
     // Ticker search ref
     const tickerMenuRef = useRef(null);
@@ -270,6 +286,7 @@ const EliteChart = () => {
     const [simulationActive, setSimulationActive] = useState(false);
     const [projectionSeries, setProjectionSeries] = useState(null);
     const [activeAiPattern, setActiveAiPattern] = useState(null);
+    const [liveDetectedPatterns, setLiveDetectedPatterns] = useState(null);
 
     // Blueprint / Judge My Trade state
     const [isBlueprintMode, setIsBlueprintMode] = useState(false);
@@ -487,6 +504,44 @@ const EliteChart = () => {
         }
     }, [theme]);
 
+    // Subscribe to crosshair move for OHLC display
+    useEffect(() => {
+        if (!chartRef.current) return;
+
+        const handleCrosshairMove = (param) => {
+            if (!param.time || !param.point) {
+                setHoveredCandle(null);
+                return;
+            }
+
+            const series = mainSeriesRef.current;
+            if (!series) return;
+
+            const data = param.seriesData.get(series);
+            if (data) {
+                if (data.open !== undefined) {
+                    // In candlestick mode, data already has OHLC
+                    setHoveredCandle(data);
+                } else {
+                    // In line/area mode, find the original candle data for complete OHLC
+                    const candle = chartDataRef.current.find(d => d.time === param.time);
+                    if (candle) {
+                        setHoveredCandle(candle);
+                    }
+                }
+            } else {
+                setHoveredCandle(null);
+            }
+        };
+
+        chartRef.current.subscribeCrosshairMove(handleCrosshairMove);
+        return () => {
+            if (chartRef.current) {
+                chartRef.current.unsubscribeCrosshairMove(handleCrosshairMove);
+            }
+        };
+    }, []); // Only subscribe once on mount
+
     // Handle blueprint mode clicks
     useEffect(() => {
         if (!chartRef.current || !isBlueprintMode) return;
@@ -571,6 +626,8 @@ const EliteChart = () => {
         }
     };
 
+    const [scanProgress, setScanProgress] = useState([]);
+
     const judgeTrade = async () => {
         if (!checkSearchLimit()) return;
 
@@ -580,107 +637,179 @@ const EliteChart = () => {
         }
 
         setIsJudging(true);
+        setScanProgress([]);
+        setBlueprintVerdict(null);
         await logSearchToBackend();
 
         // Track GA4 event
         analytics.trackTradeJudge(symbol, 'analyzing');
 
-        // Simulate deep analysis delay for "WOW" factor
-        setTimeout(() => {
-            const { entry, target, stop } = blueprintPrices;
-            const isLong = target > entry;
-            const risk = Math.abs(entry - stop);
-            const reward = Math.abs(target - entry);
-            const rr = (reward / risk).toFixed(2);
+        const { entry, target, stop } = blueprintPrices;
+        const isLong = target > entry;
 
-            // Technical Analysis Input
-            const rsi = getCurrentValue(calculatedIndicators.rsi) || 50;
-            const atr = getCurrentValue(calculatedIndicators.atr) || entry * 0.02;
+        // ── Phase 1: Animated scanning sequence ──────────────
+        const scanSteps = [
+            { step: "Multi-Timeframe Structure", icon: "📊" },
+            { step: "Volume & Liquidity Zones", icon: "🌊" },
+            { step: "Derivatives & Funding Rates", icon: "📈" },
+            { step: "News Intelligence Vault", icon: "📰" },
+            { step: "Risk/Reward Mathematics", icon: "🧮" },
+        ];
 
-            let score = 5;
-            let comment = "";
-            let suggestion = "";
-            let status = 'neutral';
+        // Animate scan steps one by one
+        for (let i = 0; i < scanSteps.length; i++) {
+            await new Promise(resolve => setTimeout(resolve, 400));
+            setScanProgress(prev => [...prev, { ...scanSteps[i], status: 'scanning' }]);
+            await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 200));
+            setScanProgress(prev => prev.map((s, idx) =>
+                idx === i ? { ...s, status: 'complete' } : s
+            ));
+        }
 
-            // Risk/Reward Scoring
-            if (rr >= 2.5) score += 2;
-            else if (rr < 1) score -= 2;
+        // ── Phase 2: Gather all frontend indicator data ──────
+        const indicators = {};
 
-            // Trend & RSI Alignment
-            if (isLong) {
-                if (rsi < 40) { score += 1; comment = "Great entry during oversold conditions."; }
-                else if (rsi > 70) { score -= 2; comment = "High risk! You're buying into an overbought climax."; }
-                else { comment = "Solid structural setup based on current momentum."; }
+        // RSI
+        if (calculatedIndicators.rsi) indicators.rsi = getCurrentValue(calculatedIndicators.rsi);
+        // ATR
+        if (calculatedIndicators.atr) indicators.atr = getCurrentValue(calculatedIndicators.atr);
+        // EMAs
+        ['ema9', 'ema21', 'ema50', 'ema100', 'ema200'].forEach(key => {
+            if (calculatedIndicators[key]) indicators[key] = getCurrentValue(calculatedIndicators[key]);
+        });
+        // MACD
+        if (calculatedIndicators.macd) {
+            indicators.macd = getCurrentValue(calculatedIndicators.macd);
+            indicators.macdSignal = getCurrentValue(calculatedIndicators.macdSignal);
+            indicators.macdHistogram = getCurrentValue(calculatedIndicators.macdHistogram);
+        }
+        // Bollinger Bands
+        if (calculatedIndicators.bbUpper) {
+            indicators.bbUpper = getCurrentValue(calculatedIndicators.bbUpper);
+            indicators.bbMiddle = getCurrentValue(calculatedIndicators.bbMiddle);
+            indicators.bbLower = getCurrentValue(calculatedIndicators.bbLower);
+        }
+        // Support & Resistance
+        if (calculatedIndicators.support) indicators.support = calculatedIndicators.support;
+        if (calculatedIndicators.resistance) indicators.resistance = calculatedIndicators.resistance;
+        indicators.entry = entry;
 
-                if (risk < atr * 0.5) {
-                    suggestion = "Your stop is too tight. Current volatility will likely wick you out.";
-                    score -= 1;
-                } else {
-                    suggestion = "Risk management looks professional. Ensure you scale out at the first target.";
-                }
-                status = score > 6 ? 'bullish' : 'neutral';
-            } else {
-                // Short logic
-                if (rsi > 60) { score += 1; comment = "Good timing. Fading the overextended rally."; }
-                else if (rsi < 30) { score -= 2; comment = "Careful, you're shorting into a potential local bottom."; }
-                else { comment = "Short setup looks technically sound."; }
+        // ── Phase 3: Call the God-Mode backend validator ──────
+        const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
-                if (risk < atr * 0.5) {
-                    suggestion = "Stop loss is too close. Give the trade more 'breathing room' based on ATR.";
-                    score -= 1;
-                } else {
-                    suggestion = "Target looks realistic. Watch for liquidity walls on the way down.";
-                }
-                status = score > 6 ? 'bearish' : 'neutral';
-            }
-
-            // Construct Detailed Opinion Narrative
-            let opinion = "";
-            if (isLong) {
-                opinion = `This LONG setup carries a score of ${score}/10. `;
-                if (rsi < 40) opinion += "We are currently seeing significant bullish divergence/oversold conditions on the RSI, which historically suggests a high-probability reversal zone. ";
-                else if (rsi > 70) opinion += "Warning: You are attempting to 'chase' a parabolic move. Historically, entering at these RSI levels leads to significant drawdown as liquidity providers take profit. ";
-
-                if (rr >= 2.5) opinion += `Your Risk/Reward ratio of ${rr}:1 is excellent, allowing for a 'safety margin' where you can be wrong more than 50% of the time and still be profitable. `;
-                else opinion += `The Risk/Reward of ${rr}:1 is sub-optimal. You are risking almost as much as you aim to gain, which requires a very high win rate to stay solvent. `;
-
-                if (risk < atr * 0.5) opinion += "Your Stop Loss is placed within the 'Noise Zone' (below 0.5 ATR). You are likely to be stopped out by normal market volatility before the trade idea even has a chance to play out.";
-                else opinion += "Placing the Stop outside the ATR range shows professional discipline, protecting you from random market wicks.";
-            } else {
-                opinion = `This SHORT setup is rated ${score}/10. `;
-                if (rsi > 60) opinion += "The asset is showing signs of exhaustion on the RSI, making this a technically sound fading opportunity. ";
-                else if (rsi < 30) opinion += "High Risk! You are shorting into a 'Sold Out' market. Expect sudden short-covering bounces that could trigger your stop prematurely. ";
-
-                if (rr >= 2.5) opinion += `An aggressive ${rr}:1 R:R ratio provides great leverage over the market's expected move. `;
-                if (risk < atr * 0.5) opinion += "Technically, your stop is too tight for current volatility levels. Consider widening it to the nearest structural pivot.";
-            }
-
-            setBlueprintVerdict({
-                score: Math.min(10, Math.max(1, score)),
-                comment: comment,
-                suggestion: suggestion,
-                detailedOpinion: opinion,
-                status: status,
-                rr: rr,
-                stats: {
-                    rsi: rsi.toFixed(1),
-                    atr: atr.toFixed(2),
-                    risk: risk.toFixed(2),
-                    reward: reward.toFixed(2),
-                    entry: entry.toFixed(2),
-                    target: target.toFixed(2),
-                    stop: stop.toFixed(2)
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_URL}/api/v1/validate-trade`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
                 },
-                checklist: [
-                    { label: 'Risk/Reward > 2.0', pass: rr >= 2 },
-                    { label: isLong ? 'RSI Not Overbought' : 'RSI Not Oversold', pass: isLong ? rsi < 70 : rsi > 30 },
-                    { label: 'Stop Loss outside ATR', pass: risk >= atr * 0.5 },
-                    { label: 'Confluence Check', pass: score > 6 }
-                ]
+                body: JSON.stringify({
+                    ticker: symbol,
+                    entry,
+                    target,
+                    stop,
+                    current_price: currentPrice || entry,
+                    indicators,
+                }),
             });
-            setIsJudging(false);
-            setShowDetailedVerdict(false);
-        }, 1500);
+
+            if (response.ok) {
+                const result = await response.json();
+
+                setBlueprintVerdict({
+                    // New God-Mode fields
+                    confluenceScore: result.confluence_score,
+                    verdict: result.verdict,
+                    verdictEmoji: result.verdict_emoji,
+                    direction: result.direction,
+                    radar: result.radar,
+                    dimensions: result.dimensions,
+                    checklist: result.checklist,
+                    suggestions: result.suggestions,
+                    scanLog: result.scan_log,
+
+                    // Legacy compatibility fields
+                    score: Math.round(result.confluence_score / 10),
+                    rr: result.rr_ratio,
+                    status: result.direction === 'LONG'
+                        ? (result.confluence_score >= 60 ? 'bullish' : 'neutral')
+                        : (result.confluence_score >= 60 ? 'bearish' : 'neutral'),
+                    stats: {
+                        rsi: indicators.rsi?.toFixed(1) || 'N/A',
+                        atr: indicators.atr?.toFixed(2) || 'N/A',
+                        risk: Math.abs(entry - stop).toFixed(2),
+                        reward: Math.abs(target - entry).toFixed(2),
+                        entry: entry.toFixed(2),
+                        target: target.toFixed(2),
+                        stop: stop.toFixed(2),
+                    },
+                });
+            } else {
+                // Fallback to local-only analysis
+                _localFallbackVerdict(entry, target, stop, isLong, indicators);
+            }
+        } catch (err) {
+            console.error('Trade validator API error:', err);
+            _localFallbackVerdict(entry, target, stop, isLong, indicators);
+        }
+
+        setIsJudging(false);
+        setShowDetailedVerdict(false);
+    };
+
+    // Local-only fallback if backend is unreachable
+    const _localFallbackVerdict = (entry, target, stop, isLong, indicators) => {
+        const risk = Math.abs(entry - stop);
+        const reward = Math.abs(target - entry);
+        const rr = (reward / risk).toFixed(2);
+        const rsi = indicators.rsi || 50;
+        const atr = indicators.atr || entry * 0.02;
+
+        let score = 50;
+        if (rr >= 2.5) score += 20;
+        else if (rr < 1) score -= 20;
+        if (isLong && rsi < 40) score += 10;
+        else if (isLong && rsi > 70) score -= 15;
+        if (!isLong && rsi > 60) score += 10;
+        else if (!isLong && rsi < 30) score -= 15;
+        if (risk < atr * 0.5) score -= 10;
+        else if (risk >= atr * 0.8) score += 10;
+        score = Math.max(0, Math.min(100, score));
+
+        setBlueprintVerdict({
+            confluenceScore: score,
+            verdict: score >= 65 ? 'MODERATE_BIAS' : score >= 40 ? 'LOW_PROBABILITY' : 'HIGH_RISK',
+            verdictEmoji: score >= 65 ? '🟡' : score >= 40 ? '🟠' : '🔴',
+            direction: isLong ? 'LONG' : 'SHORT',
+            radar: {
+                Technicals: Math.min(100, score + 10),
+                Momentum: Math.min(100, score),
+                Sentiment: 50,
+                Fundamentals: 50,
+                'Risk Mgmt': rr >= 2 ? 75 : 35,
+            },
+            dimensions: {},
+            checklist: [
+                { label: 'Risk/Reward ≥ 2:1', pass: rr >= 2, value: `${rr}:1` },
+                { label: 'RSI Not Extreme', pass: rsi > 30 && rsi < 70, value: rsi.toFixed?.(1) || rsi },
+                { label: 'Stop Outside ATR', pass: risk >= atr * 0.5, value: risk >= atr * 0.5 ? '✓' : '✗' },
+            ],
+            suggestions: [rr < 2 ? 'Consider widening your Take Profit to achieve a 2:1 R:R ratio.' : 'Trade setup appears reasonable. Execute with discipline.'],
+            score: Math.round(score / 10),
+            rr: rr,
+            status: isLong ? (score > 60 ? 'bullish' : 'neutral') : (score > 60 ? 'bearish' : 'neutral'),
+            stats: {
+                rsi: rsi?.toFixed?.(1) || 'N/A',
+                atr: atr?.toFixed?.(2) || 'N/A',
+                risk: Math.abs(entry - stop).toFixed(2),
+                reward: Math.abs(target - entry).toFixed(2),
+                entry: entry.toFixed(2),
+                target: target.toFixed(2),
+                stop: stop.toFixed(2),
+            },
+        });
     };
 
 
@@ -745,7 +874,7 @@ const EliteChart = () => {
     const fetchInitialData = async () => {
         try {
             const response = await fetch(
-                `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=500`
+                `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=1000`
             );
             const data = await response.json();
 
@@ -870,7 +999,7 @@ const EliteChart = () => {
                                 newData[newData.length - 1] = newCandle;
                             } else {
                                 newData.push(newCandle);
-                                if (newData.length > 500) newData.shift();
+                                if (newData.length > 1000) newData.shift();
 
                                 // Re-fetch patterns on candle close if enabled
                                 if (selectedIndicators.candlestickPatterns) {
@@ -1016,14 +1145,16 @@ const EliteChart = () => {
             indicators.bbLower = bbData.lower;
         }
         if (selectedIndicators.supportResistance) {
-            const srData = calculateSupportResistance(chartData, 20);
+            const srData = srEngine === 'enhanced'
+                ? calculateEnhancedSupportResistance(chartData, 150)
+                : calculateSupportResistance(chartData, 20);
             indicators.support = srData.support;
             indicators.resistance = srData.resistance;
         }
         if (selectedIndicators.atr) indicators.atr = calculateATR(chartData, 14);
 
         setCalculatedIndicators(indicators);
-    }, [chartData, selectedIndicators, isStreaming]);
+    }, [chartData, selectedIndicators, isStreaming, srEngine]);
 
     // Update indicator lines and price lines on chart
     useEffect(() => {
@@ -1092,31 +1223,76 @@ const EliteChart = () => {
 
         // Add Support/Resistance lines - Elite & Intelligent
         if (selectedIndicators.supportResistance && mainSeriesRef.current) {
+            const atrValue = getCurrentValue(calculatedIndicators.atr) || (chartData[chartData.length - 1]?.close * 0.01);
+            const zoneSize = atrValue * 0.5; // Half ATR for zone height
+
             if (calculatedIndicators.support) {
-                calculatedIndicators.support.forEach((level, idx) => {
-                    const line = mainSeriesRef.current.createPriceLine({
-                        price: level.price,
-                        color: level.isFlipped ? '#10b981' : '#22c55e', // Emerald for flip, Green for direct
-                        lineWidth: 3,
-                        lineStyle: 0, // Solid for prominence
-                        axisLabelVisible: true,
-                        title: `${level.label} ${idx + 1}`
+                calculatedIndicators.support
+                    .filter(level => srFilter === 'all' || level.isStrong)
+                    .forEach((level, idx) => {
+                        if (srType === 'level') {
+                            const line = mainSeriesRef.current.createPriceLine({
+                                price: level.price,
+                                color: level.isFlipped ? '#10b981' : '#22c55e',
+                                lineWidth: 3,
+                                lineStyle: 0,
+                                axisLabelVisible: true,
+                                title: `${level.label} ${idx + 1}`
+                            });
+                            priceLineRefs.current.push(line);
+                        } else {
+                            // Area mode - Draw a "cloud" using 3 lines with transparency
+                            const colors = level.isFlipped ?
+                                ['rgba(16, 185, 129, 0.1)', 'rgba(16, 185, 129, 0.3)', 'rgba(16, 185, 129, 0.1)'] :
+                                ['rgba(34, 197, 94, 0.1)', 'rgba(34, 197, 94, 0.3)', 'rgba(34, 197, 94, 0.1)'];
+
+                            [-1, 0, 1].forEach((offset, i) => {
+                                const line = mainSeriesRef.current.createPriceLine({
+                                    price: level.price + (offset * zoneSize),
+                                    color: colors[i],
+                                    lineWidth: offset === 0 ? 5 : 10,
+                                    lineStyle: 0,
+                                    axisLabelVisible: offset === 0,
+                                    title: offset === 0 ? `${level.label} ZONE` : ''
+                                });
+                                priceLineRefs.current.push(line);
+                            });
+                        }
                     });
-                    priceLineRefs.current.push(line);
-                });
             }
             if (calculatedIndicators.resistance) {
-                calculatedIndicators.resistance.forEach((level, idx) => {
-                    const line = mainSeriesRef.current.createPriceLine({
-                        price: level.price,
-                        color: level.isFlipped ? '#f43f5e' : '#ef4444', // Rose for flip, Red for direct
-                        lineWidth: 3,
-                        lineStyle: 0, // Solid for prominence
-                        axisLabelVisible: true,
-                        title: `${level.label} ${idx + 1}`
+                calculatedIndicators.resistance
+                    .filter(level => srFilter === 'all' || level.isStrong)
+                    .forEach((level, idx) => {
+                        if (srType === 'level') {
+                            const line = mainSeriesRef.current.createPriceLine({
+                                price: level.price,
+                                color: level.isFlipped ? '#f43f5e' : '#ef4444',
+                                lineWidth: 3,
+                                lineStyle: 0,
+                                axisLabelVisible: true,
+                                title: `${level.label} ${idx + 1}`
+                            });
+                            priceLineRefs.current.push(line);
+                        } else {
+                            // Area mode
+                            const colors = level.isFlipped ?
+                                ['rgba(244, 63, 94, 0.1)', 'rgba(244, 63, 94, 0.3)', 'rgba(244, 63, 94, 0.1)'] :
+                                ['rgba(239, 68, 68, 0.1)', 'rgba(239, 68, 68, 0.3)', 'rgba(239, 68, 68, 0.1)'];
+
+                            [-1, 0, 1].forEach((offset, i) => {
+                                const line = mainSeriesRef.current.createPriceLine({
+                                    price: level.price + (offset * zoneSize),
+                                    color: colors[i],
+                                    lineWidth: offset === 0 ? 5 : 10,
+                                    lineStyle: 0,
+                                    axisLabelVisible: offset === 0,
+                                    title: offset === 0 ? `${level.label} ZONE` : ''
+                                });
+                                priceLineRefs.current.push(line);
+                            });
+                        }
                     });
-                    priceLineRefs.current.push(line);
-                });
             }
         }
 
@@ -1128,8 +1304,8 @@ const EliteChart = () => {
             mainSeriesRef.current.setMarkers(filteredMarkers);
         } else if (mainSeriesRef.current) {
 
-            // Only clear markers if we are not in an AI pattern to avoid flickering
-            if (!activeAiPattern) {
+            // Only clear markers if we are not in an AI pattern or live pattern to avoid flickering
+            if (!activeAiPattern && !liveDetectedPatterns) {
                 mainSeriesRef.current.setMarkers([]);
             }
         }
@@ -1190,7 +1366,64 @@ const EliteChart = () => {
                 patternSeries.setMarkers(markers);
             }
         }
-    }, [calculatedIndicators, selectedIndicators, activeAiPattern, candlestickMarkers, activeCandlePatterns]);
+
+        // Draw Live Detected Patterns if active
+        if (liveDetectedPatterns && liveDetectedPatterns.length > 0 && chartData.length > 0) {
+            indicatorSeriesRefs.current.live_trendlines = [];
+            let allMarkers = [...(mainSeriesRef.current?.markers?.() || [])];
+
+            liveDetectedPatterns.forEach(pattern => {
+                // Draw trendlines using actual chart timestamps
+                if (pattern.trendlines) {
+                    pattern.trendlines.forEach(tl => {
+                        const t1 = tl.t1 || (chartData[tl.x1]?.time);
+                        const t2 = tl.t2 || (chartData[tl.x2]?.time);
+                        if (!t1 || !t2) return;
+
+                        const lineSeries = chartRef.current.addLineSeries({
+                            color: tl.color || '#f59e0b',
+                            lineWidth: 2,
+                            lineStyle: tl.style === 'dashed' ? 2 : 0,
+                            lastValueVisible: false,
+                            priceLineVisible: false,
+                            title: tl.label || ''
+                        });
+                        lineSeries.setData([
+                            { time: t1, value: tl.y1 },
+                            { time: t2, value: tl.y2 }
+                        ]);
+                        indicatorSeriesRefs.current.live_trendlines.push(lineSeries);
+                    });
+                }
+
+                // Collect annotations
+                if (pattern.annotations && pattern.annotations.length > 0) {
+                    const newMarkers = pattern.annotations.map(ann => {
+                        const time = ann.t || (chartData[ann.x]?.time);
+                        if (!time) return null;
+                        return {
+                            time,
+                            position: ann.type === 'peak' ? 'aboveBar' : 'belowBar',
+                            color: ann.type === 'peak' ? '#ef4444' : '#22c55e',
+                            shape: ann.type === 'peak' ? 'arrowDown' : 'arrowUp',
+                            text: ann.label
+                        };
+                    }).filter(Boolean);
+                    allMarkers = [...allMarkers, ...newMarkers];
+                }
+            });
+
+            // Set all markers
+            if (mainSeriesRef.current && allMarkers.length > 0) {
+                // Remove duplicates by time and type to prevent stacking
+                const uniqueMarkersMap = new Map();
+                allMarkers.forEach(m => uniqueMarkersMap.set(m.time + m.text, m));
+                const uniqueMarkers = Array.from(uniqueMarkersMap.values());
+                mainSeriesRef.current.setMarkers(uniqueMarkers.sort((a, b) => a.time - b.time));
+            }
+        }
+
+    }, [calculatedIndicators, selectedIndicators, activeAiPattern, liveDetectedPatterns, candlestickMarkers, activeCandlePatterns]);
 
 
     const clearSimulationArtifacts = () => {
@@ -1205,6 +1438,13 @@ const EliteChart = () => {
             fanSeriesRefs.current = [];
         }
 
+        if (indicatorSeriesRefs.current?.live_trendlines) {
+            indicatorSeriesRefs.current.live_trendlines.forEach(s => {
+                if (s && chartRef.current) try { chartRef.current.removeSeries(s); } catch (e) { }
+            });
+            indicatorSeriesRefs.current.live_trendlines = [];
+        }
+
         priceLineRefs.current.forEach(line => {
             if (line && mainSeriesRef.current) {
                 try { mainSeriesRef.current.removePriceLine(line); } catch (e) { }
@@ -1212,6 +1452,7 @@ const EliteChart = () => {
         });
         priceLineRefs.current = [];
         setActiveAiPattern(null);
+        setLiveDetectedPatterns(null);
         setSimulationActive(false);
         setSimulationMode(null);
         setScenarioData(null);
@@ -1770,6 +2011,28 @@ const EliteChart = () => {
         setSimulationMode('ai-pattern');
     };
 
+    // Live Pattern Detection - Draw detected patterns on existing chart data
+    const handleLivePatternDetected = (patterns) => {
+        if (!patterns || !patterns.length || !chartRef.current || !chartData.length) return;
+
+        // Set state to trigger useEffect rendering
+        setLiveDetectedPatterns(patterns);
+
+        // Zoom to show the pattern region
+        if (patterns[0]) {
+            const startIdx = patterns[0].start_idx;
+            const endIdx = patterns[0].end_idx;
+            setTimeout(() => {
+                if (chartRef.current) {
+                    chartRef.current.timeScale().setVisibleLogicalRange({
+                        from: Math.max(0, startIdx - 10),
+                        to: Math.min(chartData.length, endIdx + 15)
+                    });
+                }
+            }, 100);
+        }
+    };
+
     // Reset Chart View - Clear all visual distractions
     const handleResetChart = () => {
         // Reset indicators to all false
@@ -1783,8 +2046,11 @@ const EliteChart = () => {
             macd: false,
             bollingerBands: false,
             supportResistance: false,
-            atr: false
+            atr: false,
+            onchainBias: false
         });
+        setOnchainData(null);
+        setOnchainHistory([]);
 
         // Clear simulation and pattern states using helper
         clearSimulationArtifacts();
@@ -2111,20 +2377,99 @@ const EliteChart = () => {
                                         { key: 'bollingerBands', label: 'Bollinger', icon: Layers },
                                         { key: 'supportResistance', label: 'S/R Levels', icon: Minus },
                                     ].map(ind => (
-                                        <button
-                                            key={ind.key}
-                                            onClick={() => setSelectedIndicators(prev => ({ ...prev, [ind.key]: !prev[ind.key] }))}
-                                            className={`px-4 py-3 rounded-2xl border flex items-center justify-between transition-all ${selectedIndicators[ind.key]
-                                                ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/20 active:scale-[0.98]'
-                                                : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-600 hover:border-purple-200 hover:shadow-md'
-                                                }`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <ind.icon size={16} />
-                                                <span className="text-[11px] font-black uppercase tracking-wider">{ind.label}</span>
-                                            </div>
-                                            {selectedIndicators[ind.key] ? <Eye size={16} /> : <Plus size={16} className="opacity-40" />}
-                                        </button>
+                                        <div key={ind.key} className="space-y-2">
+                                            <button
+                                                onClick={() => setSelectedIndicators(prev => ({ ...prev, [ind.key]: !prev[ind.key] }))}
+                                                className={`w-full px-4 py-3 rounded-2xl border flex items-center justify-between transition-all ${selectedIndicators[ind.key]
+                                                    ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/20 active:scale-[0.98]'
+                                                    : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-600 hover:border-purple-200 hover:shadow-md'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <ind.icon size={16} />
+                                                    <span className="text-[11px] font-black uppercase tracking-wider">{ind.label}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    {ind.key === 'supportResistance' && selectedIndicators.supportResistance && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setShowSRDropdown(!showSRDropdown);
+                                                            }}
+                                                            className={`p-1 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-purple-500' : 'hover:bg-purple-700'}`}
+                                                        >
+                                                            <ChevronDown size={14} className={`transition-transform duration-300 ${showSRDropdown ? 'rotate-180' : ''}`} />
+                                                        </button>
+                                                    )}
+                                                    {selectedIndicators[ind.key] ? <Eye size={16} /> : <Plus size={16} className="opacity-40" />}
+                                                </div>
+                                            </button>
+
+                                            <AnimatePresence>
+                                                {ind.key === 'supportResistance' && selectedIndicators.supportResistance && showSRDropdown && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        className={`overflow-hidden rounded-2xl border ${theme === 'dark' ? 'bg-[#16161e] border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}
+                                                    >
+                                                        <div className="p-3 space-y-3">
+                                                            <div>
+                                                                <div className="text-[8px] font-black uppercase text-slate-500 tracking-widest mb-2 px-1">Analysis Engine</div>
+                                                                <div className="flex bg-black/10 dark:bg-black/40 rounded-xl p-1 relative">
+                                                                    <button
+                                                                        onClick={() => setSrEngine('classic')}
+                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all ${srEngine === 'classic' ? 'bg-indigo-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                                                    >
+                                                                        CLASSIC
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => setSrEngine('enhanced')}
+                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all flex items-center justify-center gap-1 ${srEngine === 'enhanced' ? 'bg-indigo-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                                                    >
+                                                                        <Sparkles size={10} className={srEngine === 'enhanced' ? 'text-white' : 'text-indigo-400'} /> NEURAL VWPD
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-[8px] font-black uppercase text-slate-500 tracking-widest mb-2 px-1">Visualization Style</div>
+                                                                <div className="flex bg-black/10 dark:bg-black/40 rounded-xl p-1">
+                                                                    <button
+                                                                        onClick={() => setSrType('level')}
+                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all ${srType === 'level' ? 'bg-purple-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                                                    >
+                                                                        SOLID LEVEL
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => setSrType('area')}
+                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all ${srType === 'area' ? 'bg-purple-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                                                    >
+                                                                        CLOUD ZONE
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-[8px] font-black uppercase text-slate-500 tracking-widest mb-2 px-1">Level Strength</div>
+                                                                <div className="flex bg-black/10 dark:bg-black/40 rounded-xl p-1">
+                                                                    <button
+                                                                        onClick={() => setSrFilter('all')}
+                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all ${srFilter === 'all' ? 'bg-indigo-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                                                    >
+                                                                        ALL STRUCTURE
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => setSrFilter('strong')}
+                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all ${srFilter === 'strong' ? 'bg-indigo-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                                                    >
+                                                                        STRONG ONLY
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
                                     ))}
 
                                     {/* Candlestick Patterns Toggle with Sub-options */}
@@ -2206,6 +2551,41 @@ const EliteChart = () => {
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>
+                                    </div>
+
+                                    {/* On-Chain Bias Toggle */}
+                                    <div className="space-y-2">
+                                        <button
+                                            onClick={() => {
+                                                const newVal = !selectedIndicators.onchainBias;
+                                                setSelectedIndicators(prev => ({ ...prev, onchainBias: newVal }));
+                                                if (newVal && !onchainData) {
+                                                    const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+                                                    const asset = symbol?.includes('BTC') ? 'BTC' : symbol?.includes('ETH') ? 'ETH' : 'BTC';
+                                                    fetch(`${API_URL}/api/v1/onchain/${asset}/score`)
+                                                        .then(r => r.json())
+                                                        .then(d => setOnchainData(d))
+                                                        .catch(() => { });
+                                                    fetch(`${API_URL}/api/v1/onchain/${asset}/history?hours=168`)
+                                                        .then(r => r.json())
+                                                        .then(d => setOnchainHistory(d.scores || []))
+                                                        .catch(() => { });
+                                                }
+                                            }}
+                                            className={`w-full px-4 py-3 rounded-2xl border flex items-center justify-between transition-all ${selectedIndicators.onchainBias
+                                                ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/20 active:scale-[0.98]'
+                                                : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-600 hover:border-purple-200 hover:shadow-md'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <Link2 size={16} />
+                                                <div className="text-left">
+                                                    <span className="text-[11px] font-black uppercase tracking-wider block">On-Chain Bias</span>
+                                                    <span className="text-[8px] font-bold opacity-60">Whale + Exchange Flow</span>
+                                                </div>
+                                            </div>
+                                            {selectedIndicators.onchainBias ? <Eye size={16} /> : <Plus size={16} className="opacity-40" />}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -2471,10 +2851,10 @@ const EliteChart = () => {
                         <div className={`backdrop-blur-md rounded-2xl md:rounded-3xl border overflow-hidden shadow-2xl pointer-events-auto ${theme === 'dark' ? 'bg-[#1e2030]/60 border-white/5 shadow-black/40' : 'bg-white/60 border-white shadow-slate-200/50'}`}>
                             <div className="flex items-center flex-wrap md:flex-nowrap justify-between md:justify-start gap-y-2 gap-x-4 md:gap-8 px-4 md:px-6 py-3 md:py-4">
                                 {[
-                                    { label: 'O', val: chartData[chartData.length - 1]?.open, col: theme === 'dark' ? 'text-slate-300' : 'text-slate-500' },
-                                    { label: 'H', val: chartData[chartData.length - 1]?.high, col: 'text-emerald-500' },
-                                    { label: 'L', val: chartData[chartData.length - 1]?.low, col: 'text-rose-500' },
-                                    { label: 'C', val: chartData[chartData.length - 1]?.close, col: 'text-purple-500' }
+                                    { label: 'O', val: hoveredCandle?.open ?? chartData[chartData.length - 1]?.open, col: theme === 'dark' ? 'text-slate-300' : 'text-slate-500' },
+                                    { label: 'H', val: hoveredCandle?.high ?? chartData[chartData.length - 1]?.high, col: 'text-emerald-500' },
+                                    { label: 'L', val: hoveredCandle?.low ?? chartData[chartData.length - 1]?.low, col: 'text-rose-500' },
+                                    { label: 'C', val: hoveredCandle?.close ?? chartData[chartData.length - 1]?.close, col: 'text-purple-500' }
                                 ].map(ohlc => (
                                     <div key={ohlc.label} className="flex flex-col">
                                         <span className="text-[8px] md:text-[9px] font-black uppercase text-slate-500 tracking-tighter mb-0.5">{ohlc.label}</span>
@@ -2519,120 +2899,264 @@ const EliteChart = () => {
                         </div>
                     )}
 
-                    {/* AI Verdict Modal/Panel */}
-                    {blueprintVerdict && (
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[200] max-w-sm w-full p-1 animate-in zoom-in-95 duration-500">
-                            <div className={`rounded-[32px] border-4 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] ${theme === 'dark' ? 'bg-[#1e2030] border-slate-800' : 'bg-white border-slate-100'}`}>
-                                <div className={`p-8 text-center relative overflow-hidden ${blueprintVerdict.status === 'bullish' ? 'bg-emerald-500/10' : blueprintVerdict.status === 'bearish' ? 'bg-rose-500/10' : 'bg-purple-500/10'}`}>
-                                    {/* High-fidelity Glass Card UI */}
-                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-6 italic">Trade Intelligence Report</h3>
+                    {/* Scanning Terminal Animation (shows during analysis) */}
+                    {isJudging && scanProgress.length > 0 && (
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[200] max-w-sm w-full p-1">
+                            <div className={`rounded-[32px] border-2 overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.5)] ${theme === 'dark' ? 'bg-[#0a0a14] border-blue-500/30' : 'bg-white border-blue-200'}`}>
+                                <div className="p-8">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse shadow-[0_0_12px_rgba(59,130,246,0.6)]" />
+                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500 italic">Neural Trade Scan</span>
+                                    </div>
+                                    <div className="space-y-3 font-mono">
+                                        {scanProgress.map((s, i) => (
+                                            <div key={i} className={`flex items-center gap-3 text-[11px] transition-all duration-300 ${s.status === 'complete' ? 'opacity-100' : 'opacity-70'}`}>
+                                                <span className="text-base">{s.icon}</span>
+                                                <span className={`flex-1 font-bold ${s.status === 'complete' ? (theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600') : (theme === 'dark' ? 'text-blue-400' : 'text-blue-600')}`}>
+                                                    {s.step}
+                                                </span>
+                                                <span className={`text-[9px] font-black uppercase tracking-widest ${s.status === 'complete' ? 'text-emerald-500' : 'text-blue-500 animate-pulse'}`}>
+                                                    {s.status === 'complete' ? '[OK]' : '[SCAN]'}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
-                                    <div className="relative inline-block mb-6">
-                                        <div className="text-6xl font-black text-slate-100 flex items-baseline justify-center">
-                                            {blueprintVerdict.score}
-                                            <span className="text-xl text-slate-500">/10</span>
+                    {/* God-Mode Verdict Dashboard */}
+                    {blueprintVerdict && !isJudging && (
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[200] w-full max-w-md p-1 animate-in zoom-in-95 duration-500 max-h-[90vh] overflow-y-auto no-scrollbar">
+                            <div className={`rounded-[32px] border-2 overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.5)] ${blueprintVerdict.confluenceScore >= 70 ? (theme === 'dark' ? 'bg-[#0a1a0a] border-emerald-500/30' : 'bg-white border-emerald-200')
+                                : blueprintVerdict.confluenceScore >= 45 ? (theme === 'dark' ? 'bg-[#1a1a0a] border-amber-500/30' : 'bg-white border-amber-200')
+                                    : (theme === 'dark' ? 'bg-[#1a0a0a] border-rose-500/30' : 'bg-white border-rose-200')
+                                }`}>
+                                {/* Top gradient bar */}
+                                <div className={`h-1 w-full ${blueprintVerdict.confluenceScore >= 70 ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-cyan-500'
+                                    : blueprintVerdict.confluenceScore >= 45 ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-orange-500'
+                                        : 'bg-gradient-to-r from-rose-500 via-red-400 to-pink-500'
+                                    }`} />
+
+                                <div className="p-6 space-y-5">
+                                    {/* ── Header ──────────────────── */}
+                                    <div className="text-center">
+                                        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 italic mb-4">Trade Intelligence Report</p>
+
+                                        {/* Confluence Score Circle */}
+                                        <div className="relative inline-flex items-center justify-center w-32 h-32 mb-3">
+                                            <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                                                <circle cx="60" cy="60" r="52" fill="none" stroke={theme === 'dark' ? '#1e293b' : '#e2e8f0'} strokeWidth="8" />
+                                                <circle cx="60" cy="60" r="52" fill="none"
+                                                    stroke={blueprintVerdict.confluenceScore >= 70 ? '#10b981' : blueprintVerdict.confluenceScore >= 45 ? '#f59e0b' : '#ef4444'}
+                                                    strokeWidth="8" strokeLinecap="round"
+                                                    strokeDasharray={`${blueprintVerdict.confluenceScore * 3.27} 327`}
+                                                    className="transition-all duration-1000"
+                                                />
+                                            </svg>
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                <span className={`text-4xl font-black ${blueprintVerdict.confluenceScore >= 70 ? 'text-emerald-400'
+                                                    : blueprintVerdict.confluenceScore >= 45 ? 'text-amber-400'
+                                                        : 'text-rose-400'
+                                                    }`}>
+                                                    {blueprintVerdict.confluenceScore}
+                                                </span>
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">/ 100</span>
+                                            </div>
                                         </div>
-                                        <div className={`mt-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${blueprintVerdict.status === 'bullish' ? 'bg-emerald-500 text-white' : blueprintVerdict.status === 'bearish' ? 'bg-rose-500 text-white' : 'bg-purple-500 text-white'}`}>
-                                            {blueprintVerdict.score > 7 ? 'High Conviction' : blueprintVerdict.score > 4 ? 'Moderate Bias' : 'Low Probability'}
+
+                                        {/* Verdict Badge */}
+                                        <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${blueprintVerdict.confluenceScore >= 70 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                            : blueprintVerdict.confluenceScore >= 45 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                                : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                                            }`}>
+                                            <span>{blueprintVerdict.verdictEmoji}</span>
+                                            <span>{blueprintVerdict.verdict?.replace(/_/g, ' ')}</span>
+                                            <span className="mx-1">·</span>
+                                            <span>{blueprintVerdict.direction}</span>
+                                            <span className="mx-1">·</span>
+                                            <span>{blueprintVerdict.rr}:1 R:R</span>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4 text-left">
-                                        {showDetailedVerdict ? (
-                                            <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-300">
-                                                {/* Checklist */}
-                                                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-slate-900/60 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
-                                                    <h4 className="text-[10px] font-black uppercase text-slate-500 mb-3 tracking-widest">Technical Checklist</h4>
-                                                    <div className="space-y-2">
-                                                        {blueprintVerdict.checklist.map((item, i) => (
-                                                            <div key={i} className="flex items-center justify-between">
-                                                                <span className="text-[10px] font-bold text-slate-400">{item.label}</span>
-                                                                {item.pass ? <CheckCircle2 size={12} className="text-emerald-500" /> : <X size={12} className="text-rose-500" />}
+                                    {showDetailedVerdict ? (
+                                        /* ── Detailed View ──────────────── */
+                                        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                            {/* Radar Chart (SVG Spider Web) */}
+                                            {blueprintVerdict.radar && (
+                                                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+                                                    <h4 className="text-[9px] font-black uppercase tracking-widest text-purple-500 mb-3 italic">Confluence Radar</h4>
+                                                    <div className="flex justify-center">
+                                                        <svg viewBox="0 0 200 200" className="w-44 h-44">
+                                                            {/* Background pentagons */}
+                                                            {[1, 0.75, 0.5, 0.25].map((scale, i) => {
+                                                                const axes = Object.keys(blueprintVerdict.radar);
+                                                                const points = axes.map((_, idx) => {
+                                                                    const angle = (Math.PI * 2 * idx / axes.length) - Math.PI / 2;
+                                                                    return `${100 + Math.cos(angle) * 70 * scale},${100 + Math.sin(angle) * 70 * scale}`;
+                                                                }).join(' ');
+                                                                return <polygon key={i} points={points} fill="none" stroke={theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'} strokeWidth="1" />;
+                                                            })}
+                                                            {/* Data polygon */}
+                                                            {(() => {
+                                                                const axes = Object.entries(blueprintVerdict.radar);
+                                                                const points = axes.map(([, value], idx) => {
+                                                                    const angle = (Math.PI * 2 * idx / axes.length) - Math.PI / 2;
+                                                                    const r = (value / 100) * 70;
+                                                                    return `${100 + Math.cos(angle) * r},${100 + Math.sin(angle) * r}`;
+                                                                }).join(' ');
+                                                                return <polygon points={points} fill="rgba(139,92,246,0.15)" stroke="#8b5cf6" strokeWidth="2" />;
+                                                            })()}
+                                                            {/* Labels */}
+                                                            {Object.entries(blueprintVerdict.radar).map(([label, value], idx) => {
+                                                                const axes = Object.keys(blueprintVerdict.radar);
+                                                                const angle = (Math.PI * 2 * idx / axes.length) - Math.PI / 2;
+                                                                const x = 100 + Math.cos(angle) * 90;
+                                                                const y = 100 + Math.sin(angle) * 90;
+                                                                return (
+                                                                    <text key={label} x={x} y={y} textAnchor="middle" dominantBaseline="middle"
+                                                                        className="text-[7px] font-bold fill-slate-400">{label} ({value})</text>
+                                                                );
+                                                            })}
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Checklist */}
+                                            <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-slate-900/60 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
+                                                <h4 className="text-[9px] font-black uppercase text-slate-500 mb-3 tracking-widest">Validation Checklist</h4>
+                                                <div className="space-y-2">
+                                                    {blueprintVerdict.checklist?.map((item, i) => (
+                                                        <div key={i} className="flex items-center justify-between">
+                                                            <span className={`text-[10px] font-bold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>{item.label}</span>
+                                                            <div className="flex items-center gap-2">
+                                                                {item.value && <span className="text-[9px] font-mono text-slate-500">{item.value}</span>}
+                                                                {item.pass ? <CheckCircle2 size={13} className="text-emerald-500" /> : <X size={13} className="text-rose-500" />}
                                                             </div>
-                                                        ))}
-                                                    </div>
+                                                        </div>
+                                                    ))}
                                                 </div>
+                                            </div>
 
-                                                {/* Stats Grid */}
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    <div className={`p-3 rounded-xl border ${theme === 'dark' ? 'bg-slate-900/60 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
-                                                        <div className="text-[8px] font-black text-slate-500 uppercase">RSI (14)</div>
-                                                        <div className="text-xs font-black text-purple-500">{blueprintVerdict.stats.rsi}</div>
+                                            {/* Dimension Findings */}
+                                            {blueprintVerdict.dimensions && Object.entries(blueprintVerdict.dimensions).map(([dimKey, dim]) => {
+                                                if (!dim?.findings?.length) return null;
+                                                const dimLabels = { technicals: '📊 Technicals', volume_liquidity: '🌊 Volume', derivatives: '📈 Derivatives', fundamentals: '📰 Fundamentals', risk_math: '🧮 Risk Math' };
+                                                return (
+                                                    <div key={dimKey} className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-100'}`}>
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <span className="text-[9px] font-black uppercase tracking-widest text-purple-500 italic">{dimLabels[dimKey] || dimKey}</span>
+                                                            <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${dim.score >= 65 ? 'bg-emerald-500/20 text-emerald-400'
+                                                                : dim.score >= 45 ? 'bg-amber-500/20 text-amber-400'
+                                                                    : 'bg-rose-500/20 text-rose-400'
+                                                                }`}>{dim.score}%</span>
+                                                        </div>
+                                                        <div className="space-y-1.5">
+                                                            {dim.findings.map((f, fi) => (
+                                                                <p key={fi} className={`text-[10px] leading-relaxed font-medium ${f.type === 'bullish' ? 'text-emerald-400'
+                                                                    : f.type === 'danger' ? 'text-rose-400'
+                                                                        : f.type === 'warning' ? 'text-amber-400'
+                                                                            : theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+                                                                    }`}>
+                                                                    {f.type === 'bullish' ? '✅ ' : f.type === 'danger' ? '🚨 ' : f.type === 'warning' ? '⚠️ ' : '• '}{f.msg}
+                                                                </p>
+                                                            ))}
+                                                        </div>
                                                     </div>
-                                                    <div className={`p-3 rounded-xl border ${theme === 'dark' ? 'bg-slate-900/60 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
-                                                        <div className="text-[8px] font-black text-slate-500 uppercase">R:R Ratio</div>
-                                                        <div className="text-xs font-black text-emerald-500 text-center">{blueprintVerdict.rr}:1</div>
-                                                    </div>
-                                                </div>
+                                                );
+                                            })}
 
-                                                {/* Detailed Opinion Narrative */}
+                                            {/* Actionable Suggestions */}
+                                            {blueprintVerdict.suggestions?.length > 0 && (
                                                 <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-blue-500/5 border-blue-500/20' : 'bg-blue-50 border-blue-100'}`}>
                                                     <div className="flex items-center gap-2 mb-2">
                                                         <Brain size={14} className="text-blue-500" />
-                                                        <span className="text-[10px] font-black uppercase text-blue-600 tracking-wider">Nunno's Deep Logic</span>
+                                                        <span className="text-[9px] font-black uppercase text-blue-500 tracking-widest">Actionable Adjustments</span>
                                                     </div>
-                                                    <p className={`text-[11px] leading-relaxed font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
-                                                        {blueprintVerdict.detailedOpinion}
-                                                    </p>
-                                                </div>
-
-                                                <button
-                                                    onClick={() => setShowDetailedVerdict(false)}
-                                                    className="w-full py-2 text-[9px] font-black uppercase tracking-tighter text-blue-500 hover:text-blue-400 transition-colors"
-                                                >
-                                                    ← Back to Verdict
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <>
-                                                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-slate-900/40 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <Target size={14} className="text-blue-500" />
-                                                        <span className="text-[10px] font-black uppercase text-slate-500">Analysis Verdict</span>
+                                                    <div className="space-y-2">
+                                                        {blueprintVerdict.suggestions.map((s, i) => (
+                                                            <p key={i} className={`text-[10px] leading-relaxed font-bold italic ${theme === 'dark' ? 'text-blue-300' : 'text-blue-700'}`}>
+                                                                💡 {s}
+                                                            </p>
+                                                        ))}
                                                     </div>
-                                                    <p className={`text-xs font-bold leading-relaxed ${theme === 'dark' ? 'text-slate-100' : 'text-slate-800'}`}>
-                                                        {blueprintVerdict.comment}
-                                                    </p>
                                                 </div>
+                                            )}
 
-                                                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-slate-900/40 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <AlertTriangle size={14} className="text-amber-500" />
-                                                        <span className="text-[10px] font-black uppercase text-slate-500">AI Warning</span>
-                                                    </div>
-                                                    <p className={`text-xs font-medium leading-relaxed ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-                                                        {blueprintVerdict.suggestion}
-                                                    </p>
-                                                </div>
-
-                                                <button
-                                                    onClick={() => setShowDetailedVerdict(true)}
-                                                    className="w-full py-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-500 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
-                                                >
-                                                    View Detailed Report
-                                                </button>
-                                            </>
-                                        )}
-
-                                        <div className="grid grid-cols-2 gap-3 pt-4">
                                             <button
-                                                onClick={() => {
-                                                    setBlueprintVerdict(null);
-                                                    setShowDetailedVerdict(false);
-                                                }}
-                                                className={`py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest border transition-all ${theme === 'dark' ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-800'}`}
+                                                onClick={() => setShowDetailedVerdict(false)}
+                                                className="w-full py-2 text-[9px] font-black uppercase tracking-tighter text-blue-500 hover:text-blue-400 transition-colors"
                                             >
-                                                CLOSE
-                                            </button>
-                                            <button
-                                                onClick={toggleBlueprintMode}
-                                                className="py-3 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2"
-                                            >
-                                                <RotateCcw size={14} />
-                                                RESET
+                                                ← Back to Verdict
                                             </button>
                                         </div>
+                                    ) : (
+                                        /* ── Summary View ──────────────── */
+                                        <>
+                                            {/* Stats Grid */}
+                                            <div className="grid grid-cols-4 gap-2">
+                                                {[
+                                                    { label: 'R:R', value: `${blueprintVerdict.rr}:1`, color: blueprintVerdict.rr >= 2 ? 'text-emerald-400' : 'text-rose-400' },
+                                                    { label: 'RSI', value: blueprintVerdict.stats?.rsi || 'N/A', color: 'text-purple-400' },
+                                                    { label: 'Risk', value: `$${blueprintVerdict.stats?.risk}`, color: 'text-rose-400' },
+                                                    { label: 'Reward', value: `$${blueprintVerdict.stats?.reward}`, color: 'text-emerald-400' },
+                                                ].map(stat => (
+                                                    <div key={stat.label} className={`p-2.5 rounded-xl border text-center ${theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+                                                        <p className="text-[7px] font-black uppercase tracking-widest text-slate-500">{stat.label}</p>
+                                                        <p className={`text-sm font-black italic ${stat.color}`}>{stat.value}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* Quick Checklist */}
+                                            <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-100'}`}>
+                                                {blueprintVerdict.checklist?.slice(0, 4).map((item, i) => (
+                                                    <div key={i} className="flex items-center justify-between py-1">
+                                                        <span className={`text-[10px] font-bold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>{item.label}</span>
+                                                        {item.pass ? <CheckCircle2 size={12} className="text-emerald-500" /> : <X size={12} className="text-rose-500" />}
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* Top suggestion */}
+                                            {blueprintVerdict.suggestions?.[0] && (
+                                                <div className={`p-3 rounded-2xl border ${theme === 'dark' ? 'bg-blue-500/5 border-blue-500/20' : 'bg-blue-50 border-blue-100'}`}>
+                                                    <p className={`text-[10px] font-bold italic leading-relaxed ${theme === 'dark' ? 'text-blue-300' : 'text-blue-700'}`}>
+                                                        💡 {blueprintVerdict.suggestions[0]}
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            <button
+                                                onClick={() => setShowDetailedVerdict(true)}
+                                                className="w-full py-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-500 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                                            >
+                                                View Full Diagnostic Report
+                                            </button>
+                                        </>
+                                    )}
+
+                                    {/* Action Buttons */}
+                                    <div className="grid grid-cols-2 gap-3 pt-2">
+                                        <button
+                                            onClick={() => {
+                                                setBlueprintVerdict(null);
+                                                setShowDetailedVerdict(false);
+                                                setScanProgress([]);
+                                            }}
+                                            className={`py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest border transition-all ${theme === 'dark' ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-800'}`}
+                                        >
+                                            CLOSE
+                                        </button>
+                                        <button
+                                            onClick={toggleBlueprintMode}
+                                            className="py-3 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2"
+                                        >
+                                            <RotateCcw size={14} />
+                                            RESET
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -2653,6 +3177,62 @@ const EliteChart = () => {
                             currentPrice={currentPrice}
                         />
                     </div>
+
+                    {/* On-Chain Bias Overlay Pane */}
+                    {selectedIndicators.onchainBias && onchainData && (
+                        <div className={`w-full border-t px-4 py-3 flex-shrink-0 ${theme === 'dark' ? 'bg-[#0a0a12] border-white/5' : 'bg-slate-50 border-slate-200'}`}
+                            style={{ height: '100px' }}
+                        >
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                    <Link2 size={12} className="text-purple-400" />
+                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-purple-400">
+                                        On-Chain Bias · {onchainData.asset || (symbol?.includes('BTC') ? 'BTC' : 'ETH')}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className={`text-xs font-black font-mono ${onchainData.score > 0.1 ? 'text-emerald-400' : onchainData.score < -0.1 ? 'text-rose-400' : 'text-amber-400'
+                                        }`}>
+                                        {onchainData.score > 0 ? '+' : ''}{onchainData.score?.toFixed(2)}
+                                    </span>
+                                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${onchainData.trend?.includes('Bullish') ? 'bg-emerald-500/10 text-emerald-400'
+                                        : onchainData.trend?.includes('Bearish') ? 'bg-rose-500/10 text-rose-400'
+                                            : 'bg-amber-500/10 text-amber-400'
+                                        }`}>
+                                        {onchainData.trend}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-4 h-8">
+                                {/* Score Bar */}
+                                <div className="flex-1 relative h-3 rounded-full overflow-hidden" style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : '#e2e8f0' }}>
+                                    <div className="absolute left-1/2 top-0 w-px h-full" style={{ background: 'rgba(100,116,139,0.3)' }} />
+                                    {(() => {
+                                        const score = onchainData.score || 0;
+                                        const barWidth = Math.abs(score) * 50;
+                                        const barLeft = score >= 0 ? 50 : 50 - barWidth;
+                                        const barColor = score > 0.1 ? '#10b981' : score < -0.1 ? '#f43f5e' : '#f59e0b';
+                                        return <div className="absolute top-0 h-full rounded-full transition-all duration-700" style={{ left: `${barLeft}%`, width: `${barWidth}%`, background: barColor, opacity: 0.8 }} />;
+                                    })()}
+                                </div>
+                                {/* Component Pills */}
+                                <div className="flex gap-2 flex-shrink-0">
+                                    {[
+                                        { label: 'W', value: onchainData.whale_score, title: 'Whale Flow' },
+                                        { label: 'E', value: onchainData.exchange_score, title: 'Exchange Flow' },
+                                        { label: 'A', value: onchainData.activity_score, title: 'Activity' },
+                                    ].map(c => (
+                                        <div key={c.label} className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold font-mono ${theme === 'dark' ? 'bg-white/5' : 'bg-white'}`} title={c.title}>
+                                            <span className="text-slate-500">{c.label}</span>
+                                            <span className={c.value > 0 ? 'text-emerald-400' : c.value < 0 ? 'text-rose-400' : 'text-slate-400'}>
+                                                {c.value > 0 ? '+' : ''}{(c.value || 0).toFixed(2)}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Floating Utils - Hidden when AI Chat is open to avoid clutter */}
                     <div className={`absolute bottom-6 right-6 flex flex-col gap-3 z-[150] transition-all duration-500 ${showAIChat ? 'opacity-0 pointer-events-none translate-y-10' : 'opacity-100'}`}>
@@ -2691,101 +3271,130 @@ const EliteChart = () => {
                             : 'w-0 border-none overflow-hidden opacity-0 pointer-events-none'
                         } ${theme === 'dark' ? 'bg-[#0f111a] border-white/5 shadow-2xl' : 'bg-white border-slate-200 shadow-xl'}`}
                 >
-                    {showAIChat && !focusMode && (
-                        <div className="flex flex-col h-full w-full">
-                            <header className={`flex items-center justify-between p-6 border-b sticky top-0 z-10 ${theme === 'dark' ? 'bg-[#0f111a]/80 border-white/5 backdrop-blur-xl' : 'bg-white/90 border-slate-200 backdrop-blur-md'}`}>
-                                <div className="flex items-center gap-4">
-                                    <div className="relative">
-                                        <div className="w-11 h-11 rounded-2xl bg-[#0f111a] flex items-center justify-center shadow-lg border border-white/5 overflow-hidden">
-                                            <img src="/logo.png" alt="Nunno Logo" className="w-8 h-8 object-contain" />
-                                        </div>
-                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#0f111a] flex items-center justify-center">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                                        </div>
+                    <div
+                        className="flex flex-col h-full w-full"
+                        style={{ display: showAIChat && !focusMode ? 'flex' : 'none' }}
+                    >
+                        <header className={`flex items-center justify-between p-6 border-b sticky top-0 z-10 ${theme === 'dark' ? 'bg-[#0f111a]/80 border-white/5 backdrop-blur-xl' : 'bg-white/90 border-slate-200 backdrop-blur-md'}`}>
+                            <div className="flex items-center gap-4">
+                                <div className="relative">
+                                    <div className="w-11 h-11 rounded-2xl bg-[#0f111a] flex items-center justify-center shadow-lg border border-white/5 overflow-hidden">
+                                        <img src="/logo.png" alt="Nunno Logo" className="w-8 h-8 object-contain" />
                                     </div>
-                                    <div>
-                                        <h3 className={`font-black tracking-tight text-lg ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Nunno Intel</h3>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Neural Link Active</span>
-                                        </div>
+                                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#0f111a] flex items-center justify-center">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => setShowAIChat(false)}
-                                    className={`p-2.5 rounded-xl transition-all active:scale-90 ${theme === 'dark' ? 'hover:bg-white/5 text-slate-500' : 'hover:bg-slate-100 text-slate-400'}`}
-                                >
-                                    <X size={22} />
-                                </button>
-                            </header>
-
-                            <div className="flex-1 overflow-hidden">
-                                <PatternChatPanel
-                                    onPatternGenerated={handleAIPattern}
-                                    onUnauthorized={() => setShowLoginModal(true)}
-                                    currentPrice={currentPrice}
-                                    interval={interval}
-                                    getTechnicalContext={() => {
-                                        const lastCandle = chartData[chartData.length - 1];
-                                        if (!lastCandle) return null;
-
-                                        const activeIndicators = Object.keys(selectedIndicators)
-                                            .filter(key => selectedIndicators[key]);
-
-                                        const indicatorValues = {};
-                                        ['ema9', 'ema21', 'ema50', 'ema100', 'ema200', 'rsi', 'atr'].forEach(key => {
-                                            if (selectedIndicators[key] && calculatedIndicators[key]) {
-                                                indicatorValues[key] = getCurrentValue(calculatedIndicators[key]);
-                                            }
-                                        });
-
-                                        if (selectedIndicators.bollingerBands && calculatedIndicators.bbUpper) {
-                                            indicatorValues.bollingerBands = {
-                                                upper: getCurrentValue(calculatedIndicators.bbUpper),
-                                                middle: getCurrentValue(calculatedIndicators.bbMiddle),
-                                                lower: getCurrentValue(calculatedIndicators.bbLower)
-                                            };
-                                        }
-
-                                        if (selectedIndicators.supportResistance && calculatedIndicators.support) {
-                                            indicatorValues.levels = {
-                                                support: calculatedIndicators.support.map(l => l.price),
-                                                resistance: calculatedIndicators.resistance.map(l => l.price)
-                                            };
-                                        }
-
-                                        if (selectedIndicators.macd && calculatedIndicators.macd) {
-                                            indicatorValues.macd = {
-                                                macd: getCurrentValue(calculatedIndicators.macd),
-                                                signal: getCurrentValue(calculatedIndicators.macdSignal),
-                                                histogram: getCurrentValue(calculatedIndicators.macdHistogram)
-                                            };
-                                        }
-
-                                        return {
-                                            symbol,
-                                            interval,
-                                            currentPrice: lastCandle.close,
-                                            open: lastCandle.open,
-                                            high: lastCandle.high,
-                                            low: lastCandle.low,
-                                            volume: lastCandle.volume || 0,
-                                            recentHistory: chartData.slice(-5).map(d => ({
-                                                t: d.time,
-                                                o: d.open,
-                                                h: d.high,
-                                                l: d.low,
-                                                c: d.close,
-                                                v: d.volume || 0
-                                            })),
-                                            indicatorValues,
-                                            activeIndicators,
-                                            timestamp: new Date().toISOString()
-                                        };
-                                    }}
-                                />
+                                <div>
+                                    <h3 className={`font-black tracking-tight text-lg ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Nunno Intel</h3>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Neural Link Active</span>
+                                    </div>
+                                </div>
                             </div>
+                            <button
+                                onClick={() => setShowAIChat(false)}
+                                className={`p-2.5 rounded-xl transition-all active:scale-90 ${theme === 'dark' ? 'hover:bg-white/5 text-slate-500' : 'hover:bg-slate-100 text-slate-400'}`}
+                            >
+                                <X size={22} />
+                            </button>
+                        </header>
+
+                        <div className="flex-1 overflow-hidden">
+                            <PatternChatPanel
+                                onPatternGenerated={handleAIPattern}
+                                onLivePatternDetected={handleLivePatternDetected}
+                                onUnauthorized={() => setShowLoginModal(true)}
+                                currentPrice={currentPrice}
+                                interval={interval}
+                                getTechnicalContext={() => {
+                                    const lastCandle = chartData[chartData.length - 1];
+                                    if (!lastCandle) return null;
+
+                                    const activeIndicators = Object.keys(selectedIndicators)
+                                        .filter(key => selectedIndicators[key]);
+
+                                    // Always include ALL core indicators for Deep Scan, not just selected ones
+                                    const indicatorValues = {};
+                                    ['ema9', 'ema21', 'ema50', 'ema100', 'ema200', 'rsi', 'atr'].forEach(key => {
+                                        if (calculatedIndicators[key]) {
+                                            indicatorValues[key] = getCurrentValue(calculatedIndicators[key]);
+                                        }
+                                    });
+
+                                    if (calculatedIndicators.bbUpper) {
+                                        indicatorValues.bollingerBands = {
+                                            upper: getCurrentValue(calculatedIndicators.bbUpper),
+                                            middle: getCurrentValue(calculatedIndicators.bbMiddle),
+                                            lower: getCurrentValue(calculatedIndicators.bbLower)
+                                        };
+                                    }
+
+                                    if (calculatedIndicators.support) {
+                                        indicatorValues.levels = {
+                                            support: calculatedIndicators.support.map(l => l.price),
+                                            resistance: calculatedIndicators.resistance.map(l => l.price)
+                                        };
+                                    }
+
+                                    if (calculatedIndicators.macd) {
+                                        indicatorValues.macd = {
+                                            macd: getCurrentValue(calculatedIndicators.macd),
+                                            signal: getCurrentValue(calculatedIndicators.macdSignal),
+                                            histogram: getCurrentValue(calculatedIndicators.macdHistogram)
+                                        };
+                                    }
+
+                                    // Compute market structure stats from recent data
+                                    const recentSlice = chartData.slice(-30);
+                                    const highs = recentSlice.map(d => d.high);
+                                    const lows = recentSlice.map(d => d.low);
+                                    const closes = recentSlice.map(d => d.close);
+                                    const volumes = recentSlice.map(d => d.volume || 0);
+                                    const periodHigh = Math.max(...highs);
+                                    const periodLow = Math.min(...lows);
+                                    const avgVolume = volumes.reduce((a, b) => a + b, 0) / volumes.length;
+                                    const totalVolume = volumes.reduce((a, b) => a + b, 0);
+                                    const firstClose = closes[0] || lastCandle.close;
+                                    const trendPct = ((lastCandle.close - firstClose) / firstClose * 100).toFixed(2);
+
+                                    return {
+                                        symbol,
+                                        interval,
+                                        currentPrice: lastCandle.close,
+                                        open: lastCandle.open,
+                                        high: lastCandle.high,
+                                        low: lastCandle.low,
+                                        volume: lastCandle.volume || 0,
+                                        recentHistory: recentSlice.map(d => ({
+                                            t: d.time,
+                                            o: d.open,
+                                            h: d.high,
+                                            l: d.low,
+                                            c: d.close,
+                                            v: d.volume || 0
+                                        })),
+                                        marketStructure: {
+                                            periodHigh,
+                                            periodLow,
+                                            range: periodHigh - periodLow,
+                                            rangePct: ((periodHigh - periodLow) / periodLow * 100).toFixed(2),
+                                            trendDirection: parseFloat(trendPct) > 0.5 ? 'BULLISH' : parseFloat(trendPct) < -0.5 ? 'BEARISH' : 'SIDEWAYS',
+                                            trendPct,
+                                            avgVolume: Math.round(avgVolume),
+                                            totalVolume: Math.round(totalVolume),
+                                            currentVsAvgVol: lastCandle.volume ? ((lastCandle.volume / avgVolume) * 100).toFixed(0) : 'N/A'
+                                        },
+                                        closeSeries: chartData.slice(-1000).map(d => d.close),
+                                        indicatorValues,
+                                        activeIndicators,
+                                        timestamp: new Date().toISOString()
+                                    };
+                                }}
+
+                            />
                         </div>
-                    )}
+                    </div>
                 </aside>
             </div>
             {/* Simulation Laboratory Deep Dive Modal */}

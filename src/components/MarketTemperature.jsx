@@ -32,7 +32,7 @@ export default function MarketTemperature({ variant = 'default' }) {
                     <div className="h-6 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
                     <div className="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
                 </div>
-                <div className="h-32 w-full bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse flex items-center justify-center border border-slate-200 dark:border-slate-700">
+                <div className="h-32 w-full bg-slate-100 dark:bg-white/5 rounded-full animate-pulse flex items-center justify-center">
                     <div className="h-16 w-16 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
                 </div>
             </div>
@@ -74,8 +74,8 @@ export default function MarketTemperature({ variant = 'default' }) {
 
     return (
         <div className={cn(
-            "market-temperature group p-5 rounded-[2rem] border transition-all duration-500",
-            theme === 'dark' ? "bg-[#0c0c14] border-white/10" : "bg-white border-slate-200 shadow-sm"
+            "market-temperature group p-5 rounded-[2rem] transition-all duration-500",
+            theme === 'dark' ? "bg-white/[0.02]" : "bg-white"
         )}>
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-3">
@@ -92,10 +92,10 @@ export default function MarketTemperature({ variant = 'default' }) {
                 </div>
                 {lastUpdated && (
                     <span className={cn(
-                        "text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 px-3 py-1 rounded-full border transition-all",
+                        "text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 px-3 py-1 rounded-full transition-all",
                         theme === 'dark'
-                            ? "text-purple-400 bg-purple-500/10 border-purple-500/20"
-                            : "text-purple-600 bg-purple-50 border-purple-100 shadow-sm"
+                            ? "text-purple-400 bg-purple-500/10"
+                            : "text-purple-600 bg-purple-50 shadow-sm"
                     )}>
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
                         Live
@@ -142,8 +142,8 @@ export default function MarketTemperature({ variant = 'default' }) {
 
             <div className="mt-4 grid grid-cols-2 gap-2">
                 <div className={cn(
-                    "p-3 rounded-2xl border flex flex-col gap-1 transition-[background-color,border-color,box-shadow]",
-                    theme === 'dark' ? "bg-white/[0.02] border-white/5" : "bg-white border-slate-100 shadow-sm"
+                    "p-3 rounded-2xl flex flex-col gap-1 transition-all",
+                    theme === 'dark' ? "bg-white/[0.02] hover:bg-white/5" : "bg-slate-50 hover:bg-slate-100 shadow-sm"
                 )}>
                     <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Activity Level</span>
                     <span className={cn(
@@ -152,8 +152,8 @@ export default function MarketTemperature({ variant = 'default' }) {
                     )}>Normal</span>
                 </div>
                 <div className={cn(
-                    "p-3 rounded-2xl border flex flex-col gap-1 transition-[background-color,border-color,box-shadow]",
-                    theme === 'dark' ? "bg-white/[0.02] border-white/5" : "bg-white border-slate-100 shadow-sm"
+                    "p-3 rounded-2xl flex flex-col gap-1 transition-all",
+                    theme === 'dark' ? "bg-white/[0.02] hover:bg-white/5" : "bg-slate-50 hover:bg-slate-100 shadow-sm"
                 )}>
                     <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Price Speed</span>
                     <span className={cn(

@@ -77,8 +77,39 @@ export const getMarketHighlights = async () => {
     }
 }
 
+// ── On-Chain Intelligence ──
+export const getOnChainScores = async () => {
+    try {
+        const response = await api.get('/api/v1/onchain/scores')
+        return response.data
+    } catch (error) {
+        console.error('On-chain scores error:', error)
+        return {}
+    }
+}
+
+export const getOnChainAssetScore = async (asset) => {
+    try {
+        const response = await api.get(`/api/v1/onchain/${asset}/score`)
+        return response.data
+    } catch (error) {
+        console.error(`On-chain ${asset} score error:`, error)
+        return null
+    }
+}
+
+export const getOnChainHistory = async (asset, hours = 168) => {
+    try {
+        const response = await api.get(`/api/v1/onchain/${asset}/history`, { params: { hours } })
+        return response.data
+    } catch (error) {
+        console.error(`On-chain ${asset} history error:`, error)
+        return { scores: [], metrics: [] }
+    }
+}
+
 // Stream message with callback for chunks
-export async function streamMessage({ message, conversationId, userAge, onChunk, signal }) {
+export async function streamMessage({ message, conversationId, userAge, webSearchEnabled, onChunk, signal }) {
     const token = localStorage.getItem('token');
     try {
         const response = await fetch(`${API_BASE_URL}/api/v1/chat/stream`, {
@@ -91,7 +122,8 @@ export async function streamMessage({ message, conversationId, userAge, onChunk,
             body: JSON.stringify({
                 message,
                 conversation_id: conversationId,
-                user_age: userAge
+                user_age: userAge,
+                web_search_enabled: webSearchEnabled
             })
         });
 

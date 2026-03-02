@@ -14,6 +14,32 @@
     contain: layout style paint;
 }
 
+/* ═══════════════════════════════════════════════════════
+   Streamed Content Fade-in — GPU only (opacity + transform)
+   Applied to each paragraph/header as AI response streams in.
+   ═══════════════════════════════════════════════════════ */
+.msg-fade-in {
+    animation: msgFadeIn 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+}
+
+@keyframes msgFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .msg-fade-in {
+        animation: none !important;
+    }
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -265,6 +291,13 @@ body::after {
     height: 100%;
 }
 
+/* Ensure seamless integration by removing any systemic borders between layout columns */
+.main-layout>div {
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+}
+
 @media (max-width: 1023px) {
     .main-container {
         padding-top: 0;
@@ -429,10 +462,7 @@ body::after {
 
 /* Chat Interface */
 .chat-interface {
-    background: var(--bg-primary);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--border);
+    background: transparent;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -2239,4 +2269,27 @@ div:not(.dark) .theme-switch .slider {
     .input-container {
         padding: var(--spacing-md) var(--spacing-md) !important;
     }
-}@layer utilities { .dot-grid { background-image: radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px); background-size: 26px 26px; } .animate-float { animation: float 6s ease-in-out infinite; } @keyframes float { 0%, 100% { transform: translateY(-10px); } 50% { transform: translateY(10px); } } }
+}
+
+@layer utilities {
+    .dot-grid {
+        background-image: radial-gradient(circle, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+        background-size: 26px 26px;
+    }
+
+    .animate-float {
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(-10px);
+        }
+
+        50% {
+            transform: translateY(10px);
+        }
+    }
+}

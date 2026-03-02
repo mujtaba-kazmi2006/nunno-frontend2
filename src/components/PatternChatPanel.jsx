@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Sparkles, TrendingUp, TrendingDown, Layers, Square, User, Bot, Plus, PieChart, Info, Zap, ChevronDown, CheckCircle2, X, Search, Activity, Brain, Target, ShieldCheck, Cpu } from 'lucide-react';
+import { Send, Loader2, Sparkles, TrendingUp, TrendingDown, Layers, Square, User, Bot, Plus, PieChart, Info, Zap, ChevronDown, CheckCircle2, X, Search, Activity, Brain, Target, ShieldCheck, Cpu, Microscope } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { streamMessage } from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+
 import ThinkingLoader from './ThinkingLoader';
 import { analytics } from '../utils/analytics';
 
-const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000, interval = '1d', getTechnicalContext, onUnauthorized }) => {
+const PatternChatPanel = ({ onPatternGenerated, onLivePatternDetected, currentPrice = 50000, interval = '1d', getTechnicalContext, onUnauthorized }) => {
     const { isAuthenticated } = useAuth();
     const [messages, setMessages] = useState([
         {
@@ -76,17 +77,30 @@ const PatternChatPanel = ({ onPatternGenerated, currentPrice = 50000, interval =
         const context = getTechnicalContext();
         if (!context) return;
 
-        const analysisPrompt = `[INTEL_FEED] Perform an elite-tier technical deep dive for ${context.symbol} on the ${context.interval} timeframe.
-        
-CURRENT MARKET SNAPSHOT:
-- Spot Price: $${context.currentPrice.toLocaleString()}
-- Current Candle OHLC: O:$${context.open.toLocaleString()} H:$${context.high.toLocaleString()} L:$${context.low.toLocaleString()} C:$${context.currentPrice.toLocaleString()}
-- Volume: ${context.volume.toLocaleString()}
+        const ms = context.marketStructure || {};
+        const analysisPrompt = `[INTEL_FEED] Perform a high-fidelity 'Deep Scan' technical analysis for ${context.symbol} on the ${context.interval} timeframe.
+    
+PRESENT DATA MATRIX:
+- Current Spot: $${context.currentPrice.toLocaleString()}
+- OHLC: O:$${context.open.toLocaleString()} H:$${context.high.toLocaleString()} L:$${context.low.toLocaleString()} C:$${context.currentPrice.toLocaleString()}
+- Current Candle Volume: ${context.volume.toLocaleString()}
 
-RECENT OHLCV HISTORY (Last 5 periods):
-${context.recentHistory.map(d => `- T:${d.t}: O:${d.o}, H:${d.h}, L:${d.l}, C:${d.c}, V:${d.v}`).join('\n')}
+MARKET STRUCTURE OVERVIEW (Last 30 ${context.interval} periods):
+- 30-Period High: $${ms.periodHigh?.toLocaleString() || 'N/A'}
+- 30-Period Low: $${ms.periodLow?.toLocaleString() || 'N/A'}
+- Price Range: $${ms.range?.toLocaleString() || 'N/A'} (${ms.rangePct || 0}%)
+- Trend Direction: ${ms.trendDirection || 'N/A'} (${ms.trendPct || 0}% over 30 periods)
+- Average Volume: ${ms.avgVolume?.toLocaleString() || 'N/A'}
+- Total Volume: ${ms.totalVolume?.toLocaleString() || 'N/A'}
+- Current vs Avg Volume: ${ms.currentVsAvgVol || 'N/A'}%
 
-ACTIVE TECHNICAL INDICATORS:
+HISTORICAL OHLCV DATA (Last 30 periods):
+${context.recentHistory.map(d => `T:${new Date(d.t * 1000).toLocaleTimeString()} | O:${d.o} H:${d.h} L:${d.l} C:${d.c} V:${(d.v || 0).toLocaleString()}`).join('\n')}
+
+MACRO CLOSE SERIES (Last ${context.closeSeries?.length || 0} candles, oldest→newest):
+${context.closeSeries?.join(', ') || 'N/A'}
+
+ACTIVE NEURAL INDICATORS:
 ${Object.entries(context.indicatorValues).map(([name, val]) => {
             if (typeof val === 'object') {
                 return `- ${name.toUpperCase()}: ${JSON.stringify(val, null, 1)}`;
@@ -94,7 +108,23 @@ ${Object.entries(context.indicatorValues).map(([name, val]) => {
             return `- ${name.toUpperCase()}: ${val}`;
         }).join('\n')}
 
-INSTRUCTION: You are given direct "live feed" access to the user's chart technicals. Create a comprehensive, premium market intelligence report. Analyze price action momentum across the recent history, identify indicator confluence, identify any clear candlestick patterns (like pinbars, hammers, or engulfing candles), and break down support/resistance dynamics. Provide a high-confidence verdict on the imminent chart bias. Explore the educational aspect of any patterns found.`;
+INSTRUCTIONS FOR OUTPUT:
+You are the Nunno Intelligence Core. Deliver a professional, structured market briefing. Use Markdown headings (###).
+
+### 1. Birds-Eye Market Perspective
+Analyze the broad trend over the last 30 periods using the MARKET STRUCTURE data. Reference the 30-period high/low, trend direction percentage, and volume dynamics. Is this a distribution, accumulation, or trending phase?
+
+### 2. Micro-Structural Dynamics
+Deep dive into the immediate price action (last 3-5 candles from the OHLCV data). Identify specific candlestick patterns (Hammers, Engulfing, Dojis). Compare current volume to the average — is volume confirming or diverging from price?
+
+### 3. Indicator Confluence & Strategic Levels
+Synthesize ALL the indicators above. Where is price relative to EMAs? Is RSI showing divergence? What does MACD histogram direction tell us? Cross-reference with Support/Resistance levels.
+
+### 4. Tactical Verdict
+Deliver a high-confidence bias (Bullish/Bearish/Neutral) with a conviction percentage for the next 1-3 periods.
+
+### 5. Simulator Activation
+CRITICAL: Explicitly ask the user if they want to physically see what this looks like simulated on their chart. You MUST organically mention a specific common chart pattern (like "ascending triangle", "falling wedge", "head and shoulders", "bull flag", etc.) that fits your analysis.`;
 
         setMessages(prev => [...prev, {
             role: 'user',
@@ -182,11 +212,21 @@ INSTRUCTION: You are given direct "live feed" access to the user's chart technic
 
             let patternFound = null;
             try {
+                // If user's response is an affirmation, append the last AI message so the recognizer catches the suggested pattern
+                let patternQuery = userMessage;
+                const isAffirmation = /yes|sure|ok|okay|show|simulate|do it|yeah|yep|please|go ahead/i.test(userMessage);
+                if (isAffirmation && messages.length > 0) {
+                    const lastMsg = messages[messages.length - 1];
+                    if (lastMsg.role === 'assistant') {
+                        patternQuery = `${lastMsg.content} ${userMessage}`;
+                    }
+                }
+
                 const patResponse = await fetch(`${API_URL}/api/v1/pattern/recognize`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        query: userMessage,
+                        query: patternQuery,
                         base_price: currentPrice || 50000,
                         num_points: 50,
                         interval: interval
@@ -226,6 +266,7 @@ INSTRUCTION: You are given direct "live feed" access to the user's chart technic
                 message: userMessage,
                 conversationId: `chat-${Date.now()}`,
                 userAge: 18,
+                webSearchEnabled: false,
                 onChunk: (chunk) => {
                     if (chunk.type === 'text') {
                         setLoadingStatus('');
@@ -266,9 +307,80 @@ INSTRUCTION: You are given direct "live feed" access to the user's chart technic
         }
     };
 
+    const handleDetectLivePatterns = async () => {
+        if (!isAuthenticated) { onUnauthorized?.(); return; }
+        if (!getTechnicalContext || isLoading) return;
+        setIsActionMenuOpen(false);
+
+        const context = getTechnicalContext();
+        if (!context || !context.recentHistory || context.recentHistory.length < 30) {
+            setMessages(prev => [...prev, { role: 'assistant', content: '⚠️ Not enough chart data loaded. Wait for candles to populate.', isSystem: true }]);
+            return;
+        }
+
+        setMessages(prev => [...prev, { role: 'user', content: `🔬 [PATTERN_DETECT] Scanning ${context.symbol} for live chart patterns...`, isIntelRequest: true }]);
+        setIsLoading(true);
+        setLoadingStatus('Scanning price structure...');
+
+        try {
+            let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            if (API_URL === 'your_key_here' || !API_URL.startsWith('http')) API_URL = 'http://localhost:8000';
+
+            // Use closeSeries for a wider window, fallback to recentHistory
+            const closes = context.closeSeries || context.recentHistory.map(d => d.c);
+            const highs = context.closeSeries ? [] : context.recentHistory.map(d => d.h);
+            const lows = context.closeSeries ? [] : context.recentHistory.map(d => d.l);
+            const times = context.recentHistory.map(d => d.t);
+
+            // For live detection we want OHLC from the full chart data
+            // The component passes recentHistory (30 candles) - we need to call the API with all available data
+            const response = await fetch(`${API_URL}/api/v1/pattern/detect-live`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    closes: context.recentHistory.map(d => d.c),
+                    highs: context.recentHistory.map(d => d.h),
+                    lows: context.recentHistory.map(d => d.l),
+                    times: context.recentHistory.map(d => d.t),
+                    lookback: 100
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success && data.patterns && data.patterns.length > 0) {
+                const patternList = data.patterns.map(p => `**${p.pattern.replace(/_/g, ' ').toUpperCase()}** (${p.direction}, ${p.confidence}% confidence)`).join('\n- ');
+                setMessages(prev => [...prev, {
+                    role: 'assistant',
+                    content: `### 🔬 Live Pattern Detection\n\nI found **${data.patterns.length}** pattern(s) on your ${context.symbol} chart:\n\n- ${patternList}\n\nThese patterns are highlighted on your chart now.`,
+                    isIntelResponse: true,
+                    symbol: context.symbol
+                }]);
+
+                // Send detected patterns to chart for rendering
+                if (onLivePatternDetected) {
+                    onLivePatternDetected(data.patterns);
+                }
+            } else {
+                setMessages(prev => [...prev, {
+                    role: 'assistant',
+                    content: `### 🔬 Live Pattern Detection\n\nNo clear structural patterns (double tops, triangles, flags, etc.) detected on the current ${context.symbol} ${context.interval} chart in the visible range. The price action may be in a transitional phase.\n\nTry switching to a higher timeframe for broader pattern visibility.`,
+                    isIntelResponse: true,
+                    symbol: context.symbol
+                }]);
+            }
+        } catch (error) {
+            console.error('Live pattern detection error:', error);
+            setMessages(prev => [...prev, { role: 'assistant', content: '❌ Pattern detection scan failed.', isSystem: true }]);
+        } finally {
+            setIsLoading(false);
+            setLoadingStatus('');
+        }
+    };
+
     const quickPatterns = [
         { name: 'Deep Scan Chart', icon: <Cpu className="w-3.5 h-3.5" />, action: handleAnalyzeChart },
-        { name: 'Pattern Hunt', icon: <Search className="w-3.5 h-3.5" /> },
+        { name: 'Detect Patterns', icon: <Microscope className="w-3.5 h-3.5" />, action: handleDetectLivePatterns },
         { name: 'Bias Verdict', icon: <Target className="w-3.5 h-3.5" /> },
         { name: 'Strategy Guide', icon: <ShieldCheck className="w-3.5 h-3.5" /> },
     ];
@@ -319,11 +431,114 @@ INSTRUCTION: You are given direct "live feed" access to the user's chart technic
                                     )}
 
                                     <div className={`text-[13px] whitespace-pre-line leading-[1.6] ${message.isSystem ? 'opacity-80' : 'font-medium'}`}>
-                                        {message.content.split('**').map((part, i) =>
-                                            i % 2 === 1 ? <strong key={i} className="text-purple-400 font-black">{part}</strong> : part
-                                        )}
+                                        {(() => {
+                                            const contentLines = message.content.split('\n');
+                                            const rendered = [];
+                                            let li = 0;
+                                            while (li < contentLines.length) {
+                                                const cLine = contentLines[li];
+                                                const cTrimmed = cLine.trim();
+
+                                                // ── Table detection ──
+                                                if (cTrimmed.startsWith('|')) {
+                                                    const tblLines = [];
+                                                    while (li < contentLines.length && contentLines[li].trim().startsWith('|')) {
+                                                        tblLines.push(contentLines[li]);
+                                                        li++;
+                                                    }
+                                                    if (tblLines.length >= 2) {
+                                                        const parseCells = (row) => row.trim().split('|').filter((_, idx, arr) => idx > 0 && idx < arr.length - 1).map(c => c.trim());
+                                                        const isSep = (l) => /^\|[\s\-:|]+\|$/.test(l.trim());
+                                                        let sepIdx = tblLines.findIndex(isSep);
+                                                        let hdCells = [];
+                                                        let bdRows = [];
+                                                        if (sepIdx >= 0) {
+                                                            if (sepIdx > 0) hdCells = parseCells(tblLines[sepIdx - 1]);
+                                                            bdRows = tblLines.slice(sepIdx + 1).filter(l => !isSep(l)).map(parseCells);
+                                                        } else {
+                                                            hdCells = parseCells(tblLines[0]);
+                                                            bdRows = tblLines.slice(1).map(parseCells);
+                                                        }
+                                                        const fmtCell = (t) => {
+                                                            const ps = t.split('**');
+                                                            if (ps.length <= 1) return t;
+                                                            return ps.map((p, j) => j % 2 === 1 ? <strong key={j} className="text-purple-400 font-black">{p}</strong> : p);
+                                                        };
+                                                        rendered.push(
+                                                            <div key={`tbl-${li}`} className="my-4 overflow-x-auto rounded-2xl border border-purple-500/20 bg-white/[0.02] dark:bg-white/[0.015] shadow-lg shadow-purple-500/5 backdrop-blur-sm">
+                                                                <table className="w-full text-[12px] border-collapse">
+                                                                    {hdCells.length > 0 && (
+                                                                        <thead>
+                                                                            <tr className={`border-b ${theme === 'dark' ? 'border-purple-500/20 bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent' : 'border-purple-200 bg-purple-50'}`}>
+                                                                                {hdCells.map((c, ci) => (
+                                                                                    <th key={ci} className={`px-4 py-3 text-left font-black uppercase tracking-widest text-[10px] whitespace-nowrap ${theme === 'dark' ? 'text-purple-300' : 'text-purple-600'}`}>
+                                                                                        {fmtCell(c)}
+                                                                                    </th>
+                                                                                ))}
+                                                                            </tr>
+                                                                        </thead>
+                                                                    )}
+                                                                    <tbody>
+                                                                        {bdRows.map((row, ri) => (
+                                                                            <tr key={ri} className={`border-b transition-colors duration-200 ${theme === 'dark' ? 'border-white/5 hover:bg-purple-500/[0.06]' : 'border-slate-100 hover:bg-purple-50/50'} ${ri % 2 === 0 ? (theme === 'dark' ? 'bg-white/[0.01]' : 'bg-slate-50/50') : 'bg-transparent'}`}>
+                                                                                {row.map((cell, ci) => (
+                                                                                    <td key={ci} className={`px-4 py-2.5 whitespace-nowrap ${ci === 0 ? (theme === 'dark' ? 'font-semibold text-slate-300' : 'font-semibold text-slate-700') : (theme === 'dark' ? 'text-slate-200 font-mono tabular-nums' : 'text-slate-600 font-mono tabular-nums')}`}>
+                                                                                        {fmtCell(cell)}
+                                                                                    </td>
+                                                                                ))}
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        );
+                                                    } else {
+                                                        tblLines.forEach((tl, ti) => {
+                                                            rendered.push(<span key={`s-${li}-${ti}`}>{tl}{'\n'}</span>);
+                                                        });
+                                                    }
+                                                    continue;
+                                                }
+
+                                                // ### Heading
+                                                const headingMatch = cLine.match(/^###\s*(.+)/);
+                                                if (headingMatch) {
+                                                    rendered.push(
+                                                        <h3 key={li} className={`text-[14px] font-black uppercase tracking-widest mt-5 mb-2 pb-1.5 border-b ${theme === 'dark' ? 'text-purple-400 border-purple-500/20' : 'text-purple-600 border-purple-200'}`}>
+                                                            {headingMatch[1]}
+                                                        </h3>
+                                                    );
+                                                    li++;
+                                                    continue;
+                                                }
+                                                // Bullet list
+                                                if (cLine.match(/^\s*[-•]\s/)) {
+                                                    const bContent = cLine.replace(/^\s*[-•]\s/, '');
+                                                    rendered.push(
+                                                        <div key={li} className="flex gap-2 items-start pl-2 my-0.5">
+                                                            <span className="text-purple-500 mt-1 text-[8px]">●</span>
+                                                            <span>{bContent.split('**').map((p, j) => j % 2 === 1 ? <strong key={j} className="text-purple-400 font-black">{p}</strong> : p)}</span>
+                                                        </div>
+                                                    );
+                                                    li++;
+                                                    continue;
+                                                }
+                                                // Regular text with **bold** support
+                                                rendered.push(
+                                                    <span key={li}>
+                                                        {cLine.split('**').map((part, pi) =>
+                                                            pi % 2 === 1 ? <strong key={pi} className="text-purple-400 font-black">{part}</strong> : part
+                                                        )}
+                                                        {'\n'}
+                                                    </span>
+                                                );
+                                                li++;
+                                            }
+                                            return rendered;
+                                        })()}
                                         {message.content === '' && isLoading && <div className="flex gap-1 items-center opacity-40"><div className="w-1.5 h-1.5 rounded-full bg-white animate-bounce" style={{ animationDelay: '0ms' }} /><div className="w-1.5 h-1.5 rounded-full bg-white animate-bounce" style={{ animationDelay: '150ms' }} /><div className="w-1.5 h-1.5 rounded-full bg-white animate-bounce" style={{ animationDelay: '300ms' }} /></div>}
                                     </div>
+
 
                                     {message.pattern && (
                                         <div className={`mt-4 pt-3 border-t flex items-center justify-between gap-4 text-[10px] ${message.role === 'user' ? 'border-white/10' : (theme === 'dark' ? 'border-slate-800' : 'border-slate-100')}`}>
@@ -355,16 +570,13 @@ INSTRUCTION: You are given direct "live feed" access to the user's chart technic
                     <motion.div
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="flex justify-start gap-4 items-center"
+                        className="flex justify-start gap-4 items-center mb-6 pl-2"
                     >
-                        <div className={`px-6 py-4 rounded-[1.5rem] rounded-tl-sm shadow-2xl border flex items-center gap-5 ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-100' : 'bg-white border-slate-200 text-slate-800 shadow-xl'}`}>
-                            <div className="relative">
-                                <img src="/logo.png" alt="Nunno Thinking" className="w-6 h-6 object-contain animate-pulse" />
-                                <div className="absolute inset-0 bg-purple-500/10 blur-lg rounded-full animate-pulse" />
-                            </div>
+                        <div className="flex items-center gap-4 bg-transparent border-none shadow-none outline-none">
+                            <ThinkingLoader />
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-purple-400 uppercase tracking-[0.2em] animate-pulse italic">Thinking Engine</span>
-                                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest truncate max-w-[200px]">{loadingStatus}</span>
+                                <span className="text-[10px] font-black text-purple-400/60 uppercase tracking-[0.2em] animate-pulse italic">Thinking Engine</span>
+                                <span className="text-[9px] text-slate-500/60 font-bold uppercase tracking-widest truncate max-w-[200px]">{loadingStatus}</span>
                             </div>
                         </div>
                     </motion.div>
@@ -433,6 +645,7 @@ INSTRUCTION: You are given direct "live feed" access to the user's chart technic
                                     <div className="p-3 space-y-1">
                                         {[
                                             { label: 'Deep Scan Chart', desc: 'Full AI data extraction', icon: <Sparkles size={18} />, color: 'purple', action: handleAnalyzeChart },
+                                            { label: 'Detect Live Patterns', desc: 'Find patterns on chart', icon: <Microscope size={18} />, color: 'emerald', action: handleDetectLivePatterns },
                                             { label: 'Pattern Briefing', desc: 'Details on active setup', icon: <Layers size={18} />, color: 'blue', action: () => { setInputValue("Analyze current chart patterns"); handleSendMessage(); } },
                                             { label: 'Market Sentiment', desc: 'Fear & Greed analysis', icon: <Target size={18} />, color: 'amber', action: () => { setInputValue("What is the current market sentiment?"); handleSendMessage(); } }
                                         ].map((item, idx) => (

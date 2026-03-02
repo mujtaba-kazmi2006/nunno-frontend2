@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, memo, forwardRef } from 'react'
-import { Send, Loader, Sparkles, TrendingUp, DollarSign, BookOpen, Square, Zap, Plus, PieChart, Info, Bot, User as UserIcon, Flame, AlertOctagon } from 'lucide-react'
+import { useState, useRef, useEffect, useCallback, memo, forwardRef } from 'react'
+import { Send, Loader, Sparkles, TrendingUp, DollarSign, BookOpen, Square, Zap, Plus, PieChart, Info, Bot, User as UserIcon, Flame, AlertOctagon, Globe } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import EducationalCard from './EducationalCard'
 import NunnoLogo from './NunnoLogo'
@@ -7,41 +7,168 @@ import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useChat } from '../contexts/ChatContext'
 import { cn } from '../utils/cn'
+
 import ThinkingLoader from './ThinkingLoader'
 import { analytics } from '../utils/analytics'
 import LoginSignup from './LoginSignup'
 
+// Helper: format inline text (bold markers)
+function formatInlineText(text) {
+    if (!text) return text;
+    const parts = text.split('**');
+    if (parts.length <= 1) return text;
+    return parts.map((part, j) =>
+        j % 2 === 1
+            ? <strong key={j} className="font-bold text-slate-900 dark:text-slate-50">{part}</strong>
+            : part
+    );
+}
+
+// Helper: parse a markdown table row into cell strings
+function parseTableRow(row) {
+    return row.trim().split('|')
+        .filter((_, idx, arr) => idx > 0 && idx < arr.length - 1)
+        .map(c => c.trim());
+}
+
+// Helper: check if a line is a markdown table separator (e.g. |---|---|)
+function isTableSeparator(line) {
+    return /^\|[\s\-:|]+\|$/.test(line.trim());
+}
+
 // Extracted utility outside component to avoid recreation
 function formatMessageContent(content) {
     const safeContent = (content || '').replace(/\[NAVIGATE:[^\]]+\]/g, '');
-    const lines = safeContent.split('\n')
+    const lines = safeContent.split('\n');
+    const elements = [];
+    let i = 0;
 
-    return lines.map((line, i) => {
-        // Headers
-        if (line.startsWith('## ')) {
-            return <h3 key={i} className="text-lg font-bold text-slate-900 dark:text-slate-100 mt-4 mb-2">{line.substring(3)}</h3>
+    while (i < lines.length) {
+        const line = lines[i];
+        const trimmed = line.trim();
+
+        // ── Markdown Table Detection ──
+        if (trimmed.startsWith('|')) {
+            const tableLines = [];
+            while (i < lines.length && lines[i].trim().startsWith('|')) {
+                tableLines.push(lines[i]);
+                i++;
+            }
+
+            if (tableLines.length >= 2) {
+                let separatorIdx = -1;
+                for (let j = 0; j < tableLines.length; j++) {
+                    if (isTableSeparator(tableLines[j])) {
+                        separatorIdx = j;
+                        break;
+                    }
+                }
+
+                let headerCells = [];
+                let bodyRows = [];
+
+                if (separatorIdx >= 0) {
+                    if (separatorIdx > 0) {
+                        headerCells = parseTableRow(tableLines[separatorIdx - 1]);
+                    }
+                    bodyRows = tableLines.slice(separatorIdx + 1)
+                        .filter(l => !isTableSeparator(l))
+                        .map(parseTableRow);
+                } else {
+                    headerCells = parseTableRow(tableLines[0]);
+                    bodyRows = tableLines.slice(1).map(parseTableRow);
+                }
+
+                elements.push(
+                    <div key={`table-${i}`} className="my-6 overflow-x-auto rounded-2xl border border-purple-500/20 bg-white/[0.02] dark:bg-white/[0.015] shadow-lg shadow-purple-500/5">
+                        <table className="w-full text-sm border-collapse">
+                            {headerCells.length > 0 && (
+                                <thead>
+                                    <tr className="border-b border-purple-500/20 bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent sticky top-0 z-10">
+                                        {headerCells.map((cell, ci) => (
+                                            <th key={ci} className="px-5 py-3.5 text-left font-black text-purple-400 dark:text-purple-300 uppercase tracking-widest text-[11px] whitespace-nowrap">
+                                                {formatInlineText(cell)}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                            )}
+                            <tbody>
+                                {bodyRows.map((row, ri) => (
+                                    <tr
+                                        key={ri}
+                                        className={cn(
+                                            "border-b border-white/5 transition-colors duration-200 hover:bg-purple-500/[0.06]",
+                                            ri % 2 === 0 ? "bg-white/[0.01]" : "bg-transparent"
+                                        )}
+                                    >
+                                        {row.map((cell, ci) => (
+                                            <td key={ci} className={cn(
+                                                "px-5 py-3 whitespace-nowrap",
+                                                ci === 0
+                                                    ? "font-semibold text-slate-600 dark:text-slate-300"
+                                                    : "text-slate-700 dark:text-slate-200 font-mono tabular-nums"
+                                            )}>
+                                                {formatInlineText(cell)}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                );
+            } else {
+                tableLines.forEach((tl, ti) => {
+                    elements.push(
+                        <p key={`p-${i}-${ti}`} className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4 msg-fade-in">
+                            {formatInlineText(tl)}
+                        </p>
+                    );
+                });
+            }
+            continue;
         }
-        if (line.startsWith('# ')) {
-            return <h2 key={i} className="text-xl font-bold text-slate-900 dark:text-slate-100 mt-6 mb-3">{line.substring(2)}</h2>
+
+        // ── Headers ──
+        if (trimmed.startsWith('### ')) {
+            elements.push(<h4 key={i} className="text-base font-bold text-slate-900 dark:text-slate-100 mt-5 mb-2 msg-fade-in">{formatInlineText(trimmed.substring(4))}</h4>);
+            i++;
+            continue;
+        }
+        if (trimmed.startsWith('## ')) {
+            elements.push(<h3 key={i} className="text-lg font-bold text-slate-900 dark:text-slate-100 mt-5 mb-2 msg-fade-in">{formatInlineText(trimmed.substring(3))}</h3>);
+            i++;
+            continue;
+        }
+        if (trimmed.startsWith('# ')) {
+            elements.push(<h2 key={i} className="text-xl font-bold text-slate-900 dark:text-slate-100 mt-6 mb-3 msg-fade-in">{formatInlineText(trimmed.substring(2))}</h2>);
+            i++;
+            continue;
         }
 
-        // Bold text
-        const boldFormatted = line.split('**').map((part, j) =>
-            j % 2 === 1 ? <strong key={j} className="font-bold text-slate-900 dark:text-slate-50">{part}</strong> : part
-        )
+        // ── Bold inline formatting ──
+        const boldFormatted = formatInlineText(line);
 
-        // Bullet points
-        if (line.trim().startsWith('-') || line.trim().startsWith('•')) {
-            return <li key={i} className="ml-4 list-disc text-slate-700 dark:text-slate-300 my-1">{boldFormatted}</li>
+        // ── Bullet points ──
+        if (trimmed.startsWith('-') || trimmed.startsWith('•')) {
+            elements.push(<li key={i} className="ml-4 list-disc text-slate-700 dark:text-slate-300 my-1 msg-fade-in">{boldFormatted}</li>);
+            i++;
+            continue;
         }
 
-        // Regular paragraph
-        if (line.trim()) {
-            return <p key={i} className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">{boldFormatted}</p>
+        // ── Regular paragraph ──
+        if (trimmed) {
+            elements.push(<p key={i} className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4 msg-fade-in">{boldFormatted}</p>);
+            i++;
+            continue;
         }
 
-        return <div key={i} className="h-2" />
-    })
+        elements.push(<div key={i} className="h-2" />);
+        i++;
+    }
+
+    return elements;
 }
 
 // Redesigned Message Component - Simple Text Mode
@@ -52,11 +179,11 @@ const MessageItem = memo(forwardRef(({ message, onDeepAnalysis }, ref) => {
     return (
         <motion.div
             ref={ref}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
             className={cn(
-                "flex flex-col gap-3 mb-12 w-full will-change-transform",
+                "flex flex-col gap-3 mb-12 w-full",
                 isAssistant ? "items-start" : "items-end"
             )}
         >
@@ -65,11 +192,11 @@ const MessageItem = memo(forwardRef(({ message, onDeepAnalysis }, ref) => {
                 isAssistant ? "flex-row" : "flex-row-reverse"
             )}>
                 <div className={cn(
-                    "flex items-center justify-center size-7 rounded-full overflow-hidden transition-transform hover:scale-110",
+                    "flex items-center justify-center size-7 rounded-full overflow-hidden",
                     isAssistant ? "bg-white/10" : "bg-slate-200 dark:bg-white/10 text-slate-500"
                 )}>
                     {isAssistant ? (
-                        <img src="/logo.png" alt="Nunno" className="size-full object-contain p-1" />
+                        <img src="/logo.png" alt="Nunno" className="size-full object-contain p-1" loading="lazy" />
                     ) : (
                         <UserIcon size={14} />
                     )}
@@ -96,21 +223,19 @@ const MessageItem = memo(forwardRef(({ message, onDeepAnalysis }, ref) => {
                             ? message.dataUsed.technical
                             : [message.dataUsed.technical]
                         ).map((data, idx) => (
-                            <motion.div
+                            <div
                                 key={idx}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: idx * 0.1 }}
+                                className="msg-fade-in"
+                                style={{ animationDelay: `${idx * 80}ms` }}
                             >
                                 <EducationalCard
                                     data={data}
                                     onDeepAnalysis={onDeepAnalysis}
                                 />
-                            </motion.div>
+                            </div>
                         ))}
                     </div>
                 )}
-
 
                 {/* Determine if we should show message text */}
                 {(message.content || (!message.dataUsed?.technical)) && (
@@ -119,7 +244,7 @@ const MessageItem = memo(forwardRef(({ message, onDeepAnalysis }, ref) => {
                         isAssistant ? "max-w-3xl" : "max-w-xl"
                     )}>
                         <div className={cn(
-                            "relative z-10 text-lg leading-relaxed px-6 py-4 rounded-3xl transition-all duration-500",
+                            "relative z-10 text-lg leading-relaxed px-6 py-4 rounded-3xl",
                             isAssistant
                                 ? "bg-white/5 dark:bg-white/[0.03] border border-white/10 dark:text-slate-200 shadow-xl shadow-black/5"
                                 : "bg-gradient-to-br from-purple-600 to-indigo-700 text-white font-medium shadow-2xl shadow-purple-500/20"
@@ -173,7 +298,9 @@ export default function ChatInterface({ userAge }) {
     } = useChat()
 
     const [input, setInput] = useState('')
+    const [webSearchEnabled, setWebSearchEnabled] = useState(false)
     const [isActionMenuOpen, setIsActionMenuOpen] = useState(false)
+    const [showScrollDown, setShowScrollDown] = useState(false)
     const messagesContainerRef = useRef(null)
     const actionMenuRef = useRef(null)
     const abortController = useRef(null)
@@ -186,24 +313,32 @@ export default function ChatInterface({ userAge }) {
         { icon: <Sparkles size={16} />, text: "Build me a portfolio" }
     ]
 
-    const handleScroll = () => {
+    const handleScroll = useCallback(() => {
         if (!messagesContainerRef.current) return;
         const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
-        isAtBottom.current = scrollHeight - scrollTop - clientHeight < 100;
-    };
+        const atBottom = scrollHeight - scrollTop - clientHeight < 100;
+        isAtBottom.current = atBottom;
+        // Show the "scroll to bottom" indicator when user scrolls up during loading
+        setShowScrollDown(!atBottom && isLoading);
+    }, [isLoading]);
 
-    const scrollToBottom = (force = false) => {
+    const scrollToBottom = useCallback((force = false) => {
         if (messagesContainerRef.current && (isAtBottom.current || force)) {
             messagesContainerRef.current.scrollTo({
                 top: messagesContainerRef.current.scrollHeight,
                 behavior: force ? 'smooth' : 'auto'
             })
         }
-    }
+    }, []);
 
     useEffect(() => {
         scrollToBottom(false)
-    }, [messages, loadingStatus])
+    }, [messages, loadingStatus, scrollToBottom])
+
+    // Hide scroll-down indicator when loading stops
+    useEffect(() => {
+        if (!isLoading) setShowScrollDown(false);
+    }, [isLoading])
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -284,6 +419,7 @@ export default function ChatInterface({ userAge }) {
                 message: userMessage,
                 conversationId: currentConversationId,
                 userAge,
+                webSearchEnabled,
                 onChunk: (chunk) => {
                     if (chunk.type === 'text') {
                         setLoadingStatus('');
@@ -555,15 +691,29 @@ export default function ChatInterface({ userAge }) {
                     </AnimatePresence>
 
                     {isLoading && (
-                        <div className="flex items-center gap-3 mb-10 pl-4 py-2 opacity-80">
+                        <div className="flex items-center gap-4 mb-12 pl-4 py-2">
                             <ThinkingLoader />
-                            <span className="text-[10px] font-black text-purple-400 dark:text-purple-500/60 uppercase tracking-[0.4em] italic animate-pulse">
-                                {loadingStatus || 'Thinking...'}
+                            <span className="thinking-status-text text-[10px] font-black text-purple-400 dark:text-purple-500/60 uppercase tracking-[0.25em] italic">
+                                {loadingStatus || 'Processing...'}
+                                <span className="status-cursor" />
                             </span>
                         </div>
                     )}
 
                 </div>
+
+                {/* Scroll-to-bottom FAB — appears when user scrolls up during streaming */}
+                {showScrollDown && (
+                    <button
+                        onClick={() => { scrollToBottom(true); setShowScrollDown(false); }}
+                        className="sticky bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-purple-600/90 hover:bg-purple-500 text-white text-[10px] font-black uppercase tracking-[0.15em] shadow-xl shadow-purple-500/30 transition-all active:scale-95 backdrop-blur-sm border border-purple-400/20"
+                    >
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M6 2v8M2 6l4 4 4-4" />
+                        </svg>
+                        New Response
+                    </button>
+                )}
             </div>
 
             {/* Input & Glass Window Container - Performance Optimized */}
@@ -586,10 +736,13 @@ export default function ChatInterface({ userAge }) {
                     )}
 
                     {/* Centered / Bottom Input Design */}
-                    <div className={cn(
-                        "relative bg-white dark:bg-[#0c0c14] rounded-2xl sm:rounded-[2rem] shadow-2xl border border-purple-100/50 dark:border-white/10 p-2 sm:p-4 group ring-1 ring-white/5",
-                        !isInitialState && "hover:border-purple-500/30 transition-[border-color]"
-                    )}>
+                    <div
+                        id="chat-input-container"
+                        className={cn(
+                            "relative bg-white dark:bg-[#0c0c14] rounded-2xl sm:rounded-[2rem] shadow-2xl border border-purple-100/50 dark:border-white/10 p-2 sm:p-4 group ring-1 ring-white/5",
+                            !isInitialState && "hover:border-purple-500/30 transition-[border-color]"
+                        )}
+                    >
                         <div className="relative flex gap-2 sm:gap-4 items-center">
                             <div className="relative" ref={actionMenuRef}>
                                 <button
@@ -610,6 +763,18 @@ export default function ChatInterface({ userAge }) {
                                         animate={{ opacity: 1, scale: 1, y: 0 }}
                                         className="absolute bottom-full mb-6 left-0 w-72 bg-white dark:bg-[#12121a] rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] border border-purple-100/50 dark:border-white/10 overflow-hidden z-50 p-2 space-y-2"
                                     >
+                                        <button onClick={() => setWebSearchEnabled(!webSearchEnabled)} className={cn("w-full flex items-center gap-4 p-4 rounded-2xl text-sm font-bold transition-all group", webSearchEnabled ? "bg-purple-500/10 dark:bg-purple-500/20 border border-purple-500/30" : "hover:bg-purple-50 dark:hover:bg-white/5")}>
+                                            <div className={cn("size-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg", webSearchEnabled ? "bg-purple-600 text-white shadow-purple-500/40" : "bg-purple-500/10 text-purple-500")}>
+                                                <Globe size={20} className={cn(webSearchEnabled && "animate-pulse")} />
+                                            </div>
+                                            <div className="flex flex-col items-start text-left">
+                                                <span className={cn("italic uppercase tracking-tight", webSearchEnabled ? "text-purple-600 dark:text-purple-400" : "text-slate-700 dark:text-slate-200")}>
+                                                    {webSearchEnabled ? "Research Mode: ON" : "Web Intelligence"}
+                                                </span>
+                                                <span className="text-[10px] text-slate-500 font-medium">Live neural web scanning</span>
+                                            </div>
+                                            {webSearchEnabled && <div className="ml-auto size-2 rounded-full bg-purple-500 animate-pulse" />}
+                                        </button>
                                         <button onClick={() => { handleFeedNunno(); setIsActionMenuOpen(false); }} className="w-full flex items-center gap-4 p-4 hover:bg-purple-50 dark:hover:bg-white/5 rounded-2xl text-slate-700 dark:text-slate-200 text-sm font-bold transition-all group">
                                             <div className="size-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform"><Zap size={20} /></div>
                                             <div className="flex flex-col items-start">
@@ -641,6 +806,8 @@ export default function ChatInterface({ userAge }) {
                                     </motion.div>
                                 )}
                             </div>
+
+
 
                             <input
                                 value={input}

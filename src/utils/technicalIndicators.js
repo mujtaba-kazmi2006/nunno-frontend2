@@ -221,37 +221,44 @@ export function calculateSupportResistance(data, lookback = 20) {
     // Sort by index descending (most recent first)
     allPivots.sort((a, b) => b.index - a.index);
 
-    // Merge levels that are very close (within 0.3%)
-    const uniqueLevels = [];
+    // Merge levels that are very close (within 0.3%) and count touches
+    const mergedLevels = [];
     const threshold = 0.003; // 0.3%
 
     for (const pivot of allPivots) {
-        let isDuplicate = false;
-        for (const existing of uniqueLevels) {
+        let matched = false;
+        for (const existing of mergedLevels) {
             const diff = Math.abs(existing.price - pivot.price) / existing.price;
             if (diff < threshold) {
-                isDuplicate = true;
-                // Keep the most recent one or maybe calculate average?
-                // For now just keep the first one found (most recent)
+                matched = true;
+                existing.touches += 1;
+                // Keep the most recent index
+                if (pivot.index > existing.index) existing.index = pivot.index;
                 break;
             }
         }
-        if (!isDuplicate) {
-            uniqueLevels.push(pivot);
+        if (!matched) {
+            mergedLevels.push({ ...pivot, touches: 1 });
         }
     }
+
+    // Sort by touches (desc) then by index (desc)
+    mergedLevels.sort((a, b) => b.touches - a.touches || b.index - a.index);
 
     // Classify based on current price
     const support = [];
     const resistance = [];
 
-    uniqueLevels.forEach(level => {
+    mergedLevels.forEach(level => {
         const isFlipped = (level.originalType === 'resistance' && level.price < currentPrice) ||
             (level.originalType === 'support' && level.price > currentPrice);
+
+        const isStrong = level.touches >= 2;
 
         const finalLevel = {
             ...level,
             isFlipped,
+            isStrong,
             label: level.price < currentPrice ? (isFlipped ? 'SR-Flip' : 'Support') : (isFlipped ? 'RS-Flip' : 'Resistance')
         };
 
@@ -263,8 +270,175 @@ export function calculateSupportResistance(data, lookback = 20) {
     });
 
     return {
-        support: support.slice(0, 3), // Return 3 strongest support
-        resistance: resistance.slice(0, 3) // Return 3 strongest resistance
+        support: support.slice(0, 6), // Return up to 6 support levels
+        resistance: resistance.slice(0, 6) // Return up to 6 resistance levels
+    };
+}
+
+/**
+ * Calculate Enhanced Support and Resistance Levels (VWPD & Order Blocks)
+ * @param {Array} data - Array of price data with high, low, close, volume
+ * @param {number} lookback - Number of periods to look back (default 150)
+ * @returns {Object} Object with support and resistance levels
+ */
+export function calculateEnhancedSupportResistance(data, lookback = 150) {
+    if (!data || data.length < lookback) {
+        lookback = data.length;
+    }
+    if (lookback < 20) return { support: [], resistance: [] };
+
+    const currentPrice = data[data.length - 1].close;
+    const startIndex = data.length - lookback;
+
+    // 1. VWPD (Volume Weighted Price Density)
+    let minPrice = Infinity;
+    let maxPrice = -Infinity;
+
+    for (let i = startIndex; i < data.length; i++) {
+        if (data[i].low < minPrice) minPrice = data[i].low;
+        if (data[i].high > maxPrice) maxPrice = data[i].high;
+    }
+
+    const numBins = 50;
+    const binSize = (maxPrice - minPrice) / numBins;
+    if (binSize === 0) return { support: [], resistance: [] };
+
+    const bins = new Array(numBins).fill(0);
+
+    for (let i = startIndex; i < data.length; i++) {
+        const candle = data[i];
+        const vol = candle.volume || 1; // Fallback to 1 if no volume
+
+        const startBin = Math.max(0, Math.floor((candle.low - minPrice) / binSize));
+        const endBin = Math.min(numBins - 1, Math.floor((candle.high - minPrice) / binSize));
+
+        const binsSpanned = endBin - startBin + 1;
+        const volPerBin = vol / binsSpanned;
+
+        for (let b = startBin; b <= endBin; b++) {
+            bins[b] += volPerBin;
+        }
+    }
+
+    // Smooth bins
+    const smoothedBins = new Array(numBins).fill(0);
+    for (let i = 1; i < numBins - 1; i++) {
+        smoothedBins[i] = (bins[i - 1] + bins[i] + bins[i + 1]) / 3;
+    }
+    smoothedBins[0] = bins[0];
+    smoothedBins[numBins - 1] = bins[numBins - 1];
+
+    let allLevels = [];
+
+    // Find peaks in smoothed bins
+    for (let i = 1; i < numBins - 1; i++) {
+        if (smoothedBins[i] > smoothedBins[i - 1] && smoothedBins[i] > smoothedBins[i + 1]) {
+            const priceLevel = minPrice + (i * binSize) + (binSize / 2);
+            allLevels.push({
+                price: priceLevel,
+                volume: smoothedBins[i],
+                type: 'vwpd'
+            });
+        }
+    }
+
+    // Keep top VWPD levels
+    allLevels.sort((a, b) => b.volume - a.volume);
+    const topVWPD = allLevels.slice(0, 8);
+
+    // 2. Order Block Detection (Simple)
+    const atrArray = calculateATR(data, 14);
+    const obLevels = [];
+
+    for (let i = Math.max(1, startIndex); i < data.length - 1; i++) {
+        const candle = data[i];
+        const prevCandle = data[i - 1];
+        const atr = atrArray[i] || ((candle.high - candle.low) / 2);
+
+        const bodySize = Math.abs(candle.close - candle.open);
+
+        // Bullish displacement
+        if (candle.close > candle.open && bodySize > atr * 1.5) {
+            // Check if prev candle was bearish
+            if (prevCandle.close < prevCandle.open) {
+                // Bullish OB
+                obLevels.push({
+                    price: (prevCandle.high + prevCandle.low) / 2, // Middle of the OB
+                    type: 'ob',
+                    obDirection: 'bullish'
+                });
+            }
+        }
+        // Bearish displacement
+        else if (candle.close < candle.open && bodySize > atr * 1.5) {
+            // Check if prev candle was bullish
+            if (prevCandle.close > prevCandle.open) {
+                // Bearish OB
+                obLevels.push({
+                    price: (prevCandle.high + prevCandle.low) / 2,
+                    type: 'ob',
+                    obDirection: 'bearish'
+                });
+            }
+        }
+    }
+
+    // Merge VWPD and OB
+    const finalLevels = [];
+    const mergedRaw = [...topVWPD, ...obLevels.slice(-6)]; // Last 6 OBs
+
+    // Filter out levels that are too close to each other
+    const threshold = 0.003; // merged threshold
+    for (const raw of mergedRaw) {
+        let matched = false;
+        for (const existing of finalLevels) {
+            const diff = Math.abs(existing.price - raw.price) / existing.price;
+            if (diff < threshold) {
+                matched = true;
+                existing.touches = (existing.touches || 1) + 1;
+                if (raw.type === 'ob') existing.label = existing.price < currentPrice ? 'Bullish OB' : 'Bearish OB'; // Give OB label priority if mixed
+                break;
+            }
+        }
+        if (!matched) {
+            finalLevels.push({
+                ...raw,
+                touches: raw.type === 'vwpd' ? 2 : 3, // Treat VWPD/OB as 'strong' by giving touches >= 2
+                label: raw.type === 'vwpd' ? 'VWPD Node' : (raw.obDirection === 'bullish' ? 'Demand Zone' : 'Supply Zone'),
+                originalType: raw.price < currentPrice ? 'support' : 'resistance'
+            });
+        }
+    }
+
+    const support = [];
+    const resistance = [];
+
+    finalLevels.forEach(level => {
+        const isStrong = level.touches >= 2;
+        const isFlipped = false; // Simplified
+
+        const outputLevel = {
+            ...level,
+            isFlipped,
+            isStrong,
+            label: level.label
+        };
+
+        if (level.price < currentPrice) {
+            support.push(outputLevel);
+        } else {
+            resistance.push(outputLevel);
+        }
+    });
+
+    // Sort support descending (closest to current price first)
+    support.sort((a, b) => b.price - a.price);
+    // Sort resistance ascending (closest to current price first)
+    resistance.sort((a, b) => a.price - b.price);
+
+    return {
+        support: support.slice(0, 6),
+        resistance: resistance.slice(0, 6)
     };
 }
 

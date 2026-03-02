@@ -38,7 +38,7 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
 
     if (loading && !highlights) {
         return (
-            <div className={`p-6 rounded-3xl border animate-pulse ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-slate-100'}`}>
+            <div className={`p-6 rounded-3xl animate-pulse ${theme === 'dark' ? 'bg-white/5' : 'bg-slate-50'}`}>
                 <div className="h-6 w-32 bg-slate-700/30 rounded mb-4"></div>
                 <div className="space-y-3">
                     {[1, 2, 3, 4, 5].map(i => (
@@ -52,9 +52,9 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
     const currentData = highlights ? highlights[activeTab] : [];
 
     return (
-        <section className={`w-full max-w-full rounded-[2.5rem] border overflow-hidden transition-all duration-700 shadow-2xl ${theme === 'dark'
-            ? 'bg-[#0c0c14] border-white/10 shadow-black/40'
-            : 'bg-white border-slate-200/60 shadow-slate-200/50'
+        <section className={`w-full max-w-full rounded-[2.5rem] overflow-hidden transition-all duration-700 ${theme === 'dark'
+            ? 'bg-[#08080c]'
+            : 'bg-white shadow-2xl shadow-slate-200/50'
             }`}>
             {/* Header / Tabs */}
             <div className={`flex flex-col p-5 gap-4 border-b ${theme === 'dark' ? 'border-white/5' : 'border-slate-100'}`}>
@@ -73,9 +73,9 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tight transition-all whitespace-nowrap border ${activeTab === tab.id
-                                ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/30'
-                                : theme === 'dark' ? 'text-slate-500 border-white/5 hover:text-white hover:bg-white/5' : 'text-slate-500 border-slate-100 hover:text-purple-600 hover:bg-purple-50'
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tight transition-all whitespace-nowrap ${activeTab === tab.id
+                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30'
+                                : theme === 'dark' ? 'text-slate-500 hover:text-white hover:bg-white/5' : 'text-slate-500 bg-slate-100 hover:text-purple-600 hover:bg-purple-50'
                                 }`}
                         >
                             {tab.icon}
@@ -95,14 +95,14 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
                                 onClick={() => setHoveredSymbol(hoveredSymbol === item.symbol ? null : item.symbol)}
                                 onMouseEnter={() => !isMobile && setHoveredSymbol(item.symbol)}
                                 onMouseLeave={() => !isMobile && setHoveredSymbol(null)}
-                                className={`relative flex flex-col p-4 rounded-2xl transition-all duration-300 w-full max-w-full overflow-hidden cursor-pointer border ${hoveredSymbol === item.symbol
-                                    ? (theme === 'dark' ? 'bg-white/10 border-white/20' : 'bg-slate-100 border-slate-200')
-                                    : (theme === 'dark' ? 'bg-transparent border-transparent hover:bg-white/5' : 'bg-transparent border-transparent hover:bg-slate-50')
+                                className={`relative flex flex-col p-4 rounded-2xl transition-all duration-300 w-full max-w-full overflow-hidden cursor-pointer ${hoveredSymbol === item.symbol
+                                    ? (theme === 'dark' ? 'bg-white/10' : 'bg-slate-100')
+                                    : (theme === 'dark' ? 'bg-white/[0.02] hover:bg-white/5' : 'bg-slate-50 hover:bg-slate-100 shadow-sm')
                                     }`}
                             >
                                 <div className="flex items-center justify-between w-full min-w-0">
                                     <div className="flex items-center gap-4 min-w-0">
-                                        <div className={`w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center font-black text-xs border shadow-sm ${theme === 'dark' ? 'bg-black/40 border-white/10 text-purple-400' : 'bg-white border-slate-100 text-purple-600'
+                                        <div className={`w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center font-black text-xs shadow-sm ${theme === 'dark' ? 'bg-black/40 text-purple-400' : 'bg-white text-purple-600'
                                             }`}>
                                             {item.symbol.substring(0, 3)}
                                         </div>
@@ -150,9 +150,9 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
                                             e.stopPropagation();
                                             onAnalyzeTokenomics?.(item.symbol);
                                         }}
-                                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${theme === 'dark'
-                                            ? 'bg-white/5 border-white/10 text-white hover:bg-white/10'
-                                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 shadow-sm'
+                                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${theme === 'dark'
+                                            ? 'bg-white/5 text-white hover:bg-white/10'
+                                            : 'bg-white text-slate-600 hover:bg-slate-50 shadow-sm'
                                             }`}
                                     >
                                         <Plus size={12} />

@@ -45,10 +45,15 @@ class ErrorBoundary extends React.Component {
 const NunnoPricing = lazy(() => import('./components/NunnoPricing'))
 const AccountSettings = lazy(() => import('./components/AccountSettings'))
 const ChatHistory = lazy(() => import('./components/ChatHistory'))
+const DiscoveryFeed = lazy(() => import('./components/DiscoveryFeed'))
 const HelpSupport = lazy(() => import('./components/HelpSupport'))
 const NunnoAcademy = lazy(() => import('./components/NunnoAcademy'))
 const InvestorMetrics = lazy(() => import('./components/InvestorMetrics'))
 const RiskWatchlistSidebar = lazy(() => import('./components/RiskWatchlistSidebar'))
+const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'))
+const TermsOfService = lazy(() => import('./components/TermsOfService'))
+const NotFound = lazy(() => import('./components/NotFound'))
+const OnChainBiasPanel = lazy(() => import('./components/OnChainBiasPanel'))
 
 // Loading fallback component
 function LoadingFallback() {
@@ -65,6 +70,7 @@ import NewsIntelligence from './components/NewsIntelligence'
 
 import { NeuralActionProvider, useNeuralAction } from './contexts/NeuralActionContext'
 import QuotaGuard from './components/QuotaGuard'
+import CookieConsent from './components/CookieConsent'
 
 function Dashboard({ userAge }) {
     const navigate = useNavigate();
@@ -121,10 +127,10 @@ function Dashboard({ userAge }) {
 
                 {!isInitial && (
                     <aside className={cn(
-                        "fixed top-0 right-0 h-full transition-transform duration-500 ease-in-out z-[41] flex flex-col will-change-transform shadow-2xl",
+                        "fixed top-0 right-0 h-full transition-transform duration-500 ease-in-out z-[41] flex flex-col will-change-transform",
                         theme === 'dark'
-                            ? "bg-[#0c0c14] border-l border-white/5"
-                            : "bg-white border-l border-purple-100/50",
+                            ? "bg-[#08080c]"
+                            : "bg-white",
                         isNewsOpen ? "translate-x-0" : "translate-x-full",
                         // News is always the leftmost open panel: offset by risk + market widths
                         isMarketOpen && isRiskOpen ? "mr-[640px]" :
@@ -135,10 +141,10 @@ function Dashboard({ userAge }) {
                         <button
                             onClick={() => setIsNewsOpen(!isNewsOpen)}
                             className={cn(
-                                "absolute left-[-40px] top-[30%] -translate-y-1/2 w-10 h-20 shadow-[-10px_0_20px_rgba(0,0,0,0.2)] border border-r-0 rounded-l-3xl flex items-center justify-center transition-all pointer-events-auto",
+                                "absolute left-[-40px] top-[30%] -translate-y-1/2 w-10 h-20 rounded-l-3xl flex items-center justify-center transition-all pointer-events-auto",
                                 theme === 'dark'
-                                    ? "bg-[#0c0c14] border-white/10 text-purple-400 hover:text-white"
-                                    : "bg-white border-purple-100 text-purple-600 hover:text-purple-800",
+                                    ? "bg-[#08080c] text-purple-400 hover:text-white"
+                                    : "bg-white text-purple-600 hover:text-purple-800",
                                 !isNewsOpen && "opacity-80 hover:opacity-100"
                             )}
                             title={isNewsOpen ? "Close News" : "Open News"}
@@ -172,10 +178,10 @@ function Dashboard({ userAge }) {
 
                 {!isInitial && (
                     <aside className={cn(
-                        "fixed top-0 right-0 h-full transition-transform duration-500 ease-in-out z-[42] flex flex-col will-change-transform shadow-2xl",
+                        "fixed top-0 right-0 h-full transition-transform duration-500 ease-in-out z-[42] flex flex-col will-change-transform",
                         theme === 'dark'
-                            ? "bg-[#0c0c14] border-l border-white/5"
-                            : "bg-white border-l border-purple-100/50",
+                            ? "bg-[#08080c]"
+                            : "bg-white",
                         isRiskOpen ? "translate-x-0" : "translate-x-full",
                         // Risk is middle: offset by market width when market is also open
                         isMarketOpen ? "mr-80" : "mr-0",
@@ -185,10 +191,10 @@ function Dashboard({ userAge }) {
                         <button
                             onClick={() => setIsRiskOpen(!isRiskOpen)}
                             className={cn(
-                                "absolute left-[-40px] top-[50%] -translate-y-1/2 w-10 h-20 shadow-[-10px_0_20px_rgba(0,0,0,0.2)] border border-r-0 rounded-l-3xl flex items-center justify-center transition-all pointer-events-auto",
+                                "absolute left-[-40px] top-[50%] -translate-y-1/2 w-10 h-20 rounded-l-3xl flex items-center justify-center transition-all pointer-events-auto",
                                 theme === 'dark'
-                                    ? "bg-[#0c0c14] border-white/10 text-emerald-400 hover:text-white"
-                                    : "bg-white border-purple-100 text-emerald-600 hover:text-emerald-800",
+                                    ? "bg-[#08080c] text-emerald-400 hover:text-white"
+                                    : "bg-white text-emerald-600 hover:text-emerald-800",
                                 !isRiskOpen && "opacity-80 hover:opacity-100"
                             )}
                             title={isRiskOpen ? "Close Risk Monitor" : "Open Risk Monitor"}
@@ -222,10 +228,10 @@ function Dashboard({ userAge }) {
 
                 {!isInitial && (
                     <aside className={cn(
-                        "fixed top-0 right-0 h-full transition-transform duration-500 ease-in-out z-[43] flex flex-col will-change-transform shadow-2xl",
+                        "fixed top-0 right-0 h-full transition-transform duration-500 ease-in-out z-[43] flex flex-col will-change-transform",
                         theme === 'dark'
-                            ? "bg-[#0c0c14] border-l border-white/5 border-r border-white/5"
-                            : "bg-white border-l border-purple-100/50 border-r border-purple-100/50 shadow-2xl",
+                            ? "bg-[#08080c]"
+                            : "bg-white shadow-2xl",
                         isMarketOpen ? "translate-x-0" : "translate-x-full",
                         "w-80" // always at right-0, no mr needed — it's the closest panel
                     )}>
@@ -233,10 +239,10 @@ function Dashboard({ userAge }) {
                         <button
                             onClick={() => setIsMarketOpen(!isMarketOpen)}
                             className={cn(
-                                "absolute left-[-40px] top-[70%] -translate-y-1/2 w-10 h-20 shadow-[-10px_0_20px_rgba(0,0,0,0.2)] border border-r-0 rounded-l-3xl flex items-center justify-center transition-all pointer-events-auto",
+                                "absolute left-[-40px] top-[70%] -translate-y-1/2 w-10 h-20 rounded-l-3xl flex items-center justify-center transition-all pointer-events-auto",
                                 theme === 'dark'
-                                    ? "bg-[#0c0c14] border-white/10 text-purple-400 hover:text-white"
-                                    : "bg-white border-purple-100 text-purple-600 hover:text-purple-800",
+                                    ? "bg-[#08080c] text-purple-400 hover:text-white"
+                                    : "bg-white text-purple-600 hover:text-purple-800",
                                 !isMarketOpen && "opacity-80 hover:opacity-100"
                             )}
                             title={isMarketOpen ? "Close Market Info" : "Open Market Info"}
@@ -287,6 +293,17 @@ function Dashboard({ userAge }) {
                                         onAnalyzeTokenomics={handleAnalyzeTokenomics}
                                     />
                                 </section>
+
+                                <div className={cn(
+                                    "h-px bg-gradient-to-r from-transparent via-purple-100 to-transparent",
+                                    theme === 'dark' && "via-slate-700/50"
+                                )} />
+
+                                <section>
+                                    <Suspense fallback={<LoadingFallback />}>
+                                        <OnChainBiasPanel />
+                                    </Suspense>
+                                </section>
                             </div>
                         </div>
                     </aside>
@@ -303,7 +320,7 @@ function MainLayout({ children }) {
     const isLandingPage = location.pathname === '/';
 
     if (isLandingPage) {
-        return <main className="h-screen w-full overflow-hidden">{children}</main>;
+        return <main className="h-screen w-full overflow-y-auto no-scrollbar">{children}</main>;
     }
 
     return (
@@ -322,7 +339,7 @@ function MainLayout({ children }) {
 
             <CollapsibleSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10 border-none shadow-none">
                 <div className="fixed top-4 left-4 md:hidden z-[1000]">
                     <button
                         onClick={() => setIsCollapsed(false)}
@@ -336,7 +353,9 @@ function MainLayout({ children }) {
                         <Menu size={24} strokeWidth={3} className="drop-shadow-lg" />
                     </button>
                 </div>
-                <main className="flex-1 overflow-hidden">{children}</main>
+                <main className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar relative">
+                    {children}
+                </main>
             </div>
         </div>
     )
@@ -425,14 +444,17 @@ function App() {
                                             <Route path="/academy" element={<NunnoAcademy />} />
                                             <Route path="/pricing" element={<NunnoPricing />} />
                                             <Route path="/settings" element={<AccountSettings />} />
-                                            <Route path="/history" element={<ChatHistory />} />
+                                            <Route path="/history" element={<DiscoveryFeed />} />
                                             <Route path="/support" element={<HelpSupport />} />
                                             <Route path="/traction-core" element={<InvestorMetrics />} />
-                                            <Route path="*" element={<Navigate to="/" replace />} />
+                                            <Route path="/privacy" element={<PrivacyPolicy />} />
+                                            <Route path="/terms" element={<TermsOfService />} />
+                                            <Route path="*" element={<NotFound />} />
                                         </Routes>
                                     </Suspense>
                                 </MainLayout>
 
+                                <CookieConsent />
                                 <TutorialController />
                             </NeuralActionProvider>
                         </ChatProvider>
