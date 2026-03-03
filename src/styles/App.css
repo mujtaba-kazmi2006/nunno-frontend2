@@ -1615,7 +1615,8 @@ body::after {
     }
 
     /* Signals grid - single column on mobile */
-    .signals-grid {
+    .signals-grid,
+    .levels-grid {
         grid-template-columns: 1fr;
     }
 

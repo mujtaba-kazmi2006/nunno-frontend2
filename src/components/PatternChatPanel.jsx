@@ -390,7 +390,7 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
             <div
                 ref={messagesContainerRef}
                 onScroll={handleScroll}
-                className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0 custom-scrollbar"
+                className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 min-h-0 custom-scrollbar"
             >
                 <AnimatePresence initial={false}>
                     {messages.map((message, index) => (
@@ -399,7 +399,7 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                             initial={{ opacity: 0, y: 10, scale: 0.98 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             transition={{ duration: 0.3 }}
-                            className={`flex gap-4 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
+                            className={`flex gap-3 md:gap-4 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
                         >
                             <div className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden ${message.role === 'user'
                                 ? 'bg-gradient-to-br from-purple-600 to-indigo-600 text-white'
@@ -412,7 +412,7 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                                 className={`max-w-[88%] flex flex-col gap-2 ${message.role === 'user' ? 'items-end' : 'items-start'}`}
                             >
                                 <div
-                                    className={`px-5 py-4 rounded-[2rem] shadow-2xl border backdrop-blur-md transition-all ${message.role === 'user'
+                                    className={`px-4 py-3 md:px-5 md:py-4 rounded-[1.5rem] md:rounded-[2rem] shadow-2xl border backdrop-blur-md transition-all ${message.role === 'user'
                                         ? 'bg-purple-600/90 text-white border-purple-500 rounded-tr-sm'
                                         : message.isIntelResponse
                                             ? (theme === 'dark' ? 'bg-indigo-500/5 border-indigo-500/20 text-slate-100 rounded-tl-sm w-full' : 'bg-indigo-50 border-indigo-100 text-slate-800 rounded-tl-sm w-full')
@@ -584,7 +584,7 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
             </div>
 
             {/* Premium Action Menu Area */}
-            <div className={`p-6 border-t space-y-4 transition-colors ${theme === 'dark' ? 'bg-[#0f111a] border-white/5' : 'bg-white border-slate-200'}`}>
+            <div className={`p-4 md:p-6 border-t space-y-3 md:space-y-4 transition-colors ${theme === 'dark' ? 'bg-[#0f111a] border-white/5' : 'bg-white border-slate-200'}`}>
                 {messages.length <= 1 && (
                     <div className="space-y-4 mb-2">
                         <div className="flex items-center justify-between px-1">
@@ -620,17 +620,17 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                     </div>
                 )}
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 md:gap-3">
                     <div className="relative" ref={actionMenuRef}>
                         <button
                             onClick={() => setIsActionMenuOpen(!isActionMenuOpen)}
                             disabled={isLoading}
-                            className={`p-3.5 rounded-2xl transition-all shadow-2xl border flex items-center justify-center active:scale-90 ${isActionMenuOpen
+                            className={`p-2.5 md:p-3.5 rounded-2xl transition-all shadow-2xl border flex items-center justify-center active:scale-90 ${isActionMenuOpen
                                 ? 'bg-purple-600 border-purple-500 text-white'
                                 : (theme === 'dark' ? 'bg-[#1e2030] border-white/5 text-slate-400 hover:text-purple-400' : 'bg-white border-slate-200 text-slate-500 hover:text-purple-600 shadow-xl')
                                 }`}
                         >
-                            <Plus size={22} className={`transition-transform duration-500 ${isActionMenuOpen ? 'rotate-90 scale-110' : ''}`} />
+                            <Plus size={isActionMenuOpen ? 22 : 20} className={`transition-transform duration-500 ${isActionMenuOpen ? 'rotate-90 scale-110' : ''}`} />
                         </button>
 
                         <AnimatePresence>
@@ -687,27 +687,27 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                             }}
                             placeholder="Connect vision into intelligence..."
                             disabled={isLoading}
-                            className={`w-full px-6 py-4 border rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all text-sm disabled:opacity-50 resize-none font-medium custom-scrollbar ${theme === 'dark'
+                            className={`w-full px-4 md:px-6 py-3 md:py-4 border rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all text-[13px] md:text-sm disabled:opacity-50 resize-none font-medium custom-scrollbar ${theme === 'dark'
                                 ? 'bg-[#1e2030] border-white/5 text-slate-100 placeholder:text-slate-600'
                                 : 'bg-white border-slate-200 text-slate-800 placeholder:text-slate-400 shadow-inner'
                                 }`}
                         />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        <div className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
                             {isLoading ? (
                                 <button
                                     onClick={handleStop}
-                                    className="p-2.5 bg-rose-500/10 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-lg group"
+                                    className="p-2 md:p-2.5 bg-rose-500/10 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-lg group"
                                     title="Stop Agent"
                                 >
-                                    <Square size={16} className="fill-current" />
+                                    <Square size={14} className="fill-current" />
                                 </button>
                             ) : (
                                 <button
                                     onClick={handleSendMessage}
                                     disabled={!inputValue.trim()}
-                                    className="p-2.5 bg-gradient-to-tr from-purple-600 to-indigo-600 text-white rounded-xl hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:scale-110 active:scale-95 transition-all disabled:opacity-0 disabled:scale-90 flex-shrink-0"
+                                    className="p-2 md:p-2.5 bg-gradient-to-tr from-purple-600 to-indigo-600 text-white rounded-xl hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:scale-110 active:scale-95 transition-all shadow-lg disabled:opacity-0 disabled:scale-90 flex-shrink-0"
                                 >
-                                    <Send size={18} />
+                                    <Send size={16} />
                                 </button>
                             )}
                         </div>

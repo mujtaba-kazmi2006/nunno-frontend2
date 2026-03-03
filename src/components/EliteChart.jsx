@@ -183,6 +183,15 @@ const EliteChart = () => {
     const [showAIChat, setShowAIChat] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
+    // Update isMobile on resize
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 1024);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     // Level Highlighting Animation (Blinking)
     useEffect(() => {
         if (!mainSeriesRef.current || (!highlightedLevels.support && !highlightedLevels.resistance)) return;
@@ -2222,18 +2231,18 @@ const EliteChart = () => {
                     </div>
 
                     {/* Right: Actions */}
-                    <div className="flex items-center justify-between md:justify-end gap-2">
+                    <div className="flex items-center flex-wrap justify-center md:justify-end gap-1.5 md:gap-2 mt-2 md:mt-0">
                         {/* Reset Chart Layout */}
                         <button
                             onClick={handleResetChart}
-                            className={`hidden sm:flex p-2.5 rounded-xl border transition-all ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-amber-500' : 'bg-white border-slate-200 text-slate-600 hover:text-amber-600'
+                            className={`flex p-2 md:p-2.5 rounded-xl border transition-all ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-amber-500' : 'bg-white border-slate-200 text-slate-600 hover:text-amber-600'
                                 }`}
                             title="Reset Chart Layout"
                         >
-                            <RotateCcw size={20} />
+                            <RotateCcw size={18} />
                         </button>
                         {/* Chart Type Toggle */}
-                        <div className={`flex gap-1 rounded-xl p-1 ${theme === 'dark' ? 'bg-[#16161e]/50' : 'bg-slate-100'}`}>
+                        <div className={`flex gap-0.5 md:gap-1 rounded-xl p-1 ${theme === 'dark' ? 'bg-[#16161e]/50' : 'bg-slate-100'}`}>
                             {[
                                 { type: 'candlestick', icon: BarChart3 },
                                 { type: 'line', icon: Activity },
@@ -2242,63 +2251,63 @@ const EliteChart = () => {
                                 <button
                                     key={type}
                                     onClick={() => setChartType(type)}
-                                    className={`p-2 rounded-lg transition-all ${chartType === type
+                                    className={`p-1.5 md:p-2 rounded-lg transition-all ${chartType === type
                                         ? 'bg-purple-600 text-white shadow-md'
                                         : 'text-slate-500 hover:text-purple-500'
                                         }`}
                                 >
-                                    <Icon size={18} />
+                                    <Icon size={16} />
                                 </button>
                             ))}
                         </div>
 
-                        <div className="h-8 w-[1px] bg-slate-700/30 mx-1 hidden md:block" />
+                        <div className="h-6 w-[1px] bg-slate-700/30 mx-0.5 hidden md:block" />
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 md:gap-2">
                             <button
                                 onClick={() => setFocusMode(!focusMode)}
-                                className={`p-2.5 rounded-xl border transition-all ${focusMode
+                                className={`p-2 md:p-2.5 rounded-xl border transition-all ${focusMode
                                     ? 'bg-purple-600 text-white border-purple-500 shadow-lg'
                                     : theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:text-purple-600'
                                     }`}
                             >
-                                {focusMode ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+                                {focusMode ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
                             </button>
 
                             {/* Liquidity Heatmap Toggle */}
                             <button
                                 onClick={() => setShowLiquidityHeatmap(!showLiquidityHeatmap)}
-                                className={`p-2.5 rounded-xl border transition-all ${showLiquidityHeatmap
+                                className={`p-2 md:p-2.5 rounded-xl border transition-all ${showLiquidityHeatmap
                                     ? 'bg-cyan-500 text-white border-cyan-400 shadow-lg shadow-cyan-500/20'
                                     : theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50' : 'bg-white border-slate-200 text-slate-600 hover:text-cyan-600'
                                     }`}
                                 title="Liquidity Heatmap — Real Order Book"
                             >
-                                <Droplets size={20} />
+                                <Droplets size={18} />
                             </button>
 
                             <button
                                 onClick={() => setShowAIChat(!showAIChat)}
-                                className={`px-4 py-2.5 rounded-xl border font-bold text-sm flex items-center gap-2 transition-all ${showAIChat
+                                className={`px-3 md:px-4 py-2 md:py-2.5 rounded-xl border font-bold text-xs md:text-sm flex items-center gap-1.5 md:gap-2 transition-all ${showAIChat
                                     ? 'bg-purple-600 text-white border-purple-500 shadow-lg'
                                     : theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:text-purple-600'
                                     }`}
                             >
-                                <MessageSquare size={18} />
-                                <span className="hidden lg:inline">Ask AI</span>
+                                <MessageSquare size={16} />
+                                <span className="hidden lg:inline text-[10px] md:text-sm">Ask AI</span>
                             </button>
 
                             <button
                                 onClick={toggleStreaming}
-                                className={`px-5 py-2.5 rounded-xl font-black text-sm flex items-center gap-2 transition-all shadow-xl ${isStreaming
+                                className={`px-4 md:px-5 py-2 md:py-2.5 rounded-xl font-black text-xs md:text-sm flex items-center gap-1.5 md:gap-2 transition-all shadow-xl ${isStreaming
                                     ? 'bg-rose-500 text-white hover:bg-rose-600'
                                     : 'bg-emerald-500 text-white hover:bg-emerald-600'
                                     }`}
                             >
                                 {isStreaming ? (
-                                    <><div className="w-2 h-2 bg-white rounded-full animate-pulse" /><span>LIVE</span></>
+                                    <><div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-white rounded-full animate-pulse" /><span className="text-[10px] md:text-sm">LIVE</span></>
                                 ) : (
-                                    <><PlayCircle size={18} /><span>START</span></>
+                                    <><PlayCircle size={16} /><span className="text-[10px] md:text-sm">START</span></>
                                 )}
                             </button>
                         </div>
@@ -2847,9 +2856,9 @@ const EliteChart = () => {
                 {/* Center Content: Chart Area */}
                 <main className={`flex-1 relative min-h-0 min-w-0 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-slate-50'}`}>
                     {/* OHLC Overlay (Glassmorphism) */}
-                    <div className={`absolute top-4 md:top-6 left-4 md:left-6 right-4 md:right-auto z-20 pointer-events-none transition-all duration-700`}>
-                        <div className={`backdrop-blur-md rounded-2xl md:rounded-3xl border overflow-hidden shadow-2xl pointer-events-auto ${theme === 'dark' ? 'bg-[#1e2030]/60 border-white/5 shadow-black/40' : 'bg-white/60 border-white shadow-slate-200/50'}`}>
-                            <div className="flex items-center flex-wrap md:flex-nowrap justify-between md:justify-start gap-y-2 gap-x-4 md:gap-8 px-4 md:px-6 py-3 md:py-4">
+                    <div className={`absolute top-2 md:top-6 left-2 md:left-6 right-2 md:right-auto z-20 pointer-events-none transition-all duration-700`}>
+                        <div className={`backdrop-blur-md rounded-xl md:rounded-3xl border overflow-hidden shadow-2xl pointer-events-auto ${theme === 'dark' ? 'bg-[#1e2030]/60 border-white/5 shadow-black/40' : 'bg-white/60 border-white shadow-slate-200/50'}`}>
+                            <div className="flex items-center flex-wrap md:flex-nowrap justify-between md:justify-start gap-y-1 gap-x-3 md:gap-8 px-3 md:px-6 py-2 md:py-4">
                                 {[
                                     { label: 'O', val: hoveredCandle?.open ?? chartData[chartData.length - 1]?.open, col: theme === 'dark' ? 'text-slate-300' : 'text-slate-500' },
                                     { label: 'H', val: hoveredCandle?.high ?? chartData[chartData.length - 1]?.high, col: 'text-emerald-500' },
@@ -2857,9 +2866,9 @@ const EliteChart = () => {
                                     { label: 'C', val: hoveredCandle?.close ?? chartData[chartData.length - 1]?.close, col: 'text-purple-500' }
                                 ].map(ohlc => (
                                     <div key={ohlc.label} className="flex flex-col">
-                                        <span className="text-[8px] md:text-[9px] font-black uppercase text-slate-500 tracking-tighter mb-0.5">{ohlc.label}</span>
-                                        <span className={`text-[12px] md:text-[15px] font-mono font-black ${ohlc.col} leading-none`}>
-                                            ${ohlc.val?.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
+                                        <span className="text-[7px] md:text-[9px] font-black uppercase text-slate-500 tracking-tighter mb-0">{ohlc.label}</span>
+                                        <span className={`text-[10px] md:text-[15px] font-mono font-black ${ohlc.col} leading-none`}>
+                                            ${ohlc.val?.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
                                         </span>
                                     </div>
                                 ))}
@@ -3267,7 +3276,7 @@ const EliteChart = () => {
                     className={`h-full border-l transition-[width,opacity] duration-500 ease-in-out flex flex-col flex-shrink-0 z-[100] will-change-[width,opacity] ${focusMode
                         ? 'w-0 border-none overflow-hidden opacity-0 pointer-events-none'
                         : showAIChat
-                            ? isMobile ? 'fixed inset-0 w-full' : 'relative w-[450px] xl:w-[550px] min-w-[450px] xl:min-w-[550px] opacity-100'
+                            ? isMobile ? 'fixed inset-0 w-full' : 'relative w-full md:w-[450px] xl:w-[550px] opacity-100'
                             : 'w-0 border-none overflow-hidden opacity-0 pointer-events-none'
                         } ${theme === 'dark' ? 'bg-[#0f111a] border-white/5 shadow-2xl' : 'bg-white border-slate-200 shadow-xl'}`}
                 >
