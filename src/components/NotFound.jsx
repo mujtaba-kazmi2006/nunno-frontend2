@@ -6,7 +6,7 @@ import SEO from './SEO';
 
 export default function NotFound() {
     return (
-        <div className="min-h-screen bg-[#020205] text-white flex items-center justify-center p-6 relative overflow-hidden font-sans">
+        <div className="min-h-[100dvh] bg-[#020205] text-white flex items-center justify-center p-6 relative overflow-hidden font-sans">
             <SEO title="404 - Lost in the Void" description="The page you are looking for does not exist in the Nunno ecosystem." path="*" />
 
             {/* 3D-like Background Elements */}

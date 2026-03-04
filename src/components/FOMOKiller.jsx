@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AlertOctagon, TrendingUp, Shield, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../utils/cn';
+import { formatPrice } from '../utils/formatPrice';
 
 const FOMOKiller = ({ watchlist = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT'] }) => {
     const { theme } = useTheme();
@@ -268,7 +269,7 @@ const FOMOWarningCard = ({ warning, theme }) => {
                 </div>
                 <div className="text-right flex-shrink-0">
                     <div className="text-base sm:text-lg font-black text-white">
-                        ${warning.current_price?.toFixed(2)}
+                        {formatPrice(warning.current_price)}
                     </div>
                 </div>
             </div>

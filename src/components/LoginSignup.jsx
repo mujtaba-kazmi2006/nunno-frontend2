@@ -102,7 +102,7 @@ export default function LoginSignup({ onClose }) {
                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 1.1, y: 10 }}
-                    className="relative w-full max-w-md max-h-[92vh] bg-[#0c0c14]/90 border border-white/10 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_32px_128px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden backdrop-blur-lg group"
+                    className="relative w-full max-w-md max-h-[92dvh] bg-[#0c0c14]/90 border border-white/10 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_32px_128px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden backdrop-blur-lg group"
                 >
                     {/* Interior Effects */}
                     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.1] pointer-events-none" />
@@ -362,7 +362,7 @@ export default function LoginSignup({ onClose }) {
                                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 1.1, y: 10 }}
-                                className="relative w-full max-w-2xl max-h-[80vh] bg-[#0c0c14] border border-white/10 rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden"
+                                className="relative w-full max-w-2xl max-h-[80dvh] bg-[#0c0c14] border border-white/10 rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden"
                             >
                                 <div className="p-8 border-b border-white/5 flex items-center justify-between">
                                     <div className="flex items-center gap-3">

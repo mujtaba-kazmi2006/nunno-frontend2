@@ -5,7 +5,7 @@ import SEO from './SEO';
 
 export default function TermsOfService() {
     return (
-        <div className="min-h-screen py-20 px-4 sm:px-6 bg-[#020205] text-white">
+        <div className="min-h-[100dvh] py-20 px-4 sm:px-6 bg-[#020205] text-white">
             <SEO title="Terms of Service" description="Terms governing your use of Nunno, an educational AI analysis tool." path="/terms" />
             <div className="max-w-3xl mx-auto">
                 <Link to="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-white text-xs font-bold uppercase tracking-widest mb-12 transition-colors">

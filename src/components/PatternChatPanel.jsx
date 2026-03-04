@@ -21,6 +21,7 @@ const PatternChatPanel = ({ onPatternGenerated, onLivePatternDetected, currentPr
     const [isLoading, setIsLoading] = useState(false);
     const [loadingStatus, setLoadingStatus] = useState('');
     const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+    const [chatConversationId] = useState(() => crypto.randomUUID());
     const inputRef = useRef(null);
     const actionMenuRef = useRef(null);
     const abortController = useRef(null);
@@ -169,6 +170,16 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                         });
                     } else if (chunk.type === 'status') {
                         setLoadingStatus(chunk.content);
+                    } else if (chunk.type === 'error') {
+                        fullContent += `\n\n⚠️ **Neural Scan Error:** ${chunk.content}`;
+                        setMessages(prev => {
+                            const newMsgs = [...prev];
+                            newMsgs[newMsgs.length - 1] = {
+                                ...newMsgs[newMsgs.length - 1],
+                                content: fullContent
+                            };
+                            return newMsgs;
+                        });
                     }
                 },
                 signal: abortController.current.signal
@@ -264,7 +275,7 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
 
             await streamMessage({
                 message: userMessage,
-                conversationId: `chat-${Date.now()}`,
+                conversationId: chatConversationId,
                 userAge: 18,
                 webSearchEnabled: false,
                 onChunk: (chunk) => {
@@ -281,6 +292,16 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                         });
                     } else if (chunk.type === 'status') {
                         setLoadingStatus(chunk.content);
+                    } else if (chunk.type === 'error') {
+                        fullContent += `\n\n⚠️ **Neural Link Error:** ${chunk.content}`;
+                        setMessages(prev => {
+                            const newMsgs = [...prev];
+                            newMsgs[newMsgs.length - 1] = {
+                                ...newMsgs[newMsgs.length - 1],
+                                content: fullContent
+                            };
+                            return newMsgs;
+                        });
                     }
                 },
                 signal: abortController.current.signal
@@ -409,7 +430,7 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                             </div>
 
                             <div
-                                className={`max-w-[88%] flex flex-col gap-2 ${message.role === 'user' ? 'items-end' : 'items-start'}`}
+                                className={`max-w-[88%] min-w-0 flex flex-col gap-2 ${message.role === 'user' ? 'items-end' : 'items-start'}`}
                             >
                                 <div
                                     className={`px-4 py-3 md:px-5 md:py-4 rounded-[1.5rem] md:rounded-[2rem] shadow-2xl border backdrop-blur-md transition-all ${message.role === 'user'
@@ -465,8 +486,8 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                                                             return ps.map((p, j) => j % 2 === 1 ? <strong key={j} className="text-purple-400 font-black">{p}</strong> : p);
                                                         };
                                                         rendered.push(
-                                                            <div key={`tbl-${li}`} className="my-4 overflow-x-auto rounded-2xl border border-purple-500/20 bg-white/[0.02] dark:bg-white/[0.015] shadow-lg shadow-purple-500/5 backdrop-blur-sm">
-                                                                <table className="w-full text-[12px] border-collapse">
+                                                            <div key={`tbl-${li}`} className="my-4 w-full max-w-full overflow-x-auto rounded-2xl border border-purple-500/20 bg-white/[0.02] dark:bg-white/[0.015] shadow-lg shadow-purple-500/5 backdrop-blur-sm">
+                                                                <table className="w-full min-w-max text-[12px] border-collapse">
                                                                     {hdCells.length > 0 && (
                                                                         <thead>
                                                                             <tr className={`border-b ${theme === 'dark' ? 'border-purple-500/20 bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent' : 'border-purple-200 bg-purple-50'}`}>

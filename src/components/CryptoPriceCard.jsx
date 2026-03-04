@@ -4,6 +4,7 @@ import { TrendingUp, TrendingDown } from 'lucide-react'
 import { useMarketData } from '../contexts/MarketDataContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { cn } from '../utils/cn'
+import { formatPrice } from '../utils/formatPrice'
 
 export default function CryptoPriceCard({ ticker, name, onClick, variant = 'default' }) {
     const { prices } = useMarketData()
@@ -76,7 +77,7 @@ export default function CryptoPriceCard({ ticker, name, onClick, variant = 'defa
                     "text-sm font-black italic transition-colors",
                     theme === 'dark' ? "text-slate-200" : "text-slate-900"
                 )}>
-                    ${priceData.current_price.toLocaleString(undefined, { minimumFractionDigits: ticker === 'ETHUSDT' ? 2 : 0, maximumFractionDigits: 2 })}
+                    {formatPrice(priceData.current_price, { symbol: true })}
                 </div>
 
                 <div className="h-8 w-full mt-auto">
@@ -119,7 +120,7 @@ export default function CryptoPriceCard({ ticker, name, onClick, variant = 'defa
                     <h4 className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>{name}</h4>
                     <div className="flex items-baseline gap-2">
                         <span className={`text-xl font-bold ${theme === 'dark' ? 'text-slate-100' : 'text-gray-900'}`}>
-                            ${priceData.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {formatPrice(priceData.current_price)}
                         </span>
                     </div>
                     <div className={`flex items-center gap-1 text-xs font-semibold mt-1 ${isPositive ? (theme === 'dark' ? 'text-emerald-400' : 'text-green-500') : (theme === 'dark' ? 'text-rose-400' : 'text-red-500')}`}>

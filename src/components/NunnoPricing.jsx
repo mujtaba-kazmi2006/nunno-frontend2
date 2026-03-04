@@ -207,7 +207,7 @@ export default function NunnoPricing({ onClose }) {
     ];
 
     return (
-        <div className={`min-h-screen py-12 px-4 transition-colors duration-500 relative ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-purple-50'}`}>
+        <div className={`min-h-dvh py-12 px-4 transition-colors duration-500 relative ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-purple-50'}`}>
             <ComingSoonOverlay onClose={onClose} />
             <div className="max-w-7xl mx-auto opacity-20 filter grayscale pointer-events-none">
                 {/* Header */}

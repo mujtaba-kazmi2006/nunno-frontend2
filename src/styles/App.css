@@ -6,6 +6,38 @@
     box-sizing: border-box;
 }
 
+/* ═══════════════════════════════════════════════════════
+   Mobile Viewport Height Fix — 3-tier fallback strategy
+   1. height: 100%           — basic fallback (all browsers)
+   2. calc(var(--vh) * 100)  — JS-powered fallback (set in index.html)
+   3. height: 100dvh         — modern browsers (dvh = dynamic vh)
+   Fixes content being hidden behind mobile browser chrome
+   (address bar, bottom nav) on ALL mobile browsers.
+   ═══════════════════════════════════════════════════════ */
+html {
+    height: 100%;
+    height: calc(var(--vh, 1vh) * 100);
+    height: 100dvh;
+}
+
+body {
+    min-height: 100%;
+    min-height: calc(var(--vh, 1vh) * 100);
+    min-height: 100dvh;
+}
+
+#root {
+    height: 100%;
+    height: calc(var(--vh, 1vh) * 100);
+    height: 100dvh;
+    overflow: hidden;
+    /* Safe area insets for notched devices (iPhone, Pixel) */
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+}
+
 /* Performance Containment */
 .main-layout,
 .dashboard-container,
@@ -204,6 +236,9 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
+    min-height: 100dvh;
+    /* Mobile viewport fix — dvh excludes browser chrome */
     position: relative;
     overflow-x: hidden;
 }
@@ -274,8 +309,10 @@ body::after {
 }
 
 .app {
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
     height: 100dvh;
-    /* Strict viewport height */
+    /* Dynamic viewport height — adjusts for mobile browser chrome */
     overflow: hidden;
     /* Prevent page scroll */
     display: flex;
@@ -1471,6 +1508,8 @@ body::after {
         display: flex;
         flex-direction: column;
         height: 100vh;
+        height: calc(var(--vh, 1vh) * 100);
+        height: 100dvh;
         padding: 0;
         gap: 0;
     }
@@ -1479,7 +1518,11 @@ body::after {
     .chat-container {
         flex: 1;
         height: 100vh;
+        height: calc(var(--vh, 1vh) * 100);
+        height: 100dvh;
         min-height: 100vh;
+        min-height: calc(var(--vh, 1vh) * 100);
+        min-height: 100dvh;
         border-radius: 0;
         transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }

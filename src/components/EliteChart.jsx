@@ -59,6 +59,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { analytics } from '../utils/analytics';
+import { formatPrice } from '../utils/formatPrice';
 
 const EliteChart = () => {
     // Chart refs
@@ -467,7 +468,11 @@ const EliteChart = () => {
             borderUpColor: '#22c55e',
             borderDownColor: '#ef4444',
             wickUpColor: '#22c55e',
-            wickDownColor: '#ef4444'
+            wickDownColor: '#ef4444',
+            priceFormat: {
+                type: 'price',
+                formatter: (price) => formatTickPrice(price)
+            }
         });
         mainSeriesRef.current = candlestickSeries;
 
@@ -748,11 +753,11 @@ const EliteChart = () => {
                     stats: {
                         rsi: indicators.rsi?.toFixed(1) || 'N/A',
                         atr: indicators.atr?.toFixed(2) || 'N/A',
-                        risk: Math.abs(entry - stop).toFixed(2),
-                        reward: Math.abs(target - entry).toFixed(2),
-                        entry: entry.toFixed(2),
-                        target: target.toFixed(2),
-                        stop: stop.toFixed(2),
+                        risk: formatPrice(Math.abs(entry - stop), { symbol: false }),
+                        reward: formatPrice(Math.abs(target - entry), { symbol: false }),
+                        entry: formatPrice(entry),
+                        target: formatPrice(target),
+                        stop: formatPrice(stop),
                     },
                 });
             } else {
@@ -812,11 +817,11 @@ const EliteChart = () => {
             stats: {
                 rsi: rsi?.toFixed?.(1) || 'N/A',
                 atr: atr?.toFixed?.(2) || 'N/A',
-                risk: Math.abs(entry - stop).toFixed(2),
-                reward: Math.abs(target - entry).toFixed(2),
-                entry: entry.toFixed(2),
-                target: target.toFixed(2),
-                stop: stop.toFixed(2),
+                risk: formatPrice(Math.abs(entry - stop), { symbol: false }),
+                reward: formatPrice(Math.abs(target - entry), { symbol: false }),
+                entry: formatPrice(entry),
+                target: formatPrice(target),
+                stop: formatPrice(stop),
             },
         });
     };
@@ -1634,9 +1639,9 @@ const EliteChart = () => {
                     // Add price targets if available
                     if (stats?.price_targets) {
                         scenarioInfo.price_targets = {
-                            p10: `$${stats.price_targets.p10.toFixed(2)}`,
-                            p50: `$${stats.price_targets.p50.toFixed(2)}`,
-                            p90: `$${stats.price_targets.p90.toFixed(2)}`
+                            p10: formatPrice(stats.price_targets.p10),
+                            p50: formatPrice(stats.price_targets.p50),
+                            p90: formatPrice(stats.price_targets.p90)
                         };
                     }
 
@@ -2187,7 +2192,7 @@ const EliteChart = () => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className={`text-lg font-mono font-bold ${priceChange >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                        ${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        {formatPrice(currentPrice)}
                                     </span>
                                     <span className={`text-xs font-black ${priceChange >= 0 ? 'text-emerald-500/80' : 'text-rose-500/80'}`}>
                                         {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
@@ -2711,7 +2716,7 @@ const EliteChart = () => {
                                         {scenarioData.targetPrice ? (
                                             <div>
                                                 <div className="text-[9px] uppercase font-black text-slate-400 tracking-tighter mb-1">Target Potential</div>
-                                                <div className="text-sm font-black text-emerald-500 leading-none">${scenarioData.targetPrice.toLocaleString(undefined, { minimumFractionDigits: 1 })}</div>
+                                                <div className="text-sm font-black text-emerald-500 leading-none">{formatPrice(scenarioData.targetPrice)}</div>
                                             </div>
                                         ) : scenarioData.metrics?.target ? (
                                             <div>
@@ -2814,7 +2819,7 @@ const EliteChart = () => {
                                                     ) : (
                                                         <div className="flex flex-col">
                                                             <span className="opacity-50 uppercase text-[7px] mb-0.5">Floor Anchor</span>
-                                                            <span className="font-bold text-slate-300">${scenarioData.meta.support_used?.toLocaleString(undefined, { maximumFractionDigits: 1 })}</span>
+                                                            <span className="font-bold text-slate-300">{formatPrice(scenarioData.meta.support_used)}</span>
                                                         </div>
                                                     )}
 
@@ -2826,7 +2831,7 @@ const EliteChart = () => {
                                                     ) : (
                                                         <div className="flex flex-col">
                                                             <span className="opacity-50 uppercase text-[7px] mb-0.5">Ceiling Anchor</span>
-                                                            <span className="font-bold text-slate-300">${scenarioData.meta.resistance_used?.toLocaleString(undefined, { maximumFractionDigits: 1 })}</span>
+                                                            <span className="font-bold text-slate-300">{formatPrice(scenarioData.meta.resistance_used)}</span>
                                                         </div>
                                                     )}
                                                 </div>
@@ -2868,7 +2873,7 @@ const EliteChart = () => {
                                     <div key={ohlc.label} className="flex flex-col">
                                         <span className="text-[7px] md:text-[9px] font-black uppercase text-slate-500 tracking-tighter mb-0">{ohlc.label}</span>
                                         <span className={`text-[10px] md:text-[15px] font-mono font-black ${ohlc.col} leading-none`}>
-                                            ${ohlc.val?.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                                            {formatPrice(ohlc.val)}
                                         </span>
                                     </div>
                                 ))}
@@ -3421,7 +3426,7 @@ const EliteChart = () => {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className={`relative w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-[2.5rem] border shadow-2xl flex flex-col ${theme === 'dark' ? 'bg-[#0b0c14] border-white/10' : 'bg-white border-slate-200'}`}
+                            className={`relative w-full max-w-5xl max-h-[90dvh] overflow-y-auto rounded-[2.5rem] border shadow-2xl flex flex-col ${theme === 'dark' ? 'bg-[#0b0c14] border-white/10' : 'bg-white border-slate-200'}`}
                         >
                             {/* Modal Header */}
                             <div className="p-8 border-b border-white/5 flex items-center justify-between sticky top-0 bg-inherit z-10">

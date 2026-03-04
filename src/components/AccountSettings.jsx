@@ -68,7 +68,7 @@ export default function AccountSettings() {
     ];
 
     return (
-        <div className={`min-h-screen py-6 sm:py-8 px-4 transition-colors duration-500 pb-24 md:pb-8 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-purple-50'}`}>
+        <div className={`min-h-[100dvh] py-6 sm:py-8 px-4 transition-colors duration-500 pb-24 md:pb-8 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-purple-50'}`}>
             <div className="max-w-5xl mx-auto">
                 {/* Header */}
                 <div className="mb-6 pl-12 md:pl-0">
@@ -120,6 +120,11 @@ export default function AccountSettings() {
                                         <h3 className={`text-xl sm:text-2xl font-black italic uppercase tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-gray-950'}`}>{user?.name}</h3>
                                         <p className={`text-xs sm:text-sm font-medium ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>{user?.email}</p>
                                         <div className="flex flex-wrap gap-2 items-center justify-center sm:justify-start mt-3">
+                                            {user?.is_admin && (
+                                                <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest italic bg-gradient-to-r from-red-500 to-orange-600 text-white shadow-lg shadow-red-500/30">
+                                                    System Administrator
+                                                </span>
+                                            )}
                                             <span className={cn(
                                                 "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest italic",
                                                 user?.is_early_bird
@@ -128,12 +133,12 @@ export default function AccountSettings() {
                                             )}>
                                                 {user?.is_early_bird ? "Early Bird Pro" : `${user?.tier || 'Free'} Specialist`}
                                             </span>
-                                            {user?.is_early_bird && (
+                                            {(user?.is_early_bird || user?.is_admin) && (
                                                 <span className="px-2 py-1 rounded-full bg-white/10 text-slate-400 text-[8px] font-black uppercase tracking-widest">
-                                                    Pioneer Protocol Active
+                                                    {user?.is_admin ? "Unlimited Access Protocol" : "Pioneer Protocol Active"}
                                                 </span>
                                             )}
-                                            {(user?.tier === 'whale' || user?.is_early_bird) && <Zap size={14} className="text-amber-400 fill-amber-400 animate-pulse" />}
+                                            {(user?.tier === 'whale' || user?.is_early_bird || user?.is_admin) && <Zap size={14} className="text-amber-400 fill-amber-400 animate-pulse" />}
                                         </div>
                                     </div>
                                 </div>

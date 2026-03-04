@@ -80,8 +80,8 @@ function formatMessageContent(content) {
                 }
 
                 elements.push(
-                    <div key={`table-${i}`} className="my-6 overflow-x-auto rounded-2xl border border-purple-500/20 bg-white/[0.02] dark:bg-white/[0.015] shadow-lg shadow-purple-500/5">
-                        <table className="w-full text-sm border-collapse">
+                    <div key={`table-${i}`} className="my-6 w-full max-w-full overflow-x-auto rounded-2xl border border-purple-500/20 bg-white/[0.02] dark:bg-white/[0.015] shadow-lg shadow-purple-500/5">
+                        <table className="w-full min-w-max text-sm border-collapse">
                             {headerCells.length > 0 && (
                                 <thead>
                                     <tr className="border-b border-purple-500/20 bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent sticky top-0 z-10">
@@ -241,7 +241,7 @@ const MessageItem = memo(forwardRef(({ message, onDeepAnalysis }, ref) => {
                 {(message.content || (!message.dataUsed?.technical)) && (
                     <div className={cn(
                         "relative inline-block",
-                        isAssistant ? "max-w-3xl" : "max-w-xl"
+                        isAssistant ? "w-full max-w-full sm:max-w-3xl" : "w-fit max-w-[85%]"
                     )}>
                         <div className={cn(
                             "relative z-10 text-lg leading-relaxed px-6 py-4 rounded-3xl",
@@ -415,11 +415,21 @@ export default function ChatInterface({ userAge }) {
             let lastUpdateTime = 0;
             let handledActions = new Set();
 
+            // Build recent history from current session (last 10 messages = 5 pairs)
+            // Note: `messages` here is the state BEFORE the new userMsgObj and assistantPlaceholder
+            // were added (React batches setMessages calls), so we just skip the welcome message
+            const historyMessages = messages.slice(1) // skip welcome msg
+                .filter(m => m.role === 'user' || m.role === 'assistant')
+                .filter(m => m.content && m.content.trim()) // skip empty
+                .slice(-10) // last 10 messages (5 pairs)
+                .map(m => ({ role: m.role, content: m.content.slice(0, 800) })); // truncate for token efficiency
+
             await streamMessage({
                 message: userMessage,
                 conversationId: currentConversationId,
                 userAge,
                 webSearchEnabled,
+                recentHistory: historyMessages,
                 onChunk: (chunk) => {
                     if (chunk.type === 'text') {
                         setLoadingStatus('');

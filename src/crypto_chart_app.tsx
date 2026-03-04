@@ -32,13 +32,13 @@ function calculate(data, period = 20) {
       const response = await fetch(
         `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=100`
       );
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       const candles = data.map(k => ({
         time: new Date(k[0]).toLocaleTimeString(),
         timestamp: k[0],
@@ -60,7 +60,7 @@ function calculate(data, period = 20) {
   const startStreaming = async () => {
     setIsStreaming(true);
     await fetchKlines();
-    
+
     // Poll every 2 seconds for updates
     intervalRef.current = setInterval(fetchKlines, 2000);
   };
@@ -77,14 +77,14 @@ function calculate(data, period = 20) {
     try {
       const indicatorFunc = new Function('data', 'period', customScript + '\nreturn calculate(data, period);');
       const values = indicatorFunc(dataBufferRef.current, 20);
-      
+
       const newIndicator = {
         id: Date.now(),
         name: 'Custom Indicator',
-        color: `#${Math.floor(Math.random()*16777215).toString(16)}`,
+        color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
         values
       };
-      
+
       setIndicators(prev => [...prev, newIndicator]);
       setShowScriptEditor(false);
     } catch (error) {
@@ -126,27 +126,27 @@ function calculate(data, period = 20) {
       }
     };
   }, []);
-  
+
   useEffect(() => {
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth <= 640);
     };
-    
+
     checkIsMobile();
-    
+
     const handleResize = () => {
       checkIsMobile();
     };
-    
+
     window.addEventListener('resize', handleResize);
-    
+
     return () => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 sm:p-6 animate-fade-in">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 sm:p-6 animate-fade-in">
       <div className="max-w-7xl mx-auto">
         {/* Mobile Header */}
         <div className="sm:hidden flex items-center justify-between mb-4 animate-slide-down">
@@ -157,13 +157,13 @@ function calculate(data, period = 20) {
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${isStreaming ? 'bg-green-400' : 'bg-gray-400'} ${isStreaming ? 'animate-pulse' : ''}`} />
             <span className="text-white text-xs">{isStreaming ? 'Live' : 'Stopped'}</span>
-            <button 
+            <button
               onClick={() => setMarketOverviewOpen(!marketOverviewOpen)}
               className="p-2 rounded-lg bg-slate-800 text-white"
             >
               <TrendingUp className="w-5 h-5" />
             </button>
-            <button 
+            <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-lg bg-slate-800 text-white"
             >
@@ -171,7 +171,7 @@ function calculate(data, period = 20) {
             </button>
           </div>
         </div>
-        
+
         {/* Desktop Header */}
         <div className="hidden sm:flex items-center justify-between mb-6 animate-slide-down">
           <div className="flex items-center gap-3 animate-fade-in">
@@ -193,14 +193,14 @@ function calculate(data, period = 20) {
             <div className="mb-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-bold text-white">Controls</h2>
-                <button 
+                <button
                   onClick={() => setMobileMenuOpen(false)}
                   className="p-1 rounded text-gray-400 hover:text-white"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-medium text-purple-300 mb-1">Symbol</label>
@@ -264,20 +264,20 @@ function calculate(data, period = 20) {
             </div>
           </div>
         )}
-        
+
         {/* Market Overview Sidebar - Right Side */}
         {marketOverviewOpen && (
           <div className="sm:hidden fixed inset-y-0 right-0 w-80 bg-slate-800/90 backdrop-blur-sm border-l border-purple-500/20 z-50 p-4 overflow-y-auto animate-slide-in-right">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-white">Market Overview</h2>
-              <button 
+              <button
                 onClick={() => setMarketOverviewOpen(false)}
                 className="p-1 rounded text-gray-400 hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div className="bg-slate-700/50 rounded-lg p-3">
                 <p className="text-purple-300 text-xs">Symbol</p>
@@ -291,7 +291,7 @@ function calculate(data, period = 20) {
                 <p className="text-purple-300 text-xs">Status</p>
                 <p className="text-white font-bold text-sm">{isStreaming ? 'Live' : 'Stopped'}</p>
               </div>
-              
+
               {chartData.length > 0 && (
                 <>
                   <div className="bg-slate-700/50 rounded-lg p-3">
@@ -312,14 +312,14 @@ function calculate(data, period = 20) {
                   </div>
                 </>
               )}
-              
+
               {lastUpdate && (
                 <div className="bg-slate-700/50 rounded-lg p-3">
                   <p className="text-purple-300 text-xs">Last Updated</p>
                   <p className="text-purple-400 font-bold text-sm">{lastUpdate}</p>
                 </div>
               )}
-              
+
               <div className="bg-slate-700/50 rounded-lg p-3">
                 <p className="text-purple-300 text-xs">Active Indicators</p>
                 <p className="text-white font-bold text-sm">{indicators.length}</p>
@@ -460,7 +460,7 @@ function calculate(data, period = 20) {
               </button>
             )}
           </div>
-          
+
           {chartData.length === 0 ? (
             <div className="h-64 sm:h-96 flex items-center justify-center">
               <div className="text-center">
@@ -472,20 +472,20 @@ function calculate(data, period = 20) {
             <ResponsiveContainer width="100%" height={isMobile ? 300 : 500}>
               <LineChart data={chartDataWithIndicators}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis 
-                  dataKey="time" 
+                <XAxis
+                  dataKey="time"
                   stroke="#9CA3AF"
                   style={{ fontSize: isMobile ? '10px' : '12px' }}
                   interval="preserveStartEnd"
                 />
-                <YAxis 
+                <YAxis
                   domain={['auto', 'auto']}
                   stroke="#9CA3AF"
                   style={{ fontSize: isMobile ? '10px' : '12px' }}
                 />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1e293b', 
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1e293b',
                     border: '1px solid #7c3aed',
                     borderRadius: '8px',
                     color: '#fff',
@@ -493,10 +493,10 @@ function calculate(data, period = 20) {
                   }}
                 />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="close" 
-                  stroke="#8b5cf6" 
+                <Line
+                  type="monotone"
+                  dataKey="close"
+                  stroke="#8b5cf6"
                   strokeWidth={2}
                   dot={false}
                   name="Price"
@@ -544,10 +544,10 @@ function calculate(data, period = 20) {
             </div>
           )}
         </div>
-        
+
         {/* Mobile Stats Toggle - Now opens Market Overview */}
         <div className="sm:hidden mt-4 flex justify-center">
-          <button 
+          <button
             onClick={() => setMarketOverviewOpen(true)}
             className="px-4 py-2 bg-slate-700 text-white rounded-lg text-sm"
           >

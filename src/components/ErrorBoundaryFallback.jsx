@@ -3,7 +3,7 @@ import { AlertOctagon, RefreshCcw, Home } from 'lucide-react';
 
 export default function ErrorBoundaryFallback({ error, resetErrorBoundary }) {
     return (
-        <div className="min-h-screen bg-[#020205] text-white flex items-center justify-center p-6 font-sans">
+        <div className="min-h-[100dvh] bg-[#020205] text-white flex items-center justify-center p-6 font-sans">
             <div className="max-w-xl w-full">
                 {/* Decorative Background Glow */}
                 <div className="fixed inset-0 overflow-hidden pointer-events-none">

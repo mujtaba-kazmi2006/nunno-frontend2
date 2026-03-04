@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { TrendingUp, TrendingDown, ChevronDown, ChevronUp, Thermometer } from 'lucide-react'
 import { API_ENDPOINTS } from '../config/api'
 import useBinanceWebSocket from '../hooks/useBinanceWebSocket'
+import { formatPrice } from '../utils/formatPrice'
 
 export default function MiniWidgets() {
     const { prices, isConnected } = useBinanceWebSocket(['BTCUSDT', 'ETHUSDT'])
@@ -96,9 +97,7 @@ export default function MiniWidgets() {
                         <div className="mini-widget-item">
                             <span className="mini-widget-label">₿</span>
                             <span className="mini-widget-value">
-                                ${btcData.current_price >= 1000
-                                    ? `${(btcData.current_price / 1000).toFixed(1)}k`
-                                    : btcData.current_price.toFixed(0)}
+                                {formatPrice(btcData.current_price, { compact: true })}
                             </span>
                             <span className={`mini-widget-change ${btcData.percent_change >= 0 ? 'positive' : 'negative'}`}>
                                 {btcData.percent_change >= 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
@@ -112,9 +111,7 @@ export default function MiniWidgets() {
                         <div className="mini-widget-item">
                             <span className="mini-widget-label">⬨</span>
                             <span className="mini-widget-value">
-                                ${ethData.current_price >= 1000
-                                    ? `${(ethData.current_price / 1000).toFixed(1)}k`
-                                    : ethData.current_price.toFixed(0)}
+                                {formatPrice(ethData.current_price, { compact: true })}
                             </span>
                             <span className={`mini-widget-change ${ethData.percent_change >= 0 ? 'positive' : 'negative'}`}>
                                 {ethData.percent_change >= 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
@@ -154,7 +151,7 @@ export default function MiniWidgets() {
                                     <span>Bitcoin</span>
                                 </div>
                                 <div className="mini-widget-expanded-value">
-                                    ${btcData.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    {formatPrice(btcData.current_price)}
                                 </div>
                                 <div className={`mini-widget-expanded-change ${btcData.percent_change >= 0 ? 'positive' : 'negative'}`}>
                                     {btcData.percent_change >= 0 ? '▲' : '▼'} {Math.abs(btcData.percent_change).toFixed(2)}%
@@ -169,7 +166,7 @@ export default function MiniWidgets() {
                                     <span>Ethereum</span>
                                 </div>
                                 <div className="mini-widget-expanded-value">
-                                    ${ethData.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    {formatPrice(ethData.current_price)}
                                 </div>
                                 <div className={`mini-widget-expanded-change ${ethData.percent_change >= 0 ? 'positive' : 'negative'}`}>
                                     {ethData.percent_change >= 0 ? '▲' : '▼'} {Math.abs(ethData.percent_change).toFixed(2)}%

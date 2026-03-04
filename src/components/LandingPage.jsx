@@ -59,7 +59,7 @@ const LandingPage = () => {
 
   return (
     <div
-      className="relative min-h-screen bg-[#0f111a] text-slate-200 selection:bg-purple-500/30 overflow-x-hidden font-heading"
+      className="relative min-h-[100dvh] bg-[#0f111a] text-slate-200 selection:bg-purple-500/30 overflow-x-hidden font-heading"
       style={{ fontFamily: 'var(--font-heading)' }}
     >
       <SEO
@@ -137,7 +137,7 @@ const LandingPage = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="relative pt-40 pb-20 md:pt-48 md:pb-32 px-6 flex flex-col items-center justify-center min-h-[90vh] text-center z-10">
+      <section className="relative pt-40 pb-20 md:pt-48 md:pb-32 px-6 flex flex-col items-center justify-center min-h-[90dvh] text-center z-10">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}

@@ -4,6 +4,7 @@ import { API_ENDPOINTS } from '../config/api';
 import { X, TrendingUp, TrendingDown, Calendar, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import useBinanceWebSocket from '../hooks/useBinanceWebSocket';
 import { useTheme } from '../contexts/ThemeContext';
+import { formatPrice, formatTickPrice } from '../utils/formatPrice';
 
 // Memoized Chart Component to prevent re-renders when only price changes
 const DetailChart = React.memo(({ data, color, timeframe, theme }) => {
@@ -34,7 +35,7 @@ const DetailChart = React.memo(({ data, color, timeframe, theme }) => {
                         axisLine={false}
                         tickLine={false}
                         tick={{ fill: theme === 'dark' ? '#64748b' : '#9ca3af', fontSize: 12 }}
-                        tickFormatter={(val) => `$${val.toLocaleString()}`}
+                        tickFormatter={(val) => formatTickPrice(val)}
                         width={60}
                     />
                     <Tooltip
@@ -46,7 +47,7 @@ const DetailChart = React.memo(({ data, color, timeframe, theme }) => {
                         }}
                         itemStyle={{ color: theme === 'dark' ? '#f1f5f9' : '#1f2937', fontWeight: '600' }}
                         labelStyle={{ color: theme === 'dark' ? '#94a3b8' : '#6b7280', marginBottom: '4px' }}
-                        formatter={(value) => [`$${value.toLocaleString()}`, 'Price']}
+                        formatter={(value) => [formatPrice(value), 'Price']}
                     />
                     <Area
                         type="monotone"
@@ -198,7 +199,7 @@ export default function CryptoDetailModal({ isOpen, onClose, initialTicker = "BT
                         <>
                             <div className="flex flex-wrap items-baseline gap-4 mb-8">
                                 <h2 className={`text-4xl font-extrabold ${theme === 'dark' ? 'text-slate-100' : 'text-gray-900'}`}>
-                                    ${data.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    {formatPrice(data.current_price)}
                                 </h2>
                                 <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-bold ${isPositive ? (theme === 'dark' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-green-100 text-green-700') : (theme === 'dark' ? 'bg-rose-500/10 text-rose-400' : 'bg-red-100 text-red-700')
                                     }`}>
@@ -213,11 +214,11 @@ export default function CryptoDetailModal({ isOpen, onClose, initialTicker = "BT
                             <div className={`grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8 pt-6 border-t ${theme === 'dark' ? 'border-slate-700/50' : 'border-gray-100'}`}>
                                 <div className={`p-4 rounded-xl ${theme === 'dark' ? 'bg-[#1e2030]/50' : 'bg-gray-50'}`}>
                                     <p className={`text-sm mb-1 ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>High ({timeframe})</p>
-                                    <p className={`text-lg font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'}`}>${data.high_price?.toLocaleString() || '—'}</p>
+                                    <p className={`text-lg font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'}`}>{formatPrice(data.high_price) || '—'}</p>
                                 </div>
                                 <div className={`p-4 rounded-xl ${theme === 'dark' ? 'bg-[#1e2030]/50' : 'bg-gray-50'}`}>
                                     <p className={`text-sm mb-1 ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>Low ({timeframe})</p>
-                                    <p className={`text-lg font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'}`}>${data.low_price?.toLocaleString() || '—'}</p>
+                                    <p className={`text-lg font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'}`}>{formatPrice(data.low_price) || '—'}</p>
                                 </div>
                                 <div className={`p-4 rounded-xl ${theme === 'dark' ? 'bg-[#1e2030]/50' : 'bg-gray-50'}`}>
                                     <p className={`text-sm mb-1 ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>Vol ({timeframe})</p>

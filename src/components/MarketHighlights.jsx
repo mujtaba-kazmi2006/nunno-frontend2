@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Clock, Search, ExternalLink, Zap, Plus, ArrowUpRight, ArrowDownRight, Activity } from 'lucide-react';
 import { getMarketHighlights } from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
+import { formatPrice } from '../utils/formatPrice';
 
 const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
     const { theme } = useTheme();
@@ -118,7 +119,7 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
 
                                     <div className="flex flex-col items-end flex-shrink-0 ml-2">
                                         <span className={`text-xs font-mono font-black ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
-                                            ${item.price < 1 ? item.price.toFixed(4) : item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            {formatPrice(item.price)}
                                         </span>
                                         <div className={`flex items-center gap-0.5 text-[10px] font-black px-2 py-0.5 rounded-full ${item.change >= 0
                                             ? 'text-emerald-400 bg-emerald-500/10'

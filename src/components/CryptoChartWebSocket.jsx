@@ -3,7 +3,7 @@ import React from 'react';
 // Placeholder component - redirects to EliteChart
 const CryptoChartWebSocket = () => {
   return (
-    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-50 to-purple-50">
+    <div className="flex items-center justify-center h-dvh bg-gradient-to-br from-slate-50 to-purple-50">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-slate-800 mb-4">
           This component has been upgraded to Elite Chart

@@ -21,7 +21,7 @@ const QuotaGuard = () => {
     };
 
     useEffect(() => {
-        if (!user) return;
+        if (!user || user.is_admin) return;
 
         const tier = user.tier || 'free';
         const limit = TIER_LIMITS[tier];

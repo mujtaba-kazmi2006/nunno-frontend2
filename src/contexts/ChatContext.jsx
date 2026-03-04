@@ -12,8 +12,12 @@ export function ChatProvider({ children }) {
     const userName = user?.name || 'User';
 
     const [currentConversationId, setCurrentConversationId] = useState(() => {
-        // Simple UUID generation for the conversation
-        return crypto.randomUUID();
+        // Persist conversation ID in sessionStorage so it survives page refreshes
+        const stored = sessionStorage.getItem('nunno_conversation_id');
+        if (stored) return stored;
+        const newId = crypto.randomUUID();
+        sessionStorage.setItem('nunno_conversation_id', newId);
+        return newId;
     });
     const [messages, setMessages] = useState([
         {

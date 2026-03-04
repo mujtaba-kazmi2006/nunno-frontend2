@@ -95,7 +95,7 @@ const InvestorMetrics = () => {
 
     return (
         <div className={cn(
-            "min-h-screen p-8 transition-colors duration-500 relative overflow-hidden",
+            "min-h-[100dvh] p-8 transition-colors duration-500 relative overflow-hidden",
             theme === 'dark' ? "bg-[#020205]" : "bg-slate-50"
         )}>
             {/* Ambient Background Effects */}

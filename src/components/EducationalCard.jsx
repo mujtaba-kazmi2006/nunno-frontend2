@@ -1,8 +1,9 @@
-import { TrendingUp, TrendingDown, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Maximize2, Brain } from 'lucide-react'
+import { TrendingUp, TrendingDown, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Maximize2, Brain, Target, ShieldAlert, Zap, MessageSquare } from 'lucide-react'
 import PredictionChart from './PredictionChart'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { formatPrice } from '../utils/formatPrice'
 
 export default function EducationalCard({ data, onDeepAnalysis }) {
     const [showAllIndicators] = useState(false)
@@ -126,6 +127,62 @@ export default function EducationalCard({ data, onDeepAnalysis }) {
                 </button>
             </div>
 
+            {/* Multi-Timeframe Sync Heatmap */}
+            {data.multi_timeframe && data.multi_timeframe.timeframes?.length > 0 && (
+                <div className={`px-6 py-3 border-b border-white/5 ${data.multi_timeframe.god_signal ? 'bg-gradient-to-r from-amber-500/[0.08] via-yellow-500/[0.05] to-amber-500/[0.08]' : 'bg-white/[0.02]'}`}>
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-500">Timeframe Sync</span>
+                            {data.multi_timeframe.god_signal && (
+                                <motion.span
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-[8px] font-black uppercase tracking-widest text-black shadow-lg shadow-amber-500/30"
+                                    style={{ animation: 'pulse 2s infinite' }}
+                                >
+                                    ⚡ GOD SIGNAL
+                                </motion.span>
+                            )}
+                        </div>
+                        <span className={`text-[10px] font-black ${data.multi_timeframe.sync_score >= 75 ? 'text-emerald-400' : data.multi_timeframe.sync_score >= 50 ? 'text-amber-400' : 'text-slate-500'}`}>
+                            {data.multi_timeframe.sync_score}% Aligned
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {data.multi_timeframe.timeframes.map((tf, idx) => (
+                            <motion.div
+                                key={tf.interval}
+                                initial={{ opacity: 0, y: 3 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.08 }}
+                                className={`flex-1 text-center py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-wider transition-all ${tf.bias === 'bullish'
+                                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                                        : tf.bias === 'bearish'
+                                            ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                                            : 'bg-white/5 border-white/10 text-slate-500'
+                                    } ${tf.is_primary ? 'ring-1 ring-purple-500/40' : ''}`}
+                                title={`${tf.interval}: ${tf.bias}${tf.rsi ? ` (RSI: ${tf.rsi})` : ''}`}
+                            >
+                                {tf.interval}
+                            </motion.div>
+                        ))}
+                    </div>
+                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden mt-2">
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${data.multi_timeframe.sync_score}%` }}
+                            transition={{ duration: 1.2, ease: 'easeOut' }}
+                            className={`h-full rounded-full ${data.multi_timeframe.sync_score >= 75
+                                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
+                                    : data.multi_timeframe.sync_score >= 50
+                                        ? 'bg-gradient-to-r from-amber-500 to-amber-400'
+                                        : 'bg-gradient-to-r from-slate-500 to-slate-400'
+                                }`}
+                        />
+                    </div>
+                </div>
+            )}
+
             <div className="card-body p-6 space-y-8">
                 {/* Price Chart */}
                 {Array.isArray(data.price_history) && data.price_history.length > 0 && (
@@ -152,7 +209,7 @@ export default function EducationalCard({ data, onDeepAnalysis }) {
                     <div className="metric flex flex-col">
                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Market Price</span>
                         <span className="text-2xl font-black italic tracking-tighter dark:text-white">
-                            ${typeof data.current_price === 'number' ? data.current_price.toFixed(2) : (data.current_price || '0.00')}
+                            {typeof data.current_price === 'number' ? formatPrice(data.current_price) : (data.current_price || '$0.00')}
                         </span>
                     </div>
                     <div className="metric flex flex-col items-end">
@@ -221,25 +278,152 @@ export default function EducationalCard({ data, onDeepAnalysis }) {
                     <div className="p-4 rounded-[1.5rem] bg-emerald-500/[0.03] border border-emerald-500/10">
                         <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500/60 block mb-1">Floor</span>
                         <span className="text-sm font-mono font-black text-emerald-400">
-                            ${typeof data.key_levels?.support === 'number' ? data.key_levels.support.toFixed(2) : (data.key_levels?.support || '0.00')}
+                            {typeof data.key_levels?.support === 'number' ? formatPrice(data.key_levels.support) : (data.key_levels?.support || '$0.00')}
                         </span>
                     </div>
                     <div className="p-4 rounded-[1.5rem] bg-rose-500/[0.03] border border-rose-500/10">
                         <span className="text-[9px] font-black uppercase tracking-widest text-rose-500/60 block mb-1">Ceiling</span>
                         <span className="text-sm font-mono font-black text-rose-400">
-                            ${typeof data.key_levels?.resistance === 'number' ? data.key_levels.resistance.toFixed(2) : (data.key_levels?.resistance || '0.00')}
+                            {typeof data.key_levels?.resistance === 'number' ? formatPrice(data.key_levels.resistance) : (data.key_levels?.resistance || '$0.00')}
                         </span>
                     </div>
+
+                    {/* NEW: Trade Thesis - 3-Path Scenario */}
+                    {data.trade_thesis && (
+                        <div className="space-y-3">
+                            <h5 className="text-[10px] font-black uppercase tracking-[0.3em] italic text-purple-400">Trade Thesis</h5>
+                            <div className="space-y-2">
+                                {/* Primary Path */}
+                                <motion.div
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.1 }}
+                                    className="p-3 rounded-2xl bg-emerald-500/[0.06] border border-emerald-500/15"
+                                >
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <div className="flex items-center gap-2">
+                                            <Target size={12} className="text-emerald-400" />
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">{data.trade_thesis.primary?.label}</span>
+                                        </div>
+                                        <span className="text-xs font-black text-emerald-400">{data.trade_thesis.primary?.probability}%</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mb-2">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${data.trade_thesis.primary?.probability}%` }}
+                                            transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
+                                            className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
+                                        />
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] text-slate-500">{data.trade_thesis.primary?.description}</span>
+                                        <span className="text-[10px] font-mono font-bold text-emerald-400 ml-2 whitespace-nowrap">
+                                            {data.trade_thesis.primary?.target ? formatPrice(data.trade_thesis.primary.target) : ''}
+                                        </span>
+                                    </div>
+                                </motion.div>
+
+                                {/* Shakeout Path */}
+                                <motion.div
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="p-3 rounded-2xl bg-amber-500/[0.06] border border-amber-500/15"
+                                >
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <div className="flex items-center gap-2">
+                                            <Zap size={12} className="text-amber-400" />
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-amber-400">{data.trade_thesis.shakeout?.label}</span>
+                                        </div>
+                                        <span className="text-xs font-black text-amber-400">{data.trade_thesis.shakeout?.probability}%</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mb-2">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${data.trade_thesis.shakeout?.probability}%` }}
+                                            transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }}
+                                            className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full"
+                                        />
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] text-slate-500">{data.trade_thesis.shakeout?.description}</span>
+                                        <span className="text-[10px] font-mono font-bold text-amber-400 ml-2 whitespace-nowrap">
+                                            {data.trade_thesis.shakeout?.level ? formatPrice(data.trade_thesis.shakeout.level) : ''}
+                                        </span>
+                                    </div>
+                                </motion.div>
+
+                                {/* Invalidation Path */}
+                                <motion.div
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                    className="p-3 rounded-2xl bg-rose-500/[0.06] border border-rose-500/15"
+                                >
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <div className="flex items-center gap-2">
+                                            <ShieldAlert size={12} className="text-rose-400" />
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-rose-400">{data.trade_thesis.invalidation?.label}</span>
+                                        </div>
+                                        <span className="text-xs font-black text-rose-400">{data.trade_thesis.invalidation?.probability}%</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mb-2">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${data.trade_thesis.invalidation?.probability}%` }}
+                                            transition={{ duration: 1, ease: 'easeOut', delay: 0.7 }}
+                                            className="h-full bg-gradient-to-r from-rose-500 to-rose-400 rounded-full"
+                                        />
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] text-slate-500">{data.trade_thesis.invalidation?.description}</span>
+                                        <span className="text-[10px] font-mono font-bold text-rose-400 ml-2 whitespace-nowrap">
+                                            {data.trade_thesis.invalidation?.level ? formatPrice(data.trade_thesis.invalidation.level) : ''}
+                                        </span>
+                                    </div>
+                                </motion.div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            <div className="card-footer bg-black/40 p-6 border-t border-white/5 space-y-3">
-                <div className="flex flex-col gap-2 pb-4">
+            <div className="card-footer bg-black/40 p-6 border-t border-white/5 space-y-4">
+                <div className="flex flex-col gap-2 pb-3">
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400 italic">Neural Interpretation:</span>
                     <p className="text-sm text-slate-400 leading-relaxed font-medium">{data.explanation}</p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3">
+                {/* NEW: Smart Follow-up Action Chips */}
+                {data.follow_up_actions && data.follow_up_actions.length > 0 && (
+                    <div className="space-y-2">
+                        <span className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-600">What's Next?</span>
+                        <div className="flex flex-wrap gap-2">
+                            {data.follow_up_actions.map((action, idx) => (
+                                <motion.button
+                                    key={idx}
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.1 * idx }}
+                                    onClick={() => {
+                                        if (action.action === 'deep_analysis') {
+                                            onDeepAnalysis?.(action.ticker || data.ticker);
+                                        } else if (action.action === 'chat' && action.message) {
+                                            // Navigate to chat with pre-filled message
+                                            navigate(`/?chat=${encodeURIComponent(action.message)}`);
+                                        }
+                                    }}
+                                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-purple-500/10 hover:border-purple-500/30 text-[10px] font-bold text-slate-400 hover:text-purple-300 transition-all active:scale-[0.97] group"
+                                    title={action.description}
+                                >
+                                    <span>{action.label}</span>
+                                </motion.button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row gap-3 pt-1">
                     <button
                         onClick={handleLaunchChart}
                         className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] group"

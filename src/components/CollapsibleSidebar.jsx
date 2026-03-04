@@ -72,15 +72,15 @@ export default function CollapsibleSidebar({ isCollapsed: isMobileCollapsed, set
                     // Mobile: floating slide-in with Glassmorphism
                     isMobile
                         ? (isMobileCollapsed
-                            ? "fixed -translate-x-[150%] w-[220px] h-[calc(100vh-32px)] my-4 ml-4 rounded-[26px]"
+                            ? "fixed -translate-x-[150%] w-[220px] h-[calc(100dvh-32px)] my-4 ml-4 rounded-[26px]"
                             : cn(
-                                "fixed translate-x-0 w-[220px] h-[calc(100vh-32px)] my-4 ml-4 rounded-[26px] shadow-2xl border backdrop-blur-xl transition-all",
+                                "fixed translate-x-0 w-[220px] h-[calc(100dvh-32px)] my-4 ml-4 rounded-[26px] shadow-2xl border backdrop-blur-xl transition-all",
                                 theme === 'dark'
                                     ? "bg-[#08080c]/85 border-white/10 [background:radial-gradient(circle_at_top_left,rgba(120,80,255,0.08),transparent_50%),rgba(8,8,12,0.85)]"
                                     : "bg-white/85 border-slate-200/60"
                             ))
                         : cn(
-                            "relative h-screen w-[68px] hover:w-[240px] transition-[width] sticky top-0 border-none shadow-none",
+                            "relative h-dvh w-[68px] hover:w-[240px] transition-[width] sticky top-0 border-none shadow-none",
                             theme === 'dark'
                                 ? "bg-[#08080c] [background:radial-gradient(circle_at_top_left,rgba(120,80,255,0.05),transparent_40%),#08080c]"
                                 : "bg-white"

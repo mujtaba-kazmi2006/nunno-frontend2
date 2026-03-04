@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { useTheme } from '../contexts/ThemeContext';
+import { formatPrice, formatTickPrice } from '../utils/formatPrice';
 
 export default function PredictionChart({ data, support, resistance, currentPrice, bias, supportResistance = [] }) {
     const { theme } = useTheme();
@@ -38,7 +39,7 @@ export default function PredictionChart({ data, support, resistance, currentPric
                                 : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
                                 }`}
                         >
-                            {level.type}: ${Number(level.price).toFixed(2)}
+                            {level.type}: {formatPrice(level.price)}
                         </div>
                     ))}
                 </div>
@@ -65,7 +66,7 @@ export default function PredictionChart({ data, support, resistance, currentPric
                             tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)', fontWeight: 800 }}
                             tickLine={false}
                             axisLine={false}
-                            tickFormatter={(value) => value !== null && value !== undefined ? `$${value.toLocaleString()}` : ''}
+                            tickFormatter={(value) => value !== null && value !== undefined ? formatTickPrice(value) : ''}
                         />
                         <Tooltip
                             contentStyle={{
@@ -79,7 +80,7 @@ export default function PredictionChart({ data, support, resistance, currentPric
                             itemStyle={{ color: '#fff' }}
                             labelStyle={{ color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}
                             labelFormatter={(label, payload) => payload?.[0]?.payload?.timestamp || label}
-                            formatter={(value, name) => [`$${Number(value).toFixed(2)}`, name.toUpperCase()]}
+                            formatter={(value, name) => [formatPrice(value), name.toUpperCase()]}
                         />
 
                         {/* main area */}

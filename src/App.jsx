@@ -27,7 +27,7 @@ class ErrorBoundary extends React.Component {
     render() {
         if (this.state.hasError) {
             return (
-                <div className="flex h-screen items-center justify-center bg-[#020205] text-white p-12 text-center">
+                <div className="flex h-dvh items-center justify-center bg-[#020205] text-white p-12 text-center">
                     <div className="max-w-md">
                         <h1 className="text-4xl font-black text-purple-500 mb-4 tracking-tighter">APP_STABILITY_MODE</h1>
                         <p className="text-slate-400 mb-8 italic">"Even in chaos, there is opportunity." - Nunno</p>
@@ -320,12 +320,12 @@ function MainLayout({ children }) {
     const isLandingPage = location.pathname === '/';
 
     if (isLandingPage) {
-        return <main className="h-screen w-full overflow-y-auto no-scrollbar">{children}</main>;
+        return <main className="h-screen h-dvh w-full overflow-y-auto no-scrollbar">{children}</main>;
     }
 
     return (
         <div className={cn(
-            "flex h-screen overflow-hidden relative selection:bg-purple-500/30 main-layout",
+            "flex h-dvh overflow-hidden relative selection:bg-purple-500/30 main-layout",
             theme === 'dark' ? 'bg-[#020205]' : 'bg-gradient-to-br from-purple-50 via-white to-purple-50/30'
         )}>
             <div className={cn(
