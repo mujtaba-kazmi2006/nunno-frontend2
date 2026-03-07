@@ -62,8 +62,8 @@ export default function LanguageSelector({ isOpen, onClose }) {
                     className="relative w-full max-w-lg bg-[#0c0c14] border border-white/10 rounded-[3rem] shadow-[0_32px_128px_rgba(0,0,0,1)] overflow-hidden"
                 >
                     {/* Interior Lighting Effects */}
-                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-purple-600/20 blur-[100px] rounded-full pointer-events-none" />
-                    <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-600/10 blur-[100px] rounded-full pointer-events-none" />
+                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-violet-600/20 blur-[100px] rounded-full pointer-events-none" />
+                    <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-violet-600/10 blur-[100px] rounded-full pointer-events-none" />
 
                     <div className="relative p-8 sm:p-12">
                         {/* Header */}
@@ -71,7 +71,7 @@ export default function LanguageSelector({ isOpen, onClose }) {
                             <motion.div
                                 initial={{ y: -20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
-                                className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 mb-6"
+                                className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-500/10 border border-violet-500/20 text-violet-400 mb-6"
                             >
                                 <Languages size={32} />
                             </motion.div>
@@ -82,7 +82,7 @@ export default function LanguageSelector({ isOpen, onClose }) {
                                 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none mb-3"
                             >
                                 Select Your<br />
-                                <span className="text-purple-500 underline decoration-purple-500/30 underline-offset-4">
+                                <span className="text-violet-500 underline decoration-violet-500/30 underline-offset-4">
                                     Language
                                 </span>
                             </motion.h2>
@@ -103,7 +103,7 @@ export default function LanguageSelector({ isOpen, onClose }) {
                                     className={cn(
                                         "w-full group relative flex items-center gap-4 p-5 rounded-[2rem] border-2 transition-all duration-500 text-left",
                                         selected === lang.id
-                                            ? "bg-purple-600 border-purple-400 text-white shadow-[0_20px_40px_rgba(168,85,247,0.2)]"
+                                            ? "bg-violet-600 border-violet-400 text-white shadow-[0_20px_40px_rgba(168,85,247,0.2)]"
                                             : "bg-white/5 border-white/5 text-slate-400 hover:border-white/20 hover:bg-white/10"
                                     )}
                                 >
@@ -123,7 +123,7 @@ export default function LanguageSelector({ isOpen, onClose }) {
                                     <div className={cn(
                                         "w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-500",
                                         selected === lang.id
-                                            ? "bg-white border-white text-purple-600 scale-100"
+                                            ? "bg-white border-white text-violet-600 scale-100"
                                             : "border-white/10 text-transparent scale-75 group-hover:border-white/30"
                                     )}>
                                         <Check size={16} strokeWidth={4} />
@@ -136,9 +136,9 @@ export default function LanguageSelector({ isOpen, onClose }) {
                         <button
                             onClick={handleSave}
                             disabled={loading}
-                            className="w-full group relative py-5 bg-white text-black rounded-[2rem] font-black uppercase tracking-[0.2em] italic hover:bg-purple-600 hover:text-white transition-all duration-500 overflow-hidden shadow-2xl flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
+                            className="w-full group relative py-5 bg-white text-black rounded-[2rem] font-black uppercase tracking-[0.2em] italic hover:bg-violet-600 hover:text-white transition-all duration-500 overflow-hidden shadow-2xl flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-indigo-500 opacity-0 group-hover:outline-none group-hover:opacity-100 transition-opacity" />
+                            <div className="absolute inset-0 bg-gradient-to-r from-violet-400 to-violet-500 opacity-0 group-hover:outline-none group-hover:opacity-100 transition-opacity" />
                             <span className="relative z-10 flex items-center gap-3">
                                 {loading ? (
                                     <div className="w-6 h-6 border-4 border-black border-t-transparent rounded-full animate-spin group-hover:border-white group-hover:border-t-transparent" />

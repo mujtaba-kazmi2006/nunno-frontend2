@@ -42,7 +42,7 @@ const OnboardingSurvey = ({ onComplete }) => {
             subtitle: 'What is your primary objective today?',
             options: [
                 { id: 'learn', label: 'Deep Learning', desc: 'Master the logic behind every move', icon: <Sparkles className="w-5 h-5" />, color: 'purple' },
-                { id: 'scan', label: 'Elite Scanning', desc: 'Locate imminent price breakouts', icon: <Target className="w-5 h-5" />, color: 'emerald' },
+                { id: 'scan', label: 'Elite Scanning', desc: 'Locate imminent price breakouts', icon: <Target className="w-5 h-5" />, color: 'purple' },
                 { id: 'simulate', label: 'Risk Intelligence', desc: 'Run Monte Carlo & Scenario models', icon: <Zap className="w-5 h-5" />, color: 'blue' }
             ]
         }
@@ -86,7 +86,7 @@ const OnboardingSurvey = ({ onComplete }) => {
                 className="absolute inset-0 bg-[#07080d]/95 backdrop-blur-3xl"
             >
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05] pointer-events-none" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/10 blur-[150px] rounded-full animate-pulse" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-violet-600/10 blur-[150px] rounded-full animate-pulse" />
             </motion.div>
 
             <motion.div
@@ -99,7 +99,7 @@ const OnboardingSurvey = ({ onComplete }) => {
                     {steps.map((_, i) => (
                         <div
                             key={i}
-                            className={`flex-1 h-full rounded-full transition-all duration-700 ${i + 1 <= step ? 'bg-gradient-to-r from-purple-600 to-indigo-600 shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'bg-white/5'}`}
+                            className={`flex-1 h-full rounded-full transition-all duration-700 ${i + 1 <= step ? 'bg-gradient-to-r from-violet-600 to-violet-600 shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'bg-white/5'}`}
                         />
                     ))}
                 </div>
@@ -114,7 +114,7 @@ const OnboardingSurvey = ({ onComplete }) => {
                             exit={{ x: -20, opacity: 0 }}
                             className="text-center mb-10"
                         >
-                            <span className="text-[10px] font-black text-purple-400 border border-purple-500/30 px-3 py-1 rounded-full uppercase tracking-[0.3em] italic mb-4 inline-block">
+                            <span className="text-[10px] font-black text-violet-400 border border-violet-500/30 px-3 py-1 rounded-full uppercase tracking-[0.3em] italic mb-4 inline-block">
                                 Phase 0{step} Protocol
                             </span>
                             <h2 className="text-3xl sm:text-4xl font-black text-white italic uppercase tracking-tighter leading-tight mb-3">
@@ -137,12 +137,12 @@ const OnboardingSurvey = ({ onComplete }) => {
                                     transition={{ delay: idx * 0.1 }}
                                     onClick={() => handleSelect(option.id)}
                                     className={`group relative flex items-center gap-5 p-5 sm:p-6 rounded-3xl border-2 transition-all duration-500 text-left active:scale-[0.98] ${selections[currentStepData.id] === option.id
-                                            ? 'bg-purple-600 border-purple-400 text-white shadow-[0_20px_50px_rgba(168,85,247,0.25)] scale-[1.02]'
+                                            ? 'bg-violet-600 border-violet-400 text-white shadow-[0_20px_50px_rgba(168,85,247,0.25)] scale-[1.02]'
                                             : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/20 hover:bg-white/[0.07]'
                                         }`}
                                 >
                                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 overflow-hidden ${selections[currentStepData.id] === option.id
-                                            ? 'bg-white text-purple-600 shadow-xl'
+                                            ? 'bg-white text-violet-600 shadow-xl'
                                             : 'bg-white/5 text-slate-400 group-hover:text-white'
                                         }`}>
                                         {option.icon}
@@ -152,7 +152,7 @@ const OnboardingSurvey = ({ onComplete }) => {
                                             }`}>
                                             {option.label}
                                         </div>
-                                        <div className={`text-xs font-medium italic ${selections[currentStepData.id] === option.id ? 'text-purple-100/70' : 'text-slate-500'
+                                        <div className={`text-xs font-medium italic ${selections[currentStepData.id] === option.id ? 'text-violet-100/70' : 'text-slate-500'
                                             }`}>
                                             {option.desc}
                                         </div>
@@ -166,7 +166,7 @@ const OnboardingSurvey = ({ onComplete }) => {
 
                     <div className="mt-12 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                            <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic">Syncing with Neural Link</span>
                         </div>
                         <div className="text-[10px] font-black text-slate-700 uppercase tracking-widest">
@@ -183,9 +183,9 @@ const OnboardingSurvey = ({ onComplete }) => {
                     >
                         <div className="flex flex-col items-center gap-6">
                             <div className="relative">
-                                <div className="w-20 h-20 border-4 border-purple-500/20 rounded-full animate-spin border-t-purple-600 shadow-[0_0_40px_rgba(168,85,247,0.3)]" />
+                                <div className="w-20 h-20 border-4 border-violet-500/20 rounded-full animate-spin border-t-violet-600 shadow-[0_0_40px_rgba(168,85,247,0.3)]" />
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <Sparkles className="text-purple-400 w-8 h-8 animate-pulse" />
+                                    <Sparkles className="text-violet-400 w-8 h-8 animate-pulse" />
                                 </div>
                             </div>
                             <span className="text-xs font-black text-white uppercase tracking-[0.4em] italic animate-pulse">Initializing Intel...</span>

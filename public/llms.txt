@@ -1,0 +1,54 @@
+# Nunno Finance: AI-Powered Crypto Intelligence Platforms
+
+Nunno Finance is an advanced AI-driven crypto analysis and financial education platform tailored for beginners, particularly in South Asia (Pakistan). It combines real-time data with empathetic, multi-lingual AI to help users navigate the complex crypto market safely.
+
+## Core Features (Educational Context)
+
+- **AI Companion (Nunno)**: A multi-lingual (English, Urdu, Roman Urdu) AI that explains complex financial concepts using relatable analogies.
+- **Elite Charting**: Professional-grade candlestick charts with real-time WebSocket data, pattern recognition, and institutional-grade indicators.
+- **Monte Carlo Simulations**: Advanced probability modeling that visualizes 100+ potential future price paths using statistical distributions.
+- **Market Regime Detection**: AI-based classification of market states (Trending, Ranging, Volatile, Breakout) to help users adjust strategies.
+- **Roast My Coin**: A brutally honest risk-assessment tool that uses Roman Urdu and English to point out flaws in a coin's whitepaper, tokenomics, or market performance.
+- **FOMO Killer**: Real-time scanners that detect emotional buying/selling triggers and provide cooling-off advice based on overbought/oversold indicators.
+
+## Technical Architecture
+
+- **Frontend**: React (Vite) with TailwindCSS for a high-performance, glassmorphic UI.
+- **Backend**: FastAPI (Python) for high-concurrency request handling and real-time computation.
+- **Streaming**: WebSocket integration with Binance for millisecond-level price updates.
+- **AI Stack**: Utilizes OpenRouter for model orchestration (Llama 3, GPT-4, Nemotron).
+
+## System Vision & Ethical Guardrails
+
+- **Educational Mandate**: Nunno is strictly a financial literacy platform. Every tool is designed to teach a specific concept (e.g., Risk/Reward, Market Structure, Volatility) rather than provide buy/sell signals.
+- **No Advisory Policy**: The system explicitly flags all outputs as "Educational Insight" to ensure users understand they are responsible for their own capital decisions.
+- **Empathetic AI**: Unlike generic LLMs, Nunno is tuned to understand investor psychology, identifying fear-based or greed-based queries and responding with calming, data-driven rationales.
+
+## Detailed Tool Specifications
+
+### 1. Elite Chart Implementation
+- **Capability**: Real-time WebSocket streaming from institutional exchanges.
+- **Indicators**: EMA (9, 21, 50, 100, 200), RSI, MACD, Bollinger Bands, ATR.
+- **Neural Layer**: Automatically detects Liquidity Zones, Support/Resistance (Classic & Enhanced), and 30+ Candlestick Patterns.
+- **SGE Impact**: Provides a visual baseline for "High Probability" vs "High Risk" setups without being advisory.
+
+### 2. Nunno Academy (N.E.S)
+- **Time Travel Simulator**: Allows users to "Jump" into historical market crash/pump scenarios to test their emotional stamina and pattern recognition.
+- **Neural Handshake**: Interactive modules that unlock based on user experience level.
+- **Pattern Ninja**: A speed-training tool for visual identification of market reversal patterns.
+
+### 3. Risk Intelligence Nodes
+- **Monte Carlo Fan**: Statistical modeling of 100+ price paths based on current volatility (ATR-adjusted).
+- **On-Chain Bias**: Real-time sentiment tracking of whale wallets and liquidity flows.
+- **FOMO Guard**: A behavioral intervention system that activates when indicators suggest extreme market emotionality.
+
+## Educational Modules
+
+- **Candlestick Academy**: Automated detection and explanation of 30+ chart patterns.
+- **Indicator Masterclass**: Simplified explanations of RSI, MACD, EMA, and Bollinger Bands.
+- **Risk Management 101**: Integrated VaR (Value at Risk) and Max Drawdown calculations for every coin.
+
+## More Information
+- [Full App Documentation](file://./NUNNO_APP_DOCUMENTATION.md)
+- [Community Hub Vision](file://./COMMUNITY_HUB_VISION.md)
+- [Deployment Guide](file://./backend/DEPLOYMENT.md)

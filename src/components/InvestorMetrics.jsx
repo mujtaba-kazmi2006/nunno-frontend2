@@ -27,7 +27,7 @@ const MetricCard = ({ icon: Icon, label, value, trend, color, theme }) => (
             <div className={cn("p-3 rounded-2xl", color)}>
                 <Icon size={24} className="text-white" />
             </div>
-            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black italic">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-purple-500/10 text-purple-500 text-[10px] font-black italic">
                 <TrendingUp size={12} />
                 {trend}
             </div>
@@ -99,19 +99,19 @@ const InvestorMetrics = () => {
             theme === 'dark' ? "bg-[#020205]" : "bg-slate-50"
         )}>
             {/* Ambient Background Effects */}
-            <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-violet-600/10 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-violet-600/10 rounded-full blur-[120px] pointer-events-none" />
 
             <div className="max-w-7xl mx-auto relative z-10">
                 {/* Header */}
                 <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
-                            <div className="size-10 rounded-xl bg-purple-600 flex items-center justify-center shadow-lg shadow-purple-600/20">
+                            <div className="size-10 rounded-xl bg-violet-600 flex items-center justify-center shadow-lg shadow-violet-600/20">
                                 <Database size={24} className="text-white" />
                             </div>
                             <h1 className="text-4xl font-black italic uppercase tracking-tighter text-white">
-                                Traction <span className="text-purple-500">Core</span>
+                                Traction <span className="text-violet-500">Core</span>
                             </h1>
                         </div>
                         <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-[10px]">
@@ -122,9 +122,9 @@ const InvestorMetrics = () => {
                     <div className="flex items-center gap-4">
                         <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-3">
                             <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                                <span className="text-emerald-500">Live</span> Sync
+                                <span className="text-purple-500">Live</span> Sync
                             </div>
-                            <div className={cn("size-2 rounded-full bg-emerald-500 animate-pulse")} />
+                            <div className={cn("size-2 rounded-full bg-purple-500 animate-pulse")} />
                         </div>
                         <button
                             onClick={fetchMetrics}
@@ -133,7 +133,7 @@ const InvestorMetrics = () => {
                         >
                             <RefreshCw size={20} className={loading ? "animate-spin" : ""} />
                         </button>
-                        <button className="p-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white transition-all active:scale-95 shadow-lg shadow-purple-600/20">
+                        <button className="p-3 rounded-2xl bg-violet-600 hover:bg-violet-500 text-white transition-all active:scale-95 shadow-lg shadow-violet-600/20">
                             <Download size={20} />
                         </button>
                     </div>
@@ -146,7 +146,7 @@ const InvestorMetrics = () => {
                         label="Total Traction"
                         value={data.combined_traction.toLocaleString()}
                         trend="Real-time"
-                        color="bg-purple-600"
+                        color="bg-violet-600"
                         theme={theme}
                     />
                     <MetricCard
@@ -154,7 +154,7 @@ const InvestorMetrics = () => {
                         label="Verified Users"
                         value={data.total_users.toLocaleString()}
                         trend="Active"
-                        color="bg-indigo-600"
+                        color="bg-violet-600"
                         theme={theme}
                     />
                     <MetricCard
@@ -162,7 +162,7 @@ const InvestorMetrics = () => {
                         label="Waitlist Queue"
                         value={data.total_waitlist.toLocaleString()}
                         trend="High Intent"
-                        color="bg-emerald-600"
+                        color="bg-purple-600"
                         theme={theme}
                     />
                     <MetricCard
@@ -193,7 +193,7 @@ const InvestorMetrics = () => {
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     placeholder="Search by ID, email or node..."
-                                    className="w-full pl-12 pr-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-sm placeholder:text-slate-600"
+                                    className="w-full pl-12 pr-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all text-sm placeholder:text-slate-600"
                                 />
                             </div>
                             <button className="p-3 rounded-2xl bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">
@@ -205,7 +205,7 @@ const InvestorMetrics = () => {
                     <div className="overflow-x-auto min-h-[400px]">
                         {loading && data.users.length === 0 ? (
                             <div className="flex items-center justify-center p-20">
-                                <div className="text-purple-500 animate-spin">
+                                <div className="text-violet-500 animate-spin">
                                     <RefreshCw size={48} />
                                 </div>
                             </div>
@@ -238,10 +238,10 @@ const InvestorMetrics = () => {
                                             <td className="px-8 py-5">
                                                 <div className={cn(
                                                     "inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest",
-                                                    user.type === 'Signed Up' ? "bg-emerald-500/10 text-emerald-500" :
-                                                        "bg-purple-500/10 text-purple-500"
+                                                    user.type === 'Signed Up' ? "bg-purple-500/10 text-purple-500" :
+                                                        "bg-violet-500/10 text-violet-500"
                                                 )}>
-                                                    <div className={cn("size-1 rounded-full", user.type === 'Signed Up' ? "bg-emerald-500" : "bg-purple-500")} />
+                                                    <div className={cn("size-1 rounded-full", user.type === 'Signed Up' ? "bg-purple-500" : "bg-violet-500")} />
                                                     {user.type}
                                                 </div>
                                             </td>
@@ -254,7 +254,7 @@ const InvestorMetrics = () => {
                                                         <div
                                                             className={cn(
                                                                 "h-full rounded-full",
-                                                                user.activityScore > 80 ? "bg-emerald-500" : "bg-purple-500"
+                                                                user.activityScore > 80 ? "bg-purple-500" : "bg-violet-500"
                                                             )}
                                                             style={{ width: `${user.activityScore}%` }}
                                                         />
@@ -292,7 +292,7 @@ const InvestorMetrics = () => {
                             <button
                                 onClick={() => setCurrentPage(p => p + 1)}
                                 disabled={currentPage * itemsPerPage >= filteredUsers.length}
-                                className="px-4 py-2 rounded-xl bg-purple-600 text-[10px] font-black uppercase text-white hover:bg-purple-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all uppercase"
+                                className="px-4 py-2 rounded-xl bg-violet-600 text-[10px] font-black uppercase text-white hover:bg-violet-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all uppercase"
                             >
                                 Next Page
                             </button>
@@ -301,12 +301,12 @@ const InvestorMetrics = () => {
                 </div>
 
                 {/* Footer Disclaimer for Investor */}
-                <div className="mt-12 flex items-center justify-between px-8 py-6 rounded-3xl bg-emerald-500/5 border border-emerald-500/10">
+                <div className="mt-12 flex items-center justify-between px-8 py-6 rounded-3xl bg-purple-500/5 border border-purple-500/10">
                     <div className="flex items-center gap-4">
-                        <div className="p-2 rounded-lg bg-emerald-500/10">
-                            <ShieldCheck size={20} className="text-emerald-500" />
+                        <div className="p-2 rounded-lg bg-purple-500/10">
+                            <ShieldCheck size={20} className="text-purple-500" />
                         </div>
-                        <p className="text-[11px] font-bold text-emerald-500/80 uppercase tracking-widest">
+                        <p className="text-[11px] font-bold text-purple-500/80 uppercase tracking-widest">
                             Verified Production Data // Directly Synced to Mainnet DB
                         </p>
                     </div>

@@ -51,13 +51,13 @@ export default function OnChainBiasPanel({ symbol }) {
 
     const getTrendColor = (trend) => {
         if (!trend) return 'text-slate-400';
-        if (trend.includes('Bullish')) return 'text-emerald-400';
+        if (trend.includes('Bullish')) return 'text-purple-400';
         if (trend.includes('Bearish')) return 'text-rose-400';
         return 'text-amber-400';
     };
 
     const getScoreBarColor = (score) => {
-        if (score > 0.2) return 'from-emerald-500 to-emerald-400';
+        if (score > 0.2) return 'from-purple-500 to-purple-400';
         if (score < -0.2) return 'from-rose-500 to-rose-400';
         return 'from-amber-500 to-amber-400';
     };
@@ -93,8 +93,8 @@ export default function OnChainBiasPanel({ symbol }) {
                 theme === 'dark' ? 'bg-white/5' : 'bg-slate-50'
             )}>
                 <div className="flex items-center gap-2 mb-2">
-                    <Link2 size={14} className="text-purple-400" />
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-purple-400">On-Chain Intel</span>
+                    <Link2 size={14} className="text-violet-400" />
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-violet-400">On-Chain Intel</span>
                 </div>
                 <p className="text-[10px] text-slate-500">Engine warming up...</p>
             </div>
@@ -114,8 +114,8 @@ export default function OnChainBiasPanel({ symbol }) {
                 theme === 'dark' ? "bg-white/5" : "bg-slate-50"
             )}>
                 <div className="flex items-center gap-2">
-                    <Waves size={14} className="text-purple-400" />
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-purple-400">
+                    <Waves size={14} className="text-violet-400" />
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-violet-400">
                         On-Chain Bias
                     </span>
                 </div>
@@ -143,7 +143,7 @@ export default function OnChainBiasPanel({ symbol }) {
                             className={cn(
                                 "rounded-xl p-3 transition-all",
                                 isActive
-                                    ? (theme === 'dark' ? 'bg-purple-500/10' : 'bg-purple-100/50')
+                                    ? (theme === 'dark' ? 'bg-violet-500/10' : 'bg-violet-100/50')
                                     : (theme === 'dark' ? 'bg-white/[0.02]' : 'bg-slate-50')
                             )}
                         >
@@ -191,7 +191,7 @@ export default function OnChainBiasPanel({ symbol }) {
                                     theme === 'dark' ? 'bg-white/5 text-slate-400' : 'bg-white text-slate-500'
                                 )}>
                                     <span className="opacity-50">Whale</span>
-                                    <span className={data.whale_score > 0 ? 'text-emerald-400' : data.whale_score < 0 ? 'text-rose-400' : 'text-slate-400'}>
+                                    <span className={data.whale_score > 0 ? 'text-purple-400' : data.whale_score < 0 ? 'text-rose-400' : 'text-slate-400'}>
                                         {data.whale_score > 0 ? '+' : ''}{(data.whale_score || 0).toFixed(2)}
                                     </span>
                                 </div>
@@ -200,7 +200,7 @@ export default function OnChainBiasPanel({ symbol }) {
                                     theme === 'dark' ? 'bg-white/5 text-slate-400' : 'bg-white text-slate-500'
                                 )}>
                                     <span className="opacity-50">Exchange</span>
-                                    <span className={data.exchange_score > 0 ? 'text-emerald-400' : data.exchange_score < 0 ? 'text-rose-400' : 'text-slate-400'}>
+                                    <span className={data.exchange_score > 0 ? 'text-purple-400' : data.exchange_score < 0 ? 'text-rose-400' : 'text-slate-400'}>
                                         {data.exchange_score > 0 ? '+' : ''}{(data.exchange_score || 0).toFixed(2)}
                                     </span>
                                 </div>
@@ -209,7 +209,7 @@ export default function OnChainBiasPanel({ symbol }) {
                                     theme === 'dark' ? 'bg-white/5 text-slate-400' : 'bg-white text-slate-500'
                                 )}>
                                     <span className="opacity-50">Activity</span>
-                                    <span className={data.activity_score > 0 ? 'text-emerald-400' : data.activity_score < 0 ? 'text-rose-400' : 'text-slate-400'}>
+                                    <span className={data.activity_score > 0 ? 'text-purple-400' : data.activity_score < 0 ? 'text-rose-400' : 'text-slate-400'}>
                                         {data.activity_score > 0 ? '+' : ''}{(data.activity_score || 0).toFixed(2)}
                                     </span>
                                 </div>

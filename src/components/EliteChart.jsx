@@ -60,6 +60,7 @@ import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { analytics } from '../utils/analytics';
 import { formatPrice } from '../utils/formatPrice';
+import SEO from './SEO';
 
 const EliteChart = () => {
     // Chart refs
@@ -854,8 +855,8 @@ const EliteChart = () => {
             });
         } else if (type === 'area') {
             newSeries = chartRef.current.addAreaSeries({
-                topColor: 'rgba(139, 92, 246, 0.4)',
-                bottomColor: 'rgba(139, 92, 246, 0.0)',
+                topColor: 'rgba(55, 159, 157, 0.4)',
+                bottomColor: 'rgba(55, 159, 157, 0.0)',
                 lineColor: '#8b5cf6',
                 lineWidth: 2
             });
@@ -1540,7 +1541,7 @@ const EliteChart = () => {
                             // Draw 95% confidence interval
                             if (validCone[0].p95) {
                                 const upperSeries = chartRef.current.addLineSeries({
-                                    color: 'rgba(139, 92, 246, 0.3)',
+                                    color: 'rgba(55, 159, 157, 0.3)',
                                     lineWidth: 1,
                                     lineStyle: 2,
                                     priceLineVisible: false,
@@ -1562,7 +1563,7 @@ const EliteChart = () => {
                                 }
 
                                 const lowerSeries = chartRef.current.addLineSeries({
-                                    color: 'rgba(139, 92, 246, 0.3)',
+                                    color: 'rgba(55, 159, 157, 0.3)',
                                     lineWidth: 1,
                                     lineStyle: 2,
                                     priceLineVisible: false,
@@ -1601,7 +1602,7 @@ const EliteChart = () => {
 
                         if (validPath.length > 0) {
                             const pSeries = chartRef.current.addLineSeries({
-                                color: `rgba(139, 92, 246, ${0.05 + (Math.random() * 0.1)})`,
+                                color: `rgba(55, 159, 157, ${0.05 + (Math.random() * 0.1)})`,
                                 lineWidth: 1,
                                 priceLineVisible: false,
                                 lastValueVisible: false,
@@ -1674,7 +1675,7 @@ const EliteChart = () => {
                     // 2. Individual paths
                     data.paths.forEach((path, idx) => {
                         const pSeries = chartRef.current.addLineSeries({
-                            color: `rgba(139, 92, 246, ${0.05 + (Math.random() * 0.1)})`,
+                            color: `rgba(55, 159, 157, ${0.05 + (Math.random() * 0.1)})`,
                             lineWidth: 1,
                             priceLineVisible: false,
                             lastValueVisible: false,
@@ -2103,7 +2104,7 @@ const EliteChart = () => {
                     <div className="flex items-center gap-4 md:gap-8 pl-14 md:pl-0">
                         <div className="flex items-center gap-3">
                             <div className={`hidden md:flex p-2 rounded-2xl shadow-inner ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-slate-100'}`}>
-                                <TrendingUp className="text-purple-500" size={28} />
+                                <TrendingUp className="text-violet-500" size={28} />
                             </div>
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-2 relative" ref={tickerMenuRef}>
@@ -2111,7 +2112,7 @@ const EliteChart = () => {
                                         onClick={() => setIsTickerMenuOpen(!isTickerMenuOpen)}
                                         className={`flex items-center gap-2 group transition-all rounded-xl px-2 py-1 -ml-2 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}
                                     >
-                                        <span className={`transition-all ${theme === 'dark' ? 'text-white group-hover:text-purple-400' : 'text-slate-900 group-hover:text-purple-600'}`}
+                                        <span className={`transition-all ${theme === 'dark' ? 'text-white group-hover:text-violet-400' : 'text-slate-900 group-hover:text-violet-600'}`}
                                             style={{ fontWeight: 800, fontSize: isMobile ? '1.25rem' : '1.5rem', letterSpacing: '-0.02em', fontFamily: "'Inter', system-ui, sans-serif" }}>
                                             {symbol.replace('USDT', '')}
                                         </span>
@@ -2133,7 +2134,7 @@ const EliteChart = () => {
                                                                 handleTickerChange(tickerSearch);
                                                             }
                                                         }}
-                                                        className={`w-full px-4 py-2 rounded-xl text-sm font-bold border outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-white focus:border-purple-500' : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-purple-400'}`}
+                                                        className={`w-full px-4 py-2 rounded-xl text-sm font-bold border outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-white focus:border-violet-500' : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-violet-400'}`}
                                                         autoFocus
                                                     />
                                                     <div className="absolute right-3 top-2.5 opacity-40">
@@ -2150,7 +2151,7 @@ const EliteChart = () => {
                                                                 handleTickerChange(token.symbol);
                                                             }}
                                                             className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all ${symbol === token.symbol
-                                                                ? (theme === 'dark' ? 'bg-purple-600/20 text-purple-400 border border-purple-500/30' : 'bg-purple-50 text-purple-600 border border-purple-100')
+                                                                ? (theme === 'dark' ? 'bg-violet-600/20 text-violet-400 border border-violet-500/30' : 'bg-violet-50 text-violet-600 border border-violet-100')
                                                                 : (theme === 'dark' ? 'text-slate-300 hover:bg-white/5' : 'text-slate-600 hover:bg-slate-50')
                                                                 }`}
                                                         >
@@ -2163,7 +2164,7 @@ const EliteChart = () => {
                                                                     <span className={`text-[10px] opacity-60 font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>{token.name}</span>
                                                                 </div>
                                                             </div>
-                                                            {symbol === token.symbol && <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]" />}
+                                                            {symbol === token.symbol && <div className="w-1.5 h-1.5 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]" />}
                                                         </button>
                                                     ))
                                                 ) : (
@@ -2171,9 +2172,9 @@ const EliteChart = () => {
                                                         onClick={() => {
                                                             handleTickerChange(tickerSearch);
                                                         }}
-                                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${theme === 'dark' ? 'text-purple-400 bg-purple-600/10 hover:bg-purple-600/20' : 'text-purple-600 bg-purple-50 hover:bg-purple-100'}`}
+                                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${theme === 'dark' ? 'text-violet-400 bg-violet-600/10 hover:bg-violet-600/20' : 'text-violet-600 bg-violet-50 hover:bg-violet-100'}`}
                                                     >
-                                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-purple-500/20">
+                                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-violet-500/20">
                                                             <Plus size={16} />
                                                         </div>
                                                         <div className="flex flex-col items-start">
@@ -2186,15 +2187,15 @@ const EliteChart = () => {
                                         </div>
                                     )}
 
-                                    <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'bg-purple-500/20 text-purple-400' : 'bg-purple-100 text-purple-600'}`}>
+                                    <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'bg-violet-500/20 text-violet-400' : 'bg-violet-100 text-violet-600'}`}>
                                         {interval}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className={`text-lg font-mono font-bold ${priceChange >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                    <span className={`text-lg font-mono font-bold ${priceChange >= 0 ? 'text-purple-500' : 'text-rose-500'}`}>
                                         {formatPrice(currentPrice)}
                                     </span>
-                                    <span className={`text-xs font-black ${priceChange >= 0 ? 'text-emerald-500/80' : 'text-rose-500/80'}`}>
+                                    <span className={`text-xs font-black ${priceChange >= 0 ? 'text-purple-500/80' : 'text-rose-500/80'}`}>
                                         {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
                                     </span>
                                 </div>
@@ -2208,8 +2209,8 @@ const EliteChart = () => {
                                     key={tf}
                                     onClick={() => setInterval(tf)}
                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${interval === tf
-                                        ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                                        : 'text-slate-500 hover:text-purple-500'
+                                        ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/20'
+                                        : 'text-slate-500 hover:text-violet-500'
                                         }`}
                                 >
                                     {tf}
@@ -2224,8 +2225,8 @@ const EliteChart = () => {
                                 value={interval}
                                 onChange={(e) => setInterval(e.target.value)}
                                 className={`pl-9 pr-4 py-2.5 rounded-xl border text-sm font-black appearance-none outline-none transition-all shadow-xl ${theme === 'dark'
-                                    ? 'bg-[#1e2030] border-slate-700/50 text-slate-300 focus:border-purple-500'
-                                    : 'bg-white border-slate-200 text-slate-600 focus:border-purple-600'
+                                    ? 'bg-[#1e2030] border-slate-700/50 text-slate-300 focus:border-violet-500'
+                                    : 'bg-white border-slate-200 text-slate-600 focus:border-violet-600'
                                     }`}
                             >
                                 {['1m', '5m', '15m', '1h', '4h', '1d'].map(tf => (
@@ -2257,8 +2258,8 @@ const EliteChart = () => {
                                     key={type}
                                     onClick={() => setChartType(type)}
                                     className={`p-1.5 md:p-2 rounded-lg transition-all ${chartType === type
-                                        ? 'bg-purple-600 text-white shadow-md'
-                                        : 'text-slate-500 hover:text-purple-500'
+                                        ? 'bg-violet-600 text-white shadow-md'
+                                        : 'text-slate-500 hover:text-violet-500'
                                         }`}
                                 >
                                     <Icon size={16} />
@@ -2272,8 +2273,8 @@ const EliteChart = () => {
                             <button
                                 onClick={() => setFocusMode(!focusMode)}
                                 className={`p-2 md:p-2.5 rounded-xl border transition-all ${focusMode
-                                    ? 'bg-purple-600 text-white border-purple-500 shadow-lg'
-                                    : theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:text-purple-600'
+                                    ? 'bg-violet-600 text-white border-violet-500 shadow-lg'
+                                    : theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:text-violet-600'
                                     }`}
                             >
                                 {focusMode ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
@@ -2294,8 +2295,8 @@ const EliteChart = () => {
                             <button
                                 onClick={() => setShowAIChat(!showAIChat)}
                                 className={`px-3 md:px-4 py-2 md:py-2.5 rounded-xl border font-bold text-xs md:text-sm flex items-center gap-1.5 md:gap-2 transition-all ${showAIChat
-                                    ? 'bg-purple-600 text-white border-purple-500 shadow-lg'
-                                    : theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:text-purple-600'
+                                    ? 'bg-violet-600 text-white border-violet-500 shadow-lg'
+                                    : theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:text-violet-600'
                                     }`}
                             >
                                 <MessageSquare size={16} />
@@ -2306,7 +2307,7 @@ const EliteChart = () => {
                                 onClick={toggleStreaming}
                                 className={`px-4 md:px-5 py-2 md:py-2.5 rounded-xl font-black text-xs md:text-sm flex items-center gap-1.5 md:gap-2 transition-all shadow-xl ${isStreaming
                                     ? 'bg-rose-500 text-white hover:bg-rose-600'
-                                    : 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                    : 'bg-purple-500 text-white hover:bg-purple-600'
                                     }`}
                             >
                                 {isStreaming ? (
@@ -2321,6 +2322,12 @@ const EliteChart = () => {
             </header>
 
             {/* --- Main Workspace --- */}
+            <SEO
+                title={`${symbol} Elite Chart — Technical Intelligence`}
+                description={`Analyze ${symbol} with Nunno's neural pattern detection, real-time indicators, and automated risk assessment.`}
+                path="/elite-chart"
+                schemaType="SoftwareApplication"
+            />
             <div className="flex-1 flex flex-row overflow-hidden relative">
                 {/* Left Sidebar: Indicators & Simulator */}
                 <aside
@@ -2339,8 +2346,8 @@ const EliteChart = () => {
                                 ? 'right-[-40px] rounded-r-2xl w-10 h-14 top-24'
                                 : 'right-[-16px] rounded-full w-8 h-8 top-6'
                                 } ${theme === 'dark'
-                                    ? 'bg-[#1e2030] border-slate-700 text-purple-400 hover:text-purple-300'
-                                    : 'bg-white border-slate-200 text-purple-600 hover:text-purple-500 shadow-lg'
+                                    ? 'bg-[#1e2030] border-slate-700 text-violet-400 hover:text-violet-300'
+                                    : 'bg-white border-slate-200 text-violet-600 hover:text-violet-500 shadow-lg'
                                 }`}
                             title={isSidebarCollapsed ? "Expand Tools" : "Collapse Sidebar"}
                         >
@@ -2354,7 +2361,7 @@ const EliteChart = () => {
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between px-1">
                                     <h3 className={`text-[10px] font-black uppercase tracking-[0.25em] ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Technical Analysis</h3>
-                                    <Sparkles size={14} className="text-purple-500 animate-pulse" />
+                                    <Sparkles size={14} className="text-violet-500 animate-pulse" />
                                 </div>
 
                                 <div className="space-y-4">
@@ -2372,10 +2379,10 @@ const EliteChart = () => {
                                                 <button
                                                     key={key}
                                                     onClick={() => setSelectedIndicators(prev => ({ ...prev, [key]: !prev[key] }))}
-                                                    className={`w-full px-3 py-2 rounded-xl flex items-center justify-between transition-all ${selectedIndicators[key] ? (theme === 'dark' ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-50 text-purple-600 shadow-sm') : 'hover:bg-purple-500/5 text-slate-500'}`}
+                                                    className={`w-full px-3 py-2 rounded-xl flex items-center justify-between transition-all ${selectedIndicators[key] ? (theme === 'dark' ? 'bg-violet-500/10 text-violet-400' : 'bg-violet-50 text-violet-600 shadow-sm') : 'hover:bg-violet-500/5 text-slate-500'}`}
                                                 >
                                                     <div className="flex items-center gap-2">
-                                                        <div className={`w-1.5 h-1.5 rounded-full ${key === 'ema9' ? 'bg-amber-500' : key === 'ema21' ? 'bg-blue-500' : key === 'ema50' ? 'bg-purple-500' : key === 'ema100' ? 'bg-pink-500' : 'bg-red-500'}`} />
+                                                        <div className={`w-1.5 h-1.5 rounded-full ${key === 'ema9' ? 'bg-amber-500' : key === 'ema21' ? 'bg-blue-500' : key === 'ema50' ? 'bg-violet-500' : key === 'ema100' ? 'bg-pink-500' : 'bg-red-500'}`} />
                                                         <span className="text-[11px] font-bold uppercase">{key.replace('ema', 'EMA ')}</span>
                                                     </div>
                                                     {selectedIndicators[key] ? <Eye size={13} className="opacity-80" /> : <EyeOff size={13} className="opacity-30" />}
@@ -2395,8 +2402,8 @@ const EliteChart = () => {
                                             <button
                                                 onClick={() => setSelectedIndicators(prev => ({ ...prev, [ind.key]: !prev[ind.key] }))}
                                                 className={`w-full px-4 py-3 rounded-2xl border flex items-center justify-between transition-all ${selectedIndicators[ind.key]
-                                                    ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/20 active:scale-[0.98]'
-                                                    : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-600 hover:border-purple-200 hover:shadow-md'
+                                                    ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-500/20 active:scale-[0.98]'
+                                                    : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-600 hover:border-violet-200 hover:shadow-md'
                                                     }`}
                                             >
                                                 <div className="flex items-center gap-3">
@@ -2410,7 +2417,7 @@ const EliteChart = () => {
                                                                 e.stopPropagation();
                                                                 setShowSRDropdown(!showSRDropdown);
                                                             }}
-                                                            className={`p-1 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-purple-500' : 'hover:bg-purple-700'}`}
+                                                            className={`p-1 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-violet-500' : 'hover:bg-violet-700'}`}
                                                         >
                                                             <ChevronDown size={14} className={`transition-transform duration-300 ${showSRDropdown ? 'rotate-180' : ''}`} />
                                                         </button>
@@ -2433,15 +2440,15 @@ const EliteChart = () => {
                                                                 <div className="flex bg-black/10 dark:bg-black/40 rounded-xl p-1 relative">
                                                                     <button
                                                                         onClick={() => setSrEngine('classic')}
-                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all ${srEngine === 'classic' ? 'bg-indigo-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all ${srEngine === 'classic' ? 'bg-violet-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
                                                                     >
                                                                         CLASSIC
                                                                     </button>
                                                                     <button
                                                                         onClick={() => setSrEngine('enhanced')}
-                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all flex items-center justify-center gap-1 ${srEngine === 'enhanced' ? 'bg-indigo-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all flex items-center justify-center gap-1 ${srEngine === 'enhanced' ? 'bg-violet-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
                                                                     >
-                                                                        <Sparkles size={10} className={srEngine === 'enhanced' ? 'text-white' : 'text-indigo-400'} /> NEURAL VWPD
+                                                                        <Sparkles size={10} className={srEngine === 'enhanced' ? 'text-white' : 'text-violet-400'} /> NEURAL VWPD
                                                                     </button>
                                                                 </div>
                                                             </div>
@@ -2450,13 +2457,13 @@ const EliteChart = () => {
                                                                 <div className="flex bg-black/10 dark:bg-black/40 rounded-xl p-1">
                                                                     <button
                                                                         onClick={() => setSrType('level')}
-                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all ${srType === 'level' ? 'bg-purple-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all ${srType === 'level' ? 'bg-violet-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
                                                                     >
                                                                         SOLID LEVEL
                                                                     </button>
                                                                     <button
                                                                         onClick={() => setSrType('area')}
-                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all ${srType === 'area' ? 'bg-purple-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all ${srType === 'area' ? 'bg-violet-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
                                                                     >
                                                                         CLOUD ZONE
                                                                     </button>
@@ -2467,13 +2474,13 @@ const EliteChart = () => {
                                                                 <div className="flex bg-black/10 dark:bg-black/40 rounded-xl p-1">
                                                                     <button
                                                                         onClick={() => setSrFilter('all')}
-                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all ${srFilter === 'all' ? 'bg-indigo-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all ${srFilter === 'all' ? 'bg-violet-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
                                                                     >
                                                                         ALL STRUCTURE
                                                                     </button>
                                                                     <button
                                                                         onClick={() => setSrFilter('strong')}
-                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all ${srFilter === 'strong' ? 'bg-indigo-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                                                        className={`flex-1 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all ${srFilter === 'strong' ? 'bg-violet-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
                                                                     >
                                                                         STRONG ONLY
                                                                     </button>
@@ -2491,8 +2498,8 @@ const EliteChart = () => {
                                         <button
                                             onClick={() => setSelectedIndicators(prev => ({ ...prev, candlestickPatterns: !prev.candlestickPatterns }))}
                                             className={`w-full px-4 py-3 rounded-2xl border flex items-center justify-between transition-all ${selectedIndicators.candlestickPatterns
-                                                ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/20 active:scale-[0.98]'
-                                                : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-600 hover:border-purple-200 hover:shadow-md'
+                                                ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-500/20 active:scale-[0.98]'
+                                                : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-600 hover:border-violet-200 hover:shadow-md'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">
@@ -2506,7 +2513,7 @@ const EliteChart = () => {
                                                             e.stopPropagation();
                                                             setShowCandlePatternsDropdown(!showCandlePatternsDropdown);
                                                         }}
-                                                        className={`p-1 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-purple-500' : 'hover:bg-purple-700'}`}
+                                                        className={`p-1 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-violet-500' : 'hover:bg-violet-700'}`}
                                                     >
                                                         <ChevronDown size={14} className={`transition-transform duration-300 ${showCandlePatternsDropdown ? 'rotate-180' : ''}`} />
                                                     </button>
@@ -2553,7 +2560,7 @@ const EliteChart = () => {
                                                                     }
                                                                 }}
                                                                 className={`w-full px-3 py-2 rounded-xl text-[10px] font-bold flex items-center justify-between transition-all ${activeCandlePatterns.includes(pattern.id)
-                                                                    ? (theme === 'dark' ? 'bg-purple-500/20 text-purple-400' : 'bg-purple-100 text-purple-700')
+                                                                    ? (theme === 'dark' ? 'bg-violet-500/20 text-violet-400' : 'bg-violet-100 text-violet-700')
                                                                     : (theme === 'dark' ? 'text-slate-500 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-100')
                                                                     }`}
                                                             >
@@ -2587,8 +2594,8 @@ const EliteChart = () => {
                                                 }
                                             }}
                                             className={`w-full px-4 py-3 rounded-2xl border flex items-center justify-between transition-all ${selectedIndicators.onchainBias
-                                                ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/20 active:scale-[0.98]'
-                                                : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-600 hover:border-purple-200 hover:shadow-md'
+                                                ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-500/20 active:scale-[0.98]'
+                                                : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-600 hover:border-violet-200 hover:shadow-md'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">
@@ -2614,18 +2621,18 @@ const EliteChart = () => {
                                 <button
                                     onClick={runMonteCarloSimulation}
                                     disabled={isSimulatingBackend}
-                                    className={`w-full p-4 rounded-3xl border flex flex-col items-center justify-center gap-2 transition-all group relative overflow-hidden ${isSimulatingBackend ? 'opacity-50' : 'hover:scale-[1.02] active:scale-95'} ${theme === 'dark' ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400' : 'bg-indigo-50 border-indigo-200 text-indigo-600 shadow-sm'}`}
+                                    className={`w-full p-4 rounded-3xl border flex flex-col items-center justify-center gap-2 transition-all group relative overflow-hidden ${isSimulatingBackend ? 'opacity-50' : 'hover:scale-[1.02] active:scale-95'} ${theme === 'dark' ? 'bg-violet-500/10 border-violet-500/30 text-violet-400' : 'bg-indigo-50 border-violet-200 text-violet-600 shadow-sm'}`}
                                 >
-                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50" />
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-violet-500 to-transparent opacity-50" />
                                     <Layers size={21} className="group-hover:rotate-12 transition-transform" />
                                     <div className="text-center">
                                         <div className="text-[10px] font-black uppercase tracking-[0.1em]">Probability Fan</div>
-                                        <div className="text-[8px] font-bold opacity-60 italic text-indigo-500">Monte Carlo 2.0</div>
+                                        <div className="text-[8px] font-bold opacity-60 italic text-violet-500">Monte Carlo 2.0</div>
                                     </div>
                                     {isSimulatingBackend && (
-                                        <div className="absolute inset-0 bg-indigo-500/20 backdrop-blur-sm flex flex-col items-center justify-center p-2">
-                                            <Loader2 size={24} className="animate-spin text-indigo-500 mb-1" />
-                                            <span className="text-[7px] font-black uppercase tracking-widest text-indigo-600 animate-pulse text-center">
+                                        <div className="absolute inset-0 bg-violet-500/20 backdrop-blur-sm flex flex-col items-center justify-center p-2">
+                                            <Loader2 size={24} className="animate-spin text-violet-500 mb-1" />
+                                            <span className="text-[7px] font-black uppercase tracking-widest text-violet-600 animate-pulse text-center">
                                                 {simulationStatus || 'Processing...'}
                                             </span>
                                         </div>
@@ -2641,7 +2648,7 @@ const EliteChart = () => {
                                         <button
                                             key={inject.type}
                                             onClick={() => runRegimeSimulation(inject.type)}
-                                            className={`p-3 rounded-2xl border flex flex-col items-center gap-1.5 transition-all text-[8px] font-black uppercase text-center ${simulationMode === inject.type ? 'bg-purple-600 border-purple-500 text-white' : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-500 shadow-xl' : 'bg-white border-slate-200 text-slate-500 hover:border-purple-300 shadow-sm'}`}
+                                            className={`p-3 rounded-2xl border flex flex-col items-center gap-1.5 transition-all text-[8px] font-black uppercase text-center ${simulationMode === inject.type ? 'bg-violet-600 border-violet-500 text-white' : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-500 shadow-xl' : 'bg-white border-slate-200 text-slate-500 hover:border-violet-300 shadow-sm'}`}
                                         >
                                             <inject.icon size={16} />
                                             {inject.label}
@@ -2653,7 +2660,7 @@ const EliteChart = () => {
 
                                 <div className="grid grid-cols-2 gap-2">
                                     {[
-                                        { type: 'long', label: 'Long', icon: TrendingUp, color: 'emerald' },
+                                        { type: 'long', label: 'Long', icon: TrendingUp, color: 'purple' },
                                         { type: 'short', label: 'Short', icon: TrendingDown, color: 'rose' },
                                         { type: 'breakout', label: 'Breakout', icon: Zap, color: 'amber' },
                                         { type: 'mean-reversion', label: 'Revert', icon: Activity, color: 'purple' }
@@ -2663,7 +2670,7 @@ const EliteChart = () => {
                                             onClick={() => generateScenario(sim.type)}
                                             className={`flex flex-col items-center gap-2 p-3 md:p-4 rounded-2xl border transition-all ${simulationMode === sim.type
                                                 ? `bg-${sim.color}-500 border-${sim.color}-400 text-white shadow-lg scale-[1.02]`
-                                                : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:border-slate-500 hover:bg-slate-700/30' : 'bg-white border-slate-200 text-slate-600 hover:border-purple-200'
+                                                : theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-400 hover:border-slate-500 hover:bg-slate-700/30' : 'bg-white border-slate-200 text-slate-600 hover:border-violet-200'
                                                 }`}
                                         >
                                             <sim.icon size={18} />
@@ -2700,11 +2707,11 @@ const EliteChart = () => {
 
                             {/* Active Scenario Insights 2.0 */}
                             {simulationActive && scenarioData && (
-                                <div className={`mt-auto p-5 rounded-3xl border animate-in slide-in-from-bottom-4 duration-500 ${theme === 'dark' ? 'bg-purple-500/10 border-purple-500/20 shadow-2xl shadow-purple-500/10' : 'bg-purple-50 border-purple-200 shadow-xl'}`}>
+                                <div className={`mt-auto p-5 rounded-3xl border animate-in slide-in-from-bottom-4 duration-500 ${theme === 'dark' ? 'bg-violet-500/10 border-violet-500/20 shadow-2xl shadow-violet-500/10' : 'bg-violet-50 border-violet-200 shadow-xl'}`}>
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
-                                            <h4 className="text-[10px] font-black uppercase text-purple-500 tracking-widest">{scenarioData.type}</h4>
+                                            <div className="w-2.5 h-2.5 rounded-full bg-violet-500 animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
+                                            <h4 className="text-[10px] font-black uppercase text-violet-500 tracking-widest">{scenarioData.type}</h4>
                                         </div>
                                         <button onClick={clearSimulationArtifacts} className="p-1 rounded-full hover:bg-rose-500/10 text-slate-400 hover:text-rose-500 transition-colors">
                                             <X size={16} />
@@ -2716,17 +2723,17 @@ const EliteChart = () => {
                                         {scenarioData.targetPrice ? (
                                             <div>
                                                 <div className="text-[9px] uppercase font-black text-slate-400 tracking-tighter mb-1">Target Potential</div>
-                                                <div className="text-sm font-black text-emerald-500 leading-none">{formatPrice(scenarioData.targetPrice)}</div>
+                                                <div className="text-sm font-black text-purple-500 leading-none">{formatPrice(scenarioData.targetPrice)}</div>
                                             </div>
                                         ) : scenarioData.metrics?.target ? (
                                             <div>
                                                 <div className="text-[9px] uppercase font-black text-slate-400 tracking-tighter mb-1">Projected Target</div>
-                                                <div className="text-sm font-black text-emerald-500 leading-none">{scenarioData.metrics.target}</div>
+                                                <div className="text-sm font-black text-purple-500 leading-none">{scenarioData.metrics.target}</div>
                                             </div>
                                         ) : scenarioData.market_regime ? (
                                             <div>
                                                 <div className="text-[9px] uppercase font-black text-slate-400 tracking-tighter mb-1">Market Regime</div>
-                                                <div className="text-sm font-black text-indigo-500 leading-none uppercase">{scenarioData.market_regime}</div>
+                                                <div className="text-sm font-black text-violet-500 leading-none uppercase">{scenarioData.market_regime}</div>
                                             </div>
                                         ) : null}
 
@@ -2734,7 +2741,7 @@ const EliteChart = () => {
                                         {scenarioData.riskReward ? (
                                             <div>
                                                 <div className="text-[9px] uppercase font-black text-slate-400 tracking-tighter mb-1">R/R Efficiency</div>
-                                                <div className="text-sm font-black text-purple-600 leading-none">{scenarioData.riskReward}:1</div>
+                                                <div className="text-sm font-black text-violet-600 leading-none">{scenarioData.riskReward}:1</div>
                                             </div>
                                         ) : scenarioData.metrics?.projected_move ? (
                                             <div>
@@ -2744,12 +2751,12 @@ const EliteChart = () => {
                                         ) : scenarioData.metrics?.spread ? (
                                             <div>
                                                 <div className="text-[9px] uppercase font-black text-slate-400 tracking-tighter mb-1">Outcome Spread</div>
-                                                <div className="text-sm font-black text-purple-500 leading-none">{scenarioData.metrics.spread}</div>
+                                                <div className="text-sm font-black text-violet-500 leading-none">{scenarioData.metrics.spread}</div>
                                             </div>
                                         ) : (
                                             <div>
                                                 <div className="text-[9px] uppercase font-black text-slate-400 tracking-tighter mb-1">Confidence</div>
-                                                <div className="text-sm font-black text-purple-500 leading-none">AGENTIC</div>
+                                                <div className="text-sm font-black text-violet-500 leading-none">AGENTIC</div>
                                             </div>
                                         )}
 
@@ -2758,7 +2765,7 @@ const EliteChart = () => {
                                             <div className="col-span-2 mt-1 py-2 px-3 bg-white/5 rounded-xl flex justify-between items-center">
                                                 <div className="flex flex-col">
                                                     <span className="text-[8px] uppercase font-bold text-slate-400">Potential Gain</span>
-                                                    <span className="text-xs font-black text-emerald-500">+{scenarioData.potentialGain}%</span>
+                                                    <span className="text-xs font-black text-purple-500">+{scenarioData.potentialGain}%</span>
                                                 </div>
                                                 <div className="w-px h-6 bg-slate-700/20" />
                                                 <div className="flex flex-col items-end">
@@ -2778,7 +2785,7 @@ const EliteChart = () => {
                                         <div className="mt-4">
                                             <button
                                                 onClick={() => setShowSimulationDetails(!showSimulationDetails)}
-                                                className={`text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-colors ${theme === 'dark' ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-700'}`}
+                                                className={`text-[9px] font-black uppercase tracking-widest flex items-center gap-1 transition-colors ${theme === 'dark' ? 'text-violet-400 hover:text-violet-300' : 'text-violet-600 hover:text-violet-700'}`}
                                             >
                                                 {showSimulationDetails ? 'Hide Laboratory Metrics' : 'View Laboratory Metrics'}
                                                 <ChevronDown size={12} className={`transition-transform duration-300 ${showSimulationDetails ? 'rotate-180' : ''}`} />
@@ -2786,7 +2793,7 @@ const EliteChart = () => {
 
                                             <button
                                                 onClick={() => setShowLabDeepDive(true)}
-                                                className={`mt-2 w-full py-2.5 px-3 rounded-xl border text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${theme === 'dark' ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/20' : 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100'}`}
+                                                className={`mt-2 w-full py-2.5 px-3 rounded-xl border text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${theme === 'dark' ? 'bg-violet-500/10 border-violet-500/30 text-violet-400 hover:bg-violet-500/20' : 'bg-indigo-50 border-violet-200 text-violet-600 hover:bg-indigo-100'}`}
                                             >
                                                 <Microscope size={14} />
                                                 DEEP DIVE LABORATORY
@@ -2840,15 +2847,15 @@ const EliteChart = () => {
                                     )}
 
                                     {scenarioData.isAgentic && (
-                                        <div className="mt-4 pt-4 border-t border-purple-500/10 flex items-center justify-between">
+                                        <div className="mt-4 pt-4 border-t border-violet-500/10 flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <div className="p-1.5 rounded-lg bg-purple-500/20">
-                                                    <Brain size={12} className="text-purple-400" />
+                                                <div className="p-1.5 rounded-lg bg-violet-500/20">
+                                                    <Brain size={12} className="text-violet-400" />
                                                 </div>
-                                                <span className="text-[9px] font-black text-purple-400 uppercase tracking-widest">AI Projected Path</span>
+                                                <span className="text-[9px] font-black text-violet-400 uppercase tracking-widest">AI Projected Path</span>
                                             </div>
                                             <div className="flex gap-0.5">
-                                                {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 rounded-full bg-purple-500/40" />)}
+                                                {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 rounded-full bg-violet-500/40" />)}
                                             </div>
                                         </div>
                                     )}
@@ -2866,9 +2873,9 @@ const EliteChart = () => {
                             <div className="flex items-center flex-wrap md:flex-nowrap justify-between md:justify-start gap-y-1 gap-x-3 md:gap-8 px-3 md:px-6 py-2 md:py-4">
                                 {[
                                     { label: 'O', val: hoveredCandle?.open ?? chartData[chartData.length - 1]?.open, col: theme === 'dark' ? 'text-slate-300' : 'text-slate-500' },
-                                    { label: 'H', val: hoveredCandle?.high ?? chartData[chartData.length - 1]?.high, col: 'text-emerald-500' },
+                                    { label: 'H', val: hoveredCandle?.high ?? chartData[chartData.length - 1]?.high, col: 'text-purple-500' },
                                     { label: 'L', val: hoveredCandle?.low ?? chartData[chartData.length - 1]?.low, col: 'text-rose-500' },
-                                    { label: 'C', val: hoveredCandle?.close ?? chartData[chartData.length - 1]?.close, col: 'text-purple-500' }
+                                    { label: 'C', val: hoveredCandle?.close ?? chartData[chartData.length - 1]?.close, col: 'text-violet-500' }
                                 ].map(ohlc => (
                                     <div key={ohlc.label} className="flex flex-col">
                                         <span className="text-[7px] md:text-[9px] font-black uppercase text-slate-500 tracking-tighter mb-0">{ohlc.label}</span>
@@ -2926,10 +2933,10 @@ const EliteChart = () => {
                                         {scanProgress.map((s, i) => (
                                             <div key={i} className={`flex items-center gap-3 text-[11px] transition-all duration-300 ${s.status === 'complete' ? 'opacity-100' : 'opacity-70'}`}>
                                                 <span className="text-base">{s.icon}</span>
-                                                <span className={`flex-1 font-bold ${s.status === 'complete' ? (theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600') : (theme === 'dark' ? 'text-blue-400' : 'text-blue-600')}`}>
+                                                <span className={`flex-1 font-bold ${s.status === 'complete' ? (theme === 'dark' ? 'text-purple-400' : 'text-purple-600') : (theme === 'dark' ? 'text-blue-400' : 'text-blue-600')}`}>
                                                     {s.step}
                                                 </span>
-                                                <span className={`text-[9px] font-black uppercase tracking-widest ${s.status === 'complete' ? 'text-emerald-500' : 'text-blue-500 animate-pulse'}`}>
+                                                <span className={`text-[9px] font-black uppercase tracking-widest ${s.status === 'complete' ? 'text-purple-500' : 'text-blue-500 animate-pulse'}`}>
                                                     {s.status === 'complete' ? '[OK]' : '[SCAN]'}
                                                 </span>
                                             </div>
@@ -2943,12 +2950,12 @@ const EliteChart = () => {
                     {/* God-Mode Verdict Dashboard */}
                     {blueprintVerdict && !isJudging && (
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[200] w-full max-w-md p-1 animate-in zoom-in-95 duration-500 max-h-[90vh] overflow-y-auto no-scrollbar">
-                            <div className={`rounded-[32px] border-2 overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.5)] ${blueprintVerdict.confluenceScore >= 70 ? (theme === 'dark' ? 'bg-[#0a1a0a] border-emerald-500/30' : 'bg-white border-emerald-200')
+                            <div className={`rounded-[32px] border-2 overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.5)] ${blueprintVerdict.confluenceScore >= 70 ? (theme === 'dark' ? 'bg-[#0a1a0a] border-purple-500/30' : 'bg-white border-purple-200')
                                 : blueprintVerdict.confluenceScore >= 45 ? (theme === 'dark' ? 'bg-[#1a1a0a] border-amber-500/30' : 'bg-white border-amber-200')
                                     : (theme === 'dark' ? 'bg-[#1a0a0a] border-rose-500/30' : 'bg-white border-rose-200')
                                 }`}>
                                 {/* Top gradient bar */}
-                                <div className={`h-1 w-full ${blueprintVerdict.confluenceScore >= 70 ? 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-cyan-500'
+                                <div className={`h-1 w-full ${blueprintVerdict.confluenceScore >= 70 ? 'bg-gradient-to-r from-purple-500 via-purple-400 to-cyan-500'
                                     : blueprintVerdict.confluenceScore >= 45 ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-orange-500'
                                         : 'bg-gradient-to-r from-rose-500 via-red-400 to-pink-500'
                                     }`} />
@@ -2970,7 +2977,7 @@ const EliteChart = () => {
                                                 />
                                             </svg>
                                             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                <span className={`text-4xl font-black ${blueprintVerdict.confluenceScore >= 70 ? 'text-emerald-400'
+                                                <span className={`text-4xl font-black ${blueprintVerdict.confluenceScore >= 70 ? 'text-purple-400'
                                                     : blueprintVerdict.confluenceScore >= 45 ? 'text-amber-400'
                                                         : 'text-rose-400'
                                                     }`}>
@@ -2981,7 +2988,7 @@ const EliteChart = () => {
                                         </div>
 
                                         {/* Verdict Badge */}
-                                        <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${blueprintVerdict.confluenceScore >= 70 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                        <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${blueprintVerdict.confluenceScore >= 70 ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
                                             : blueprintVerdict.confluenceScore >= 45 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                                                 : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                                             }`}>
@@ -3000,7 +3007,7 @@ const EliteChart = () => {
                                             {/* Radar Chart (SVG Spider Web) */}
                                             {blueprintVerdict.radar && (
                                                 <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                                                    <h4 className="text-[9px] font-black uppercase tracking-widest text-purple-500 mb-3 italic">Confluence Radar</h4>
+                                                    <h4 className="text-[9px] font-black uppercase tracking-widest text-violet-500 mb-3 italic">Confluence Radar</h4>
                                                     <div className="flex justify-center">
                                                         <svg viewBox="0 0 200 200" className="w-44 h-44">
                                                             {/* Background pentagons */}
@@ -3047,7 +3054,7 @@ const EliteChart = () => {
                                                             <span className={`text-[10px] font-bold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>{item.label}</span>
                                                             <div className="flex items-center gap-2">
                                                                 {item.value && <span className="text-[9px] font-mono text-slate-500">{item.value}</span>}
-                                                                {item.pass ? <CheckCircle2 size={13} className="text-emerald-500" /> : <X size={13} className="text-rose-500" />}
+                                                                {item.pass ? <CheckCircle2 size={13} className="text-purple-500" /> : <X size={13} className="text-rose-500" />}
                                                             </div>
                                                         </div>
                                                     ))}
@@ -3061,15 +3068,15 @@ const EliteChart = () => {
                                                 return (
                                                     <div key={dimKey} className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-100'}`}>
                                                         <div className="flex items-center justify-between mb-2">
-                                                            <span className="text-[9px] font-black uppercase tracking-widest text-purple-500 italic">{dimLabels[dimKey] || dimKey}</span>
-                                                            <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${dim.score >= 65 ? 'bg-emerald-500/20 text-emerald-400'
+                                                            <span className="text-[9px] font-black uppercase tracking-widest text-violet-500 italic">{dimLabels[dimKey] || dimKey}</span>
+                                                            <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${dim.score >= 65 ? 'bg-purple-500/20 text-purple-400'
                                                                 : dim.score >= 45 ? 'bg-amber-500/20 text-amber-400'
                                                                     : 'bg-rose-500/20 text-rose-400'
                                                                 }`}>{dim.score}%</span>
                                                         </div>
                                                         <div className="space-y-1.5">
                                                             {dim.findings.map((f, fi) => (
-                                                                <p key={fi} className={`text-[10px] leading-relaxed font-medium ${f.type === 'bullish' ? 'text-emerald-400'
+                                                                <p key={fi} className={`text-[10px] leading-relaxed font-medium ${f.type === 'bullish' ? 'text-purple-400'
                                                                     : f.type === 'danger' ? 'text-rose-400'
                                                                         : f.type === 'warning' ? 'text-amber-400'
                                                                             : theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
@@ -3112,10 +3119,10 @@ const EliteChart = () => {
                                             {/* Stats Grid */}
                                             <div className="grid grid-cols-4 gap-2">
                                                 {[
-                                                    { label: 'R:R', value: `${blueprintVerdict.rr}:1`, color: blueprintVerdict.rr >= 2 ? 'text-emerald-400' : 'text-rose-400' },
-                                                    { label: 'RSI', value: blueprintVerdict.stats?.rsi || 'N/A', color: 'text-purple-400' },
+                                                    { label: 'R:R', value: `${blueprintVerdict.rr}:1`, color: blueprintVerdict.rr >= 2 ? 'text-purple-400' : 'text-rose-400' },
+                                                    { label: 'RSI', value: blueprintVerdict.stats?.rsi || 'N/A', color: 'text-violet-400' },
                                                     { label: 'Risk', value: `$${blueprintVerdict.stats?.risk}`, color: 'text-rose-400' },
-                                                    { label: 'Reward', value: `$${blueprintVerdict.stats?.reward}`, color: 'text-emerald-400' },
+                                                    { label: 'Reward', value: `$${blueprintVerdict.stats?.reward}`, color: 'text-purple-400' },
                                                 ].map(stat => (
                                                     <div key={stat.label} className={`p-2.5 rounded-xl border text-center ${theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-200'}`}>
                                                         <p className="text-[7px] font-black uppercase tracking-widest text-slate-500">{stat.label}</p>
@@ -3129,7 +3136,7 @@ const EliteChart = () => {
                                                 {blueprintVerdict.checklist?.slice(0, 4).map((item, i) => (
                                                     <div key={i} className="flex items-center justify-between py-1">
                                                         <span className={`text-[10px] font-bold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>{item.label}</span>
-                                                        {item.pass ? <CheckCircle2 size={12} className="text-emerald-500" /> : <X size={12} className="text-rose-500" />}
+                                                        {item.pass ? <CheckCircle2 size={12} className="text-purple-500" /> : <X size={12} className="text-rose-500" />}
                                                     </div>
                                                 ))}
                                             </div>
@@ -3199,17 +3206,17 @@ const EliteChart = () => {
                         >
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
-                                    <Link2 size={12} className="text-purple-400" />
-                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-purple-400">
+                                    <Link2 size={12} className="text-violet-400" />
+                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-violet-400">
                                         On-Chain Bias · {onchainData.asset || (symbol?.includes('BTC') ? 'BTC' : 'ETH')}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <span className={`text-xs font-black font-mono ${onchainData.score > 0.1 ? 'text-emerald-400' : onchainData.score < -0.1 ? 'text-rose-400' : 'text-amber-400'
+                                    <span className={`text-xs font-black font-mono ${onchainData.score > 0.1 ? 'text-purple-400' : onchainData.score < -0.1 ? 'text-rose-400' : 'text-amber-400'
                                         }`}>
                                         {onchainData.score > 0 ? '+' : ''}{onchainData.score?.toFixed(2)}
                                     </span>
-                                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${onchainData.trend?.includes('Bullish') ? 'bg-emerald-500/10 text-emerald-400'
+                                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${onchainData.trend?.includes('Bullish') ? 'bg-purple-500/10 text-purple-400'
                                         : onchainData.trend?.includes('Bearish') ? 'bg-rose-500/10 text-rose-400'
                                             : 'bg-amber-500/10 text-amber-400'
                                         }`}>
@@ -3238,7 +3245,7 @@ const EliteChart = () => {
                                     ].map(c => (
                                         <div key={c.label} className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold font-mono ${theme === 'dark' ? 'bg-white/5' : 'bg-white'}`} title={c.title}>
                                             <span className="text-slate-500">{c.label}</span>
-                                            <span className={c.value > 0 ? 'text-emerald-400' : c.value < 0 ? 'text-rose-400' : 'text-slate-400'}>
+                                            <span className={c.value > 0 ? 'text-purple-400' : c.value < 0 ? 'text-rose-400' : 'text-slate-400'}>
                                                 {c.value > 0 ? '+' : ''}{(c.value || 0).toFixed(2)}
                                             </span>
                                         </div>
@@ -3258,7 +3265,7 @@ const EliteChart = () => {
                             <RotateCcw size={22} />
                         </button>
                         <button
-                            className={`p-4 rounded-2xl shadow-2xl border backdrop-blur-xl transition-all hover:scale-110 active:scale-90 ${theme === 'dark' ? 'bg-[#1e2030]/80 border-slate-700 text-slate-400 hover:text-purple-400' : 'bg-white/80 border-slate-200 text-slate-600 hover:text-purple-600'}`}
+                            className={`p-4 rounded-2xl shadow-2xl border backdrop-blur-xl transition-all hover:scale-110 active:scale-90 ${theme === 'dark' ? 'bg-[#1e2030]/80 border-slate-700 text-slate-400 hover:text-violet-400' : 'bg-white/80 border-slate-200 text-slate-600 hover:text-violet-600'}`}
                             title="Snapshot"
                         >
                             <Camera size={22} />
@@ -3295,14 +3302,14 @@ const EliteChart = () => {
                                     <div className="w-11 h-11 rounded-2xl bg-[#0f111a] flex items-center justify-center shadow-lg border border-white/5 overflow-hidden">
                                         <img src="/logo.png" alt="Nunno Logo" className="w-8 h-8 object-contain" />
                                     </div>
-                                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#0f111a] flex items-center justify-center">
+                                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-purple-500 border-2 border-[#0f111a] flex items-center justify-center">
                                         <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                                     </div>
                                 </div>
                                 <div>
                                     <h3 className={`font-black tracking-tight text-lg ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Nunno Intel</h3>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Neural Link Active</span>
+                                        <span className="text-[9px] font-black text-purple-500 uppercase tracking-widest">Neural Link Active</span>
                                     </div>
                                 </div>
                             </div>
@@ -3431,8 +3438,8 @@ const EliteChart = () => {
                             {/* Modal Header */}
                             <div className="p-8 border-b border-white/5 flex items-center justify-between sticky top-0 bg-inherit z-10">
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3 rounded-2xl bg-indigo-500/20">
-                                        <Microscope size={24} className="text-indigo-400" />
+                                    <div className="p-3 rounded-2xl bg-violet-500/20">
+                                        <Microscope size={24} className="text-violet-400" />
                                     </div>
                                     <div>
                                         <h2 className="text-xl font-black uppercase tracking-[0.3em] text-white">Quantum Simulation Lab</h2>
@@ -3447,8 +3454,8 @@ const EliteChart = () => {
                             <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
                                 {/* Column 1: Core Parameters */}
                                 <div className="space-y-6">
-                                    <div className="p-6 rounded-[2rem] bg-indigo-500/5 border border-indigo-500/10">
-                                        <h3 className="text-[11px] font-black uppercase tracking-widest text-indigo-400 mb-6 flex items-center gap-2">
+                                    <div className="p-6 rounded-[2rem] bg-violet-500/5 border border-violet-500/10">
+                                        <h3 className="text-[11px] font-black uppercase tracking-widest text-violet-400 mb-6 flex items-center gap-2">
                                             <Settings size={14} /> Simulation Constants
                                         </h3>
                                         <div className="space-y-4">
@@ -3469,17 +3476,17 @@ const EliteChart = () => {
                                         </div>
                                     </div>
 
-                                    <div className="p-6 rounded-[2rem] bg-purple-500/5 border border-purple-500/10">
-                                        <h3 className="text-[11px] font-black uppercase tracking-widest text-purple-400 mb-6 flex items-center gap-2">
+                                    <div className="p-6 rounded-[2rem] bg-violet-500/5 border border-violet-500/10">
+                                        <h3 className="text-[11px] font-black uppercase tracking-widest text-violet-400 mb-6 flex items-center gap-2">
                                             <Brain size={14} /> Regime Intelligence
                                         </h3>
                                         <div className="space-y-4">
                                             <div className="p-3 rounded-2xl bg-white/5">
                                                 <span className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Detected Bias</span>
-                                                <span className="text-sm font-black text-purple-400 uppercase tracking-wider">{scenarioData.market_regime || 'NEUTRAL'}</span>
+                                                <span className="text-sm font-black text-violet-400 uppercase tracking-wider">{scenarioData.market_regime || 'NEUTRAL'}</span>
                                             </div>
                                             <div className="text-[9px] text-slate-400 leading-relaxed font-medium">
-                                                The simulation is currently using **Geometric Brownian Motion (GBM)** with a drift coefficient of <span className="text-purple-400">λ={scenarioData.meta?.vol_multiplier || 1.0}x</span>. This forces the random-walk agents to respect the momentum detected in the technical layer.
+                                                The simulation is currently using **Geometric Brownian Motion (GBM)** with a drift coefficient of <span className="text-violet-400">λ={scenarioData.meta?.vol_multiplier || 1.0}x</span>. This forces the random-walk agents to respect the momentum detected in the technical layer.
                                             </div>
                                         </div>
                                     </div>
@@ -3488,8 +3495,8 @@ const EliteChart = () => {
                                 {/* Column 2 & 3: Statistical Breakdown & Physics */}
                                 <div className="lg:col-span-2 space-y-8">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="p-6 rounded-[2rem] bg-emerald-500/5 border border-emerald-500/10">
-                                            <h3 className="text-[11px] font-black uppercase tracking-widest text-emerald-400 mb-4">Probability Spread</h3>
+                                        <div className="p-6 rounded-[2rem] bg-purple-500/5 border border-purple-500/10">
+                                            <h3 className="text-[11px] font-black uppercase tracking-widest text-purple-400 mb-4">Probability Spread</h3>
                                             <div className="flex items-baseline gap-2 mb-2">
                                                 <span className="text-3xl font-black text-white">{scenarioData.metrics?.spread || '0.00%'}</span>
                                                 <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Variance</span>
@@ -3502,7 +3509,7 @@ const EliteChart = () => {
                                             <h3 className="text-[11px] font-black uppercase tracking-widest text-amber-400 mb-4">Outcome Distribution</h3>
                                             <div className="flex items-center gap-4">
                                                 <div className="flex-1 h-3 rounded-full bg-white/5 overflow-hidden flex">
-                                                    <div className="h-full bg-emerald-500" style={{ width: '65%' }} />
+                                                    <div className="h-full bg-purple-500" style={{ width: '65%' }} />
                                                     <div className="h-full bg-rose-500" style={{ width: '35%' }} />
                                                 </div>
                                                 <span className="text-[10px] font-black text-white uppercase">65% Bulls</span>
@@ -3519,14 +3526,14 @@ const EliteChart = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="space-y-4">
                                                 <div className="flex items-start gap-3">
-                                                    <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px] font-black text-indigo-400 shrink-0">01</div>
+                                                    <div className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center text-[10px] font-black text-violet-400 shrink-0">01</div>
                                                     <div>
                                                         <h4 className="text-[11px] font-bold uppercase text-slate-200 mb-1">Stochastic Modeling</h4>
                                                         <p className="text-[10px] text-slate-500 leading-relaxed">Nunno uses Monte Carlo methods to solve the future state of {symbol}. We generate N=50 paths using current market heat as the standard deviation.</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-start gap-3">
-                                                    <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px] font-black text-indigo-400 shrink-0">02</div>
+                                                    <div className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center text-[10px] font-black text-violet-400 shrink-0">02</div>
                                                     <div>
                                                         <h4 className="text-[11px] font-bold uppercase text-slate-200 mb-1">Mean Reversion Tether</h4>
                                                         <p className="text-[10px] text-slate-500 leading-relaxed">In consolidation regimes, the engine applies a simulated elastic force, pulling "wild" agents back toward the base price to mimic ranging behavior.</p>
@@ -3535,14 +3542,14 @@ const EliteChart = () => {
                                             </div>
                                             <div className="space-y-4">
                                                 <div className="flex items-start gap-3">
-                                                    <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px] font-black text-indigo-400 shrink-0">03</div>
+                                                    <div className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center text-[10px] font-black text-violet-400 shrink-0">03</div>
                                                     <div>
                                                         <h4 className="text-[11px] font-bold uppercase text-slate-200 mb-1">Structural Anchoring</h4>
                                                         <p className="text-[10px] text-slate-500 leading-relaxed">The paths aren't flying into empty space. They are physically bouncing off the **S1 Support (${scenarioData.meta?.support_used?.toFixed(1)})** and **R1 Resistance (${scenarioData.meta?.resistance_used?.toFixed(1)})** detected on the chart.</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-start gap-3">
-                                                    <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-[10px] font-black text-indigo-400 shrink-0">04</div>
+                                                    <div className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center text-[10px] font-black text-violet-400 shrink-0">04</div>
                                                     <div>
                                                         <h4 className="text-[11px] font-bold uppercase text-slate-200 mb-1">Percentile Synthesis</h4>
                                                         <p className="text-[10px] text-slate-500 leading-relaxed">Finally, we take the P50 (Median) as the definitive prediction. If 75% of agents (the P75 cloud) are above the start price, the bias is confirmed Bullish.</p>
@@ -3558,8 +3565,8 @@ const EliteChart = () => {
                             <div className="p-8 border-t border-white/5 flex items-center justify-between text-[10px] font-bold text-slate-600 uppercase tracking-widest">
                                 <span>© 2026 Nunno Labs • Predictive Intelligence Suite</span>
                                 <div className="flex items-center gap-4">
-                                    <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /> ENGINE ONLINE</span>
-                                    <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-indigo-500" /> SYNCED TO BINANCE</span>
+                                    <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-purple-500" /> ENGINE ONLINE</span>
+                                    <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-violet-500" /> SYNCED TO BINANCE</span>
                                 </div>
                             </div>
                         </motion.div>

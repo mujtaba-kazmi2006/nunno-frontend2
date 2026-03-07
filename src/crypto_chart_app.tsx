@@ -1,15 +1,31 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { TrendingUp, Settings, PlayCircle, StopCircle, Code, RefreshCw, Menu, X } from 'lucide-react';
 
+interface Candle {
+  time: string;
+  timestamp: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
 
+interface Indicator {
+  id: number;
+  name: string;
+  color: string;
+  values: (number | null)[];
+}
 
 const CryptoChartApp = () => {
-  const [chartData, setChartData] = useState([]);
+  const [chartData, setChartData] = useState<Candle[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [symbol, setSymbol] = useState('BTCUSDT');
-  const [interval, setInterval] = useState('1m');
-  const [indicators, setIndicators] = useState([]);
+  const [interval, setKlinesInterval] = useState('1m');
+  const [indicators, setIndicators] = useState<Indicator[]>([]);
   const [customScript, setCustomScript] = useState(`// Example: Simple Moving Average
 function calculate(data, period = 20) {
   return data.map((candle, i) => {
@@ -20,12 +36,12 @@ function calculate(data, period = 20) {
   });
 }`);
   const [showScriptEditor, setShowScriptEditor] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState(null);
+  const [lastUpdate, setLastUpdate] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [marketOverviewOpen, setMarketOverviewOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const intervalRef = useRef(null);
-  const dataBufferRef = useRef([]);
+  const intervalRef = useRef<any>(null);
+  const dataBufferRef = useRef<Candle[]>([]);
 
   const fetchKlines = async () => {
     try {
@@ -39,7 +55,7 @@ function calculate(data, period = 20) {
 
       const data = await response.json();
 
-      const candles = data.map(k => ({
+      const candles: Candle[] = (data as any[][]).map(k => ({
         time: new Date(k[0]).toLocaleTimeString(),
         timestamp: k[0],
         open: parseFloat(k[1]),
@@ -89,7 +105,8 @@ function calculate(data, period = 20) {
       setShowScriptEditor(false);
     } catch (error) {
       console.error('Error in custom script:', error);
-      alert('Error in custom script: ' + error.message);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert('Error in custom script: ' + errorMessage);
     }
   };
 
@@ -110,10 +127,11 @@ function calculate(data, period = 20) {
   }, [chartData.length]);
 
   const chartDataWithIndicators = chartData.map((candle, i) => {
-    const point = { ...candle };
+    const point: Record<string, any> = { ...candle };
     indicators.forEach(ind => {
-      if (ind.values[i] !== null && ind.values[i] !== undefined) {
-        point[`indicator_${ind.id}`] = ind.values[i];
+      const val = ind.values[i];
+      if (val !== null && val !== undefined) {
+        point[`indicator_${ind.id}`] = val;
       }
     });
     return point;
@@ -146,16 +164,16 @@ function calculate(data, period = 20) {
   }, []);
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 sm:p-6 animate-fade-in">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-slate-900 via-violet-900 to-slate-900 p-4 sm:p-6 animate-fade-in">
       <div className="max-w-7xl mx-auto">
         {/* Mobile Header */}
         <div className="sm:hidden flex items-center justify-between mb-4 animate-slide-down">
           <div className="flex items-center gap-2 animate-fade-in">
-            <TrendingUp className="w-7 h-7 text-purple-400 animate-bounce-subtle" />
+            <TrendingUp className="w-7 h-7 text-violet-400 animate-bounce-subtle" />
             <h1 className="text-xl font-bold text-white">Nunno Finance</h1>
           </div>
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${isStreaming ? 'bg-green-400' : 'bg-gray-400'} ${isStreaming ? 'animate-pulse' : ''}`} />
+            <div className={`w-2 h-2 rounded-full ${isStreaming ? 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]' : 'bg-slate-500'} ${isStreaming ? 'animate-pulse' : ''}`} />
             <span className="text-white text-xs">{isStreaming ? 'Live' : 'Stopped'}</span>
             <button
               onClick={() => setMarketOverviewOpen(!marketOverviewOpen)}
@@ -175,21 +193,21 @@ function calculate(data, period = 20) {
         {/* Desktop Header */}
         <div className="hidden sm:flex items-center justify-between mb-6 animate-slide-down">
           <div className="flex items-center gap-3 animate-fade-in">
-            <TrendingUp className="w-8 h-8 text-purple-400 animate-bounce-subtle" />
+            <TrendingUp className="w-8 h-8 text-violet-400 animate-bounce-subtle" />
             <h1 className="text-3xl font-bold text-white">Nunno Finance</h1>
           </div>
           <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${isStreaming ? 'bg-green-400' : 'bg-gray-400'} ${isStreaming ? 'animate-pulse' : ''}`} />
-            <span className="text-white text-sm">{isStreaming ? 'Live' : 'Stopped'}</span>
+            <div className={`w-3 h-3 rounded-full ${isStreaming ? 'bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'bg-slate-500'} ${isStreaming ? 'animate-pulse' : ''}`} />
+            <span className="text-white text-sm font-bold tracking-tight">{isStreaming ? 'LIVE_MODE' : 'TERMINATED'}</span>
             {lastUpdate && (
-              <span className="text-purple-300 text-xs">Updated: {lastUpdate}</span>
+              <span className="text-violet-300 text-xs">Updated: {lastUpdate}</span>
             )}
           </div>
         </div>
 
         {/* Mobile Controls Menu */}
         {mobileMenuOpen && (
-          <div className="sm:hidden bg-slate-800/90 backdrop-blur-sm rounded-lg p-4 mb-4 border border-purple-500/20 shadow-xl z-50 fixed inset-y-0 left-0 w-80 overflow-y-auto animate-slide-in-left">
+          <div className="sm:hidden bg-slate-800/90 backdrop-blur-sm rounded-lg p-4 mb-4 border border-violet-500/20 shadow-xl z-50 fixed inset-y-0 left-0 w-80 overflow-y-auto animate-slide-in-left">
             <div className="mb-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-bold text-white">Controls</h2>
@@ -203,22 +221,22 @@ function calculate(data, period = 20) {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-purple-300 mb-1">Symbol</label>
+                  <label className="block text-xs font-medium text-violet-300 mb-1">Symbol</label>
                   <input
                     type="text"
                     value={symbol}
                     onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                    className="w-full px-3 py-2 bg-slate-700 text-white rounded-lg border border-purple-500/30 focus:border-purple-500 focus:outline-none text-sm"
+                    className="w-full px-3 py-2 bg-slate-700 text-white rounded-lg border border-violet-500/30 focus:border-violet-500 focus:outline-none text-sm"
                     placeholder="BTCUSDT"
                     disabled={isStreaming}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-purple-300 mb-1">Interval</label>
+                  <label className="block text-xs font-medium text-violet-300 mb-1">Interval</label>
                   <select
                     value={interval}
-                    onChange={(e) => setInterval(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-700 text-white rounded-lg border border-purple-500/30 focus:border-purple-500 focus:outline-none text-sm"
+                    onChange={(e) => setKlinesInterval(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-700 text-white rounded-lg border border-violet-500/30 focus:border-violet-500 focus:outline-none text-sm"
                     disabled={isStreaming}
                   >
                     <option value="1m">1 Min</option>
@@ -235,7 +253,7 @@ function calculate(data, period = 20) {
                   {!isStreaming ? (
                     <button
                       onClick={startStreaming}
-                      className="flex-1 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg font-semibold hover:from-green-600 hover:to-emerald-700 transition-all flex items-center justify-center gap-1 text-sm"
+                      className="flex-1 px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-lg font-semibold hover:from-violet-700 hover:to-purple-800 transition-all flex items-center justify-center gap-1 text-sm shadow-xl shadow-purple-500/20 px-4"
                     >
                       <PlayCircle className="w-4 h-4" />
                       Start
@@ -254,7 +272,7 @@ function calculate(data, period = 20) {
                       setShowScriptEditor(!showScriptEditor);
                       setMobileMenuOpen(false);
                     }}
-                    className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-pink-700 transition-all flex items-center justify-center gap-1 text-sm"
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-violet-500 to-pink-600 text-white rounded-lg font-semibold hover:from-violet-600 hover:to-pink-700 transition-all flex items-center justify-center gap-1 text-sm"
                   >
                     <Code className="w-4 h-4" />
                     Indicators
@@ -267,7 +285,7 @@ function calculate(data, period = 20) {
 
         {/* Market Overview Sidebar - Right Side */}
         {marketOverviewOpen && (
-          <div className="sm:hidden fixed inset-y-0 right-0 w-80 bg-slate-800/90 backdrop-blur-sm border-l border-purple-500/20 z-50 p-4 overflow-y-auto animate-slide-in-right">
+          <div className="sm:hidden fixed inset-y-0 right-0 w-80 bg-slate-800/90 backdrop-blur-sm border-l border-violet-500/20 z-50 p-4 overflow-y-auto animate-slide-in-right">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-white">Market Overview</h2>
               <button
@@ -280,48 +298,63 @@ function calculate(data, period = 20) {
 
             <div className="space-y-4">
               <div className="bg-slate-700/50 rounded-lg p-3">
-                <p className="text-purple-300 text-xs">Symbol</p>
+                <p className="text-violet-300 text-xs">Symbol</p>
                 <p className="text-white font-bold text-sm">{symbol}</p>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-3">
-                <p className="text-purple-300 text-xs">Interval</p>
+                <p className="text-violet-300 text-xs">Interval</p>
                 <p className="text-white font-bold text-sm">{interval}</p>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-3">
-                <p className="text-purple-300 text-xs">Status</p>
+                <p className="text-violet-300 text-xs">Status</p>
                 <p className="text-white font-bold text-sm">{isStreaming ? 'Live' : 'Stopped'}</p>
               </div>
 
               {chartData.length > 0 && (
                 <>
                   <div className="bg-slate-700/50 rounded-lg p-3">
-                    <p className="text-purple-300 text-xs">Current Price</p>
+                    <p className="text-violet-300 text-xs">Current Price</p>
                     <p className="text-white font-bold text-sm">${chartData[chartData.length - 1]?.close.toLocaleString()}</p>
                   </div>
-                  <div className="bg-slate-700/50 rounded-lg p-3">
-                    <p className="text-purple-300 text-xs">24h Change</p>
-                    <p className="text-green-400 font-bold text-sm">+{(chartData[chartData.length - 1]?.close - chartData[0]?.open).toFixed(2)} ({(((chartData[chartData.length - 1]?.close - chartData[0]?.open) / chartData[0]?.open) * 100).toFixed(2)}%)</p>
+                  <div className="bg-slate-700/50 rounded-lg p-3 border border-white/5">
+                    <p className="text-violet-300 text-xs font-bold uppercase tracking-widest">24h Change</p>
+                    {chartData.length >= 2 ? (
+                      <p className={`font-black text-sm transition-colors ${(chartData[chartData.length - 1].close - chartData[0].open) >= 0 ? "text-green-400" : "text-rose-400"
+                        }`}>
+                        {(chartData[chartData.length - 1].close - chartData[0].open) >= 0 ? '+' : ''}
+                        {(chartData[chartData.length - 1].close - chartData[0].open).toFixed(2)}
+                        <span className="ml-1 opacity-80">
+                          ({(((chartData[chartData.length - 1].close - chartData[0].open) / chartData[0].open) * 100).toFixed(2)}%)
+                        </span>
+                      </p>
+                    ) : (
+                      <p className="text-slate-500 text-xs italic">Awaiting pulse...</p>
+                    )}
                   </div>
-                  <div className="bg-slate-700/50 rounded-lg p-3">
-                    <p className="text-purple-300 text-xs">High (24h)</p>
-                    <p className="text-green-400 font-bold text-sm">${Math.max(...chartData.map(d => d.high)).toLocaleString()}</p>
+                  <div className="bg-slate-700/50 rounded-lg p-3 border border-white/5">
+                    <p className="text-violet-300 text-xs font-bold uppercase tracking-widest">High (24h)</p>
+                    <p className="text-white font-black text-sm">
+                      ${chartData.length > 0 ? Math.max(...chartData.map((d: Candle) => d.high)).toLocaleString() : '0.00'}
+                    </p>
                   </div>
-                  <div className="bg-slate-700/50 rounded-lg p-3">
-                    <p className="text-purple-300 text-xs">Low (24h)</p>
-                    <p className="text-red-400 font-bold text-sm">${Math.min(...chartData.map(d => d.low)).toLocaleString()}</p>
+                  <div className="bg-slate-700/50 rounded-lg p-3 border border-white/5">
+                    <p className="text-violet-300 text-xs font-bold uppercase tracking-widest">Low (24h)</p>
+                    <p className="text-rose-400 font-black text-sm">
+                      ${chartData.length > 0 ? Math.min(...chartData.map((d: Candle) => d.low)).toLocaleString() : '0.00'}
+                    </p>
                   </div>
                 </>
               )}
 
               {lastUpdate && (
                 <div className="bg-slate-700/50 rounded-lg p-3">
-                  <p className="text-purple-300 text-xs">Last Updated</p>
-                  <p className="text-purple-400 font-bold text-sm">{lastUpdate}</p>
+                  <p className="text-violet-300 text-xs">Last Updated</p>
+                  <p className="text-violet-400 font-bold text-sm">{lastUpdate}</p>
                 </div>
               )}
 
               <div className="bg-slate-700/50 rounded-lg p-3">
-                <p className="text-purple-300 text-xs">Active Indicators</p>
+                <p className="text-violet-300 text-xs">Active Indicators</p>
                 <p className="text-white font-bold text-sm">{indicators.length}</p>
               </div>
             </div>
@@ -329,25 +362,25 @@ function calculate(data, period = 20) {
         )}
 
         {/* Desktop Controls */}
-        <div className="hidden sm:block bg-slate-800/50 backdrop-blur-sm rounded-lg p-4 md:p-6 mb-6 border border-purple-500/20 animate-fade-in-up">
+        <div className="hidden sm:block bg-slate-800/50 backdrop-blur-sm rounded-lg p-4 md:p-6 mb-6 border border-violet-500/20 animate-fade-in-up">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <div>
-              <label className="block text-sm font-medium text-purple-300 mb-2">Symbol</label>
+              <label className="block text-sm font-medium text-violet-300 mb-2">Symbol</label>
               <input
                 type="text"
                 value={symbol}
                 onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg border border-purple-500/30 focus:border-purple-500 focus:outline-none"
+                className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg border border-violet-500/30 focus:border-violet-500 focus:outline-none"
                 placeholder="BTCUSDT"
                 disabled={isStreaming}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-purple-300 mb-2">Interval</label>
+              <label className="block text-sm font-medium text-violet-300 mb-2">Interval</label>
               <select
                 value={interval}
-                onChange={(e) => setInterval(e.target.value)}
-                className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg border border-purple-500/30 focus:border-purple-500 focus:outline-none"
+                onChange={(e) => setKlinesInterval(e.target.value)}
+                className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg border border-violet-500/30 focus:border-violet-500 focus:outline-none"
                 disabled={isStreaming}
               >
                 <option value="1m">1 Minute</option>
@@ -364,7 +397,7 @@ function calculate(data, period = 20) {
               {!isStreaming ? (
                 <button
                   onClick={startStreaming}
-                  className="w-full px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg font-semibold hover:from-green-600 hover:to-emerald-700 transition-all flex items-center justify-center gap-2"
+                  className="w-full px-6 py-2 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-lg font-semibold hover:from-violet-700 hover:to-purple-800 transition-all flex items-center justify-center gap-2 shadow-xl shadow-purple-500/30"
                 >
                   <PlayCircle className="w-5 h-5" />
                   Start Live
@@ -382,7 +415,7 @@ function calculate(data, period = 20) {
             <div className="flex items-end">
               <button
                 onClick={() => setShowScriptEditor(!showScriptEditor)}
-                className="w-full px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-pink-700 transition-all flex items-center justify-center gap-2"
+                className="w-full px-6 py-2 bg-gradient-to-r from-violet-500 to-pink-600 text-white rounded-lg font-semibold hover:from-violet-600 hover:to-pink-700 transition-all flex items-center justify-center gap-2"
               >
                 <Code className="w-5 h-5" />
                 Indicators
@@ -393,15 +426,15 @@ function calculate(data, period = 20) {
 
         {/* Script Editor */}
         {showScriptEditor && (
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 mb-6 border border-purple-500/20 animate-fade-in-up">
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 mb-6 border border-violet-500/20 animate-fade-in-up">
             <h3 className="text-xl font-bold text-white mb-4">Custom Indicator Script</h3>
-            <p className="text-purple-300 text-sm mb-3">
+            <p className="text-violet-300 text-sm mb-3">
               Write a function that takes 'data' (array of candles) and 'period' and returns an array of indicator values.
             </p>
             <textarea
               value={customScript}
               onChange={(e) => setCustomScript(e.target.value)}
-              className="w-full h-40 sm:h-48 px-3 py-2 sm:px-4 sm:py-3 bg-slate-900 text-green-400 font-mono text-xs sm:text-sm rounded-lg border border-purple-500/30 focus:border-purple-500 focus:outline-none resize-none transition-all duration-300 hover:border-purple-400"
+              className="w-full h-40 sm:h-48 px-3 py-2 sm:px-4 sm:py-3 bg-slate-900 text-green-400 font-mono text-xs sm:text-sm rounded-lg border border-violet-500/30 focus:border-violet-500 focus:outline-none resize-none transition-all duration-300 hover:border-violet-400"
               placeholder="Enter your indicator calculation function..."
             />
             <div className="mt-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -424,9 +457,9 @@ function calculate(data, period = 20) {
 
         {/* Active Indicators */}
         {indicators.length > 0 && (
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-4 mb-6 border border-purple-500/20 animate-fade-in-up">
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-4 mb-6 border border-violet-500/20 animate-fade-in-up">
             <div className="flex items-center gap-4 flex-wrap">
-              <span className="text-purple-300 font-semibold">Active:</span>
+              <span className="text-violet-300 font-semibold">Active:</span>
               {indicators.map(ind => (
                 <div key={ind.id} className="flex items-center gap-2 bg-slate-700 px-3 py-1 rounded-full">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: ind.color }} />
@@ -444,7 +477,7 @@ function calculate(data, period = 20) {
         )}
 
         {/* Chart */}
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-purple-500/20 animate-fade-in-up">
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-4 sm:p-6 border border-violet-500/20 animate-fade-in-up">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
             <h2 className="text-xl sm:text-2xl font-bold text-white">
               {symbol} - {interval}
@@ -452,7 +485,7 @@ function calculate(data, period = 20) {
             {!isStreaming && chartData.length > 0 && (
               <button
                 onClick={fetchKlines}
-                className="px-3 py-2 sm:px-4 sm:py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-all flex items-center gap-1 sm:gap-2 text-sm"
+                className="px-3 py-2 sm:px-4 sm:py-2 bg-violet-600 text-white rounded-lg font-semibold hover:bg-violet-700 transition-all flex items-center gap-1 sm:gap-2 text-sm"
               >
                 <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">Refresh</span>
@@ -464,8 +497,8 @@ function calculate(data, period = 20) {
           {chartData.length === 0 ? (
             <div className="h-64 sm:h-96 flex items-center justify-center">
               <div className="text-center">
-                <p className="text-purple-300 text-base sm:text-lg mb-3 sm:mb-4">Click "Start Live" to load chart data</p>
-                <p className="text-purple-400 text-xs sm:text-sm">Data is fetched from Binance public API</p>
+                <p className="text-violet-300 text-base sm:text-lg mb-3 sm:mb-4">Click "Start Live" to load chart data</p>
+                <p className="text-violet-400 text-xs sm:text-sm">Data is fetched from Binance public API</p>
               </div>
             </div>
           ) : (
@@ -502,7 +535,7 @@ function calculate(data, period = 20) {
                   name="Price"
                   isAnimationActive={false}
                 />
-                {indicators.map(ind => (
+                {indicators.map((ind: Indicator) => (
                   <Line
                     key={ind.id}
                     type="monotone"
@@ -522,23 +555,23 @@ function calculate(data, period = 20) {
           {chartData.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 mt-4 sm:mt-6">
               <div className="bg-slate-700/50 rounded-lg p-2 sm:p-3">
-                <p className="text-purple-300 text-xs sm:text-sm">Open</p>
+                <p className="text-violet-300 text-xs sm:text-sm">Open</p>
                 <p className="text-white font-bold text-sm sm:text-base truncate">${chartData[chartData.length - 1]?.open.toLocaleString()}</p>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-2 sm:p-3">
-                <p className="text-purple-300 text-xs sm:text-sm">High</p>
+                <p className="text-violet-300 text-xs sm:text-sm">High</p>
                 <p className="text-green-400 font-bold text-sm sm:text-base truncate">${chartData[chartData.length - 1]?.high.toLocaleString()}</p>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-2 sm:p-3">
-                <p className="text-purple-300 text-xs sm:text-sm">Low</p>
+                <p className="text-violet-300 text-xs sm:text-sm">Low</p>
                 <p className="text-red-400 font-bold text-sm sm:text-base truncate">${chartData[chartData.length - 1]?.low.toLocaleString()}</p>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-2 sm:p-3">
-                <p className="text-purple-300 text-xs sm:text-sm">Close</p>
+                <p className="text-violet-300 text-xs sm:text-sm">Close</p>
                 <p className="text-white font-bold text-sm sm:text-base truncate">${chartData[chartData.length - 1]?.close.toLocaleString()}</p>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-2 sm:p-3">
-                <p className="text-purple-300 text-xs sm:text-sm">Volume</p>
+                <p className="text-violet-300 text-xs sm:text-sm">Volume</p>
                 <p className="text-white font-bold text-sm sm:text-base truncate">{chartData[chartData.length - 1]?.volume.toFixed(2)}</p>
               </div>
             </div>

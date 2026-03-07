@@ -14,12 +14,12 @@ export default function TermsOfService() {
 
                 <header className="mb-16">
                     <div className="flex items-center gap-4 mb-6">
-                        <div className="size-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-500">
+                        <div className="size-12 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-500">
                             <FileText size={24} />
                         </div>
                         <div>
                             <h1 className="text-3xl sm:text-4xl font-black italic uppercase tracking-tighter">
-                                Terms of <span className="text-purple-500">Service</span>
+                                Terms of <span className="text-violet-500">Service</span>
                             </h1>
                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Last Updated: February 25, 2026</p>
                         </div>
@@ -56,15 +56,15 @@ export default function TermsOfService() {
                     <section>
                         <h2 className="text-white text-lg font-black italic uppercase tracking-tight mb-4">3. Acceptable Use</h2>
                         <ul className="space-y-3 list-none">
-                            <li className="flex gap-3"><span className="size-1.5 rounded-full bg-purple-500 mt-2 shrink-0" /><span>Do not use Nunno for market manipulation, pump-and-dump schemes, or any fraudulent activity.</span></li>
-                            <li className="flex gap-3"><span className="size-1.5 rounded-full bg-purple-500 mt-2 shrink-0" /><span>Do not attempt to reverse-engineer, scrape, or abuse the AI analysis engine.</span></li>
-                            <li className="flex gap-3"><span className="size-1.5 rounded-full bg-purple-500 mt-2 shrink-0" /><span>Do not redistribute AI-generated content commercially without written permission.</span></li>
+                            <li className="flex gap-3"><span className="size-1.5 rounded-full bg-violet-500 mt-2 shrink-0" /><span>Do not use Nunno for market manipulation, pump-and-dump schemes, or any fraudulent activity.</span></li>
+                            <li className="flex gap-3"><span className="size-1.5 rounded-full bg-violet-500 mt-2 shrink-0" /><span>Do not attempt to reverse-engineer, scrape, or abuse the AI analysis engine.</span></li>
+                            <li className="flex gap-3"><span className="size-1.5 rounded-full bg-violet-500 mt-2 shrink-0" /><span>Do not redistribute AI-generated content commercially without written permission.</span></li>
                         </ul>
                     </section>
 
                     <section>
                         <h2 className="text-white text-lg font-black italic uppercase tracking-tight mb-4">4. Account & Data</h2>
-                        <p>You are responsible for maintaining the security of your account. Nunno reserves the right to suspend accounts that violate these terms. Your data is handled in accordance with our <Link to="/privacy" className="text-purple-400 hover:text-white transition-colors underline underline-offset-4">Privacy Policy</Link>.</p>
+                        <p>You are responsible for maintaining the security of your account. Nunno reserves the right to suspend accounts that violate these terms. Your data is handled in accordance with our <Link to="/privacy" className="text-violet-400 hover:text-white transition-colors underline underline-offset-4">Privacy Policy</Link>.</p>
                     </section>
 
                     <section>
@@ -73,7 +73,7 @@ export default function TermsOfService() {
                     </section>
 
                     <section className="pt-8 border-t border-white/5">
-                        <p className="text-slate-600 text-xs italic">For legal inquiries, contact: <a href="mailto:legal@nunno.finance" className="text-purple-400 hover:text-white transition-colors">legal@nunno.finance</a></p>
+                        <p className="text-slate-600 text-xs italic">For legal inquiries, contact: <a href="mailto:legal@nunno.finance" className="text-violet-400 hover:text-white transition-colors">legal@nunno.finance</a></p>
                     </section>
                 </div>
             </div>

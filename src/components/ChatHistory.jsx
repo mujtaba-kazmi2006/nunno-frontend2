@@ -88,7 +88,7 @@ export default function ChatHistory() {
     };
 
     return (
-        <div className={`min-h-[100dvh] py-8 px-4 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-purple-50'}`}>
+        <div className={`min-h-[100dvh] py-8 px-4 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-violet-50'}`}>
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="mb-8 pl-14 md:pl-0">
@@ -104,8 +104,8 @@ export default function ChatHistory() {
                                 <p className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Total Predictions</p>
                                 <p className={`text-3xl font-bold mt-1 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>{stats.total}</p>
                             </div>
-                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${theme === 'dark' ? 'bg-purple-500/10' : 'bg-purple-100'}`}>
-                                <Clock className={theme === 'dark' ? 'text-purple-400' : 'text-purple-600'} size={24} />
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${theme === 'dark' ? 'bg-violet-500/10' : 'bg-violet-100'}`}>
+                                <Clock className={theme === 'dark' ? 'text-violet-400' : 'text-violet-600'} size={24} />
                             </div>
                         </div>
                     </div>
@@ -138,10 +138,10 @@ export default function ChatHistory() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Avg Confidence</p>
-                                <p className={`text-3xl font-bold mt-1 ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`}>{stats.avgConfidence}%</p>
+                                <p className={`text-3xl font-bold mt-1 ${theme === 'dark' ? 'text-violet-400' : 'text-violet-600'}`}>{stats.avgConfidence}%</p>
                             </div>
-                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${theme === 'dark' ? 'bg-purple-500/10' : 'bg-purple-100'}`}>
-                                <TrendingUp className={theme === 'dark' ? 'text-purple-400' : 'text-purple-600'} size={24} />
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${theme === 'dark' ? 'bg-violet-500/10' : 'bg-violet-100'}`}>
+                                <TrendingUp className={theme === 'dark' ? 'text-violet-400' : 'text-violet-600'} size={24} />
                             </div>
                         </div>
                     </div>
@@ -158,7 +158,7 @@ export default function ChatHistory() {
                                 placeholder="Search by coin name or ticker..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-200 focus:border-purple-500' : 'bg-white border-gray-200 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200'}`}
+                                className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-200 focus:border-violet-500' : 'bg-white border-gray-200 text-gray-900 focus:border-violet-500 focus:ring-2 focus:ring-violet-200'}`}
                             />
                         </div>
 
@@ -167,7 +167,7 @@ export default function ChatHistory() {
                             <button
                                 onClick={() => setFilterType('all')}
                                 className={`px-4 py-3 rounded-xl font-semibold transition-all ${filterType === 'all'
-                                    ? 'bg-purple-600 text-white shadow-md'
+                                    ? 'bg-violet-600 text-white shadow-md'
                                     : (theme === 'dark' ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
                                     }`}
                             >
@@ -201,7 +201,7 @@ export default function ChatHistory() {
                         filteredPredictions.map((pred) => (
                             <div
                                 key={pred.id}
-                                className={`rounded-xl p-6 shadow-md border-2 transition-all cursor-pointer ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 hover:border-purple-500/50 hover:bg-slate-800/50' : 'bg-white border-gray-200 hover:border-purple-300 hover:shadow-lg'}`}
+                                className={`rounded-xl p-6 shadow-md border-2 transition-all cursor-pointer ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 hover:border-violet-500/50 hover:bg-slate-800/50' : 'bg-white border-gray-200 hover:border-violet-300 hover:shadow-lg'}`}
                             >
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <div className="flex items-center gap-4">
@@ -229,7 +229,7 @@ export default function ChatHistory() {
                                         </div>
                                         <div>
                                             <p className={`text-xs font-medium mb-1 ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>Predicted Price</p>
-                                            <p className="text-lg font-bold text-purple-400">{pred.predictedPrice}</p>
+                                            <p className="text-lg font-bold text-violet-400">{pred.predictedPrice}</p>
                                         </div>
                                         <div>
                                             <p className={`text-xs font-medium mb-1 ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>Confidence</p>

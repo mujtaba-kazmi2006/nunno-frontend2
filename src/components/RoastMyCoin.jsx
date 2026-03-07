@@ -59,7 +59,7 @@ const RoastMyCoin = () => {
         if (riskScore >= 60) return 'from-orange-500 to-rose-500';
         if (riskScore >= 40) return 'from-yellow-500 to-orange-500';
         if (riskScore >= 20) return 'from-blue-500 to-cyan-500';
-        return 'from-emerald-500 to-green-500';
+        return 'from-purple-500 to-green-500';
     };
 
     const getRiskIcon = (verdict) => {
@@ -73,7 +73,7 @@ const RoastMyCoin = () => {
             case 'LOW_RISK':
                 return <Target className="w-12 h-12 text-blue-500" />;
             default:
-                return <Shield className="w-12 h-12 text-emerald-500" />;
+                return <Shield className="w-12 h-12 text-purple-500" />;
         }
     };
 
@@ -216,15 +216,15 @@ const RoastMyCoin = () => {
                             {result.advice && (
                                 <div className={cn(
                                     "mt-4 p-6 rounded-2xl border",
-                                    theme === 'dark' ? "bg-purple-500/10 border-purple-500/20" : "bg-purple-50 border-purple-200"
+                                    theme === 'dark' ? "bg-violet-500/10 border-violet-500/20" : "bg-violet-50 border-violet-200"
                                 )}>
                                     <div className="flex items-center gap-2 mb-3">
-                                        <Shield className="w-5 h-5 text-purple-400" />
-                                        <h3 className="font-black uppercase text-purple-400 text-sm tracking-widest">
+                                        <Shield className="w-5 h-5 text-violet-400" />
+                                        <h3 className="font-black uppercase text-violet-400 text-sm tracking-widest">
                                             Advice
                                         </h3>
                                     </div>
-                                    <p className="text-purple-200 font-medium leading-relaxed">
+                                    <p className="text-violet-200 font-medium leading-relaxed">
                                         {result.advice}
                                     </p>
                                 </div>
@@ -249,7 +249,7 @@ const RoastMyCoin = () => {
                                                 data.score >= 20 ? "text-rose-500" :
                                                     data.score >= 10 ? "text-orange-500" :
                                                         data.score >= 5 ? "text-yellow-500" :
-                                                            "text-emerald-500"
+                                                            "text-purple-500"
                                             )}>
                                                 {data.status?.replace('_', ' ')}
                                             </div>

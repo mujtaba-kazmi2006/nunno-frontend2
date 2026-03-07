@@ -132,7 +132,7 @@ const PatternChatWidget = ({ onPatternGenerated, currentPrice = 50000 }) => {
         return (
             <button
                 onClick={() => setIsOpen(true)}
-                className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-purple-600 to-purple-400 text-white p-4 rounded-full shadow-2xl hover:shadow-purple-500/50 hover:scale-110 transition-all duration-300 group"
+                className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-violet-600 to-violet-400 text-white p-4 rounded-full shadow-2xl hover:shadow-violet-500/50 hover:scale-110 transition-all duration-300 group"
                 title="Pattern Assistant"
             >
                 <MessageCircle size={24} className="group-hover:rotate-12 transition-transform" />
@@ -144,7 +144,7 @@ const PatternChatWidget = ({ onPatternGenerated, currentPrice = 50000 }) => {
     return (
         <div className={`fixed bottom-6 right-6 z-50 rounded-2xl shadow-2xl border flex flex-col transition-all duration-300 ${isMinimized ? 'w-80 h-16' : 'w-96 h-[500px]'} ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-slate-200'}`}>
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-purple-600 to-purple-400 text-white rounded-t-2xl">
+            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-violet-600 to-violet-400 text-white rounded-t-2xl">
                 <div className="flex items-center gap-2">
                     <Sparkles size={18} className="animate-pulse" />
                     <div>
@@ -181,7 +181,7 @@ const PatternChatWidget = ({ onPatternGenerated, currentPrice = 50000 }) => {
                             >
                                 <div
                                     className={`max-w-[85%] px-4 py-2.5 rounded-2xl ${message.role === 'user'
-                                        ? 'bg-gradient-to-r from-purple-600 to-purple-400 text-white rounded-br-sm'
+                                        ? 'bg-gradient-to-r from-violet-600 to-violet-400 text-white rounded-br-sm'
                                         : theme === 'dark' ? 'bg-[#1e2030] border border-slate-700/50 text-slate-200 rounded-bl-sm shadow-sm' : 'bg-white border border-slate-200 text-slate-800 rounded-bl-sm shadow-sm'
                                         }`}
                                 >
@@ -196,7 +196,7 @@ const PatternChatWidget = ({ onPatternGenerated, currentPrice = 50000 }) => {
                             <div className="flex justify-start px-2">
                                 <div className="flex items-center gap-2.5">
                                     <div className="relative">
-                                        <Loader2 size={16} className="animate-spin text-purple-600 dark:text-purple-400" />
+                                        <Loader2 size={16} className="animate-spin text-violet-600 dark:text-violet-400" />
                                     </div>
                                     <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest animate-pulse">
                                         Analyzing pattern...
@@ -220,7 +220,7 @@ const PatternChatWidget = ({ onPatternGenerated, currentPrice = 50000 }) => {
                                             setInputValue(pattern);
                                             setTimeout(() => handleSendMessage(), 100);
                                         }}
-                                        className={`px-3 py-1.5 text-xs rounded-full transition-colors border ${theme === 'dark' ? 'bg-[#1e2030] border-purple-500/30 text-purple-300 hover:bg-purple-900/20' : 'bg-white border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300'}`}
+                                        className={`px-3 py-1.5 text-xs rounded-full transition-colors border ${theme === 'dark' ? 'bg-[#1e2030] border-violet-500/30 text-violet-300 hover:bg-violet-900/20' : 'bg-white border-violet-200 text-violet-700 hover:bg-violet-50 hover:border-violet-300'}`}
                                     >
                                         {pattern}
                                     </button>
@@ -240,12 +240,12 @@ const PatternChatWidget = ({ onPatternGenerated, currentPrice = 50000 }) => {
                                 onKeyPress={handleKeyPress}
                                 placeholder="Ask for a pattern..."
                                 disabled={isLoading}
-                                className={`flex-1 px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-200' : 'bg-white border-slate-300 text-slate-800'}`}
+                                className={`flex-1 px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${theme === 'dark' ? 'bg-[#16161e] border-slate-700/50 text-slate-200' : 'bg-white border-slate-300 text-slate-800'}`}
                             />
                             <button
                                 onClick={handleSendMessage}
                                 disabled={!inputValue.trim() || isLoading}
-                                className="p-2.5 bg-gradient-to-r from-purple-600 to-purple-400 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                className="p-2.5 bg-gradient-to-r from-violet-600 to-violet-400 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                             >
                                 {isLoading ? (
                                     <Loader2 size={20} className="animate-spin" />

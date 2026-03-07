@@ -80,7 +80,7 @@ const RiskCard = ({ symbol, onRemove }) => {
     if (!data) return null;
 
     const isHighRisk = data.risk_score > 60;
-    const scoreColor = data.risk_score > 70 ? 'text-rose-500' : data.risk_score > 40 ? 'text-amber-500' : 'text-emerald-500';
+    const scoreColor = data.risk_score > 70 ? 'text-rose-500' : data.risk_score > 40 ? 'text-amber-500' : 'text-purple-500';
 
     return (
         <motion.div
@@ -110,14 +110,14 @@ const RiskCard = ({ symbol, onRemove }) => {
                         </span>
                         {/* Subtle refresh indicator — only shows while background-refreshing */}
                         {loading && (
-                            <RefreshCw size={9} className="text-purple-400 animate-spin opacity-70" />
+                            <RefreshCw size={9} className="text-violet-400 animate-spin opacity-70" />
                         )}
                     </div>
                     <h3 className={cn(
                         "text-xl font-black italic uppercase tracking-tighter leading-none mb-1",
                         isHighRisk
                             ? (theme === 'dark' ? "text-white" : "text-rose-600")
-                            : "text-emerald-500"
+                            : "text-purple-500"
                     )}>
                         {isHighRisk ? "KHATRE KA SIGNAL!" : "MAUJH HI MAUJH!"}
                     </h3>
@@ -125,7 +125,7 @@ const RiskCard = ({ symbol, onRemove }) => {
                     <button
                         onClick={() => fetchRisk(true)}
                         disabled={loading}
-                        className="flex items-center gap-1 text-[8px] font-bold uppercase tracking-widest text-slate-600 hover:text-purple-400 transition-colors disabled:opacity-40"
+                        className="flex items-center gap-1 text-[8px] font-bold uppercase tracking-widest text-slate-600 hover:text-violet-400 transition-colors disabled:opacity-40"
                         title="Force refresh"
                     >
                         <RefreshCw size={8} className={loading ? 'animate-spin' : ''} />
@@ -152,7 +152,7 @@ const RiskCard = ({ symbol, onRemove }) => {
                         "h-full rounded-full transition-all duration-1000",
                         data.risk_score > 70 ? "bg-gradient-to-r from-orange-500 to-rose-600" :
                             data.risk_score > 40 ? "bg-gradient-to-r from-yellow-400 to-orange-500" :
-                                "bg-gradient-to-r from-emerald-400 to-teal-500"
+                                "bg-gradient-to-r from-purple-400 to-violet-500"
                     )}
                 />
             </div>
@@ -175,9 +175,9 @@ const RiskCard = ({ symbol, onRemove }) => {
             {data.advice && (
                 <div className={cn(
                     "p-4 rounded-2xl",
-                    theme === 'dark' ? "bg-purple-500/5" : "bg-purple-50/50"
+                    theme === 'dark' ? "bg-violet-500/5" : "bg-violet-50/50"
                 )}>
-                    <span className="text-[8px] font-black uppercase tracking-widest text-purple-500 block mb-1">SAFE STRATEGY:</span>
+                    <span className="text-[8px] font-black uppercase tracking-widest text-violet-500 block mb-1">SAFE STRATEGY:</span>
                     <p className={cn(
                         "text-[10px] font-bold",
                         theme === 'dark' ? "text-slate-400" : "text-slate-500"
@@ -229,7 +229,7 @@ const RiskWatchlistSidebar = () => {
             <header className="flex items-center justify-between">
                 <div>
                     <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Risk Monitor</h4>
-                    <div className="flex items-center gap-1.5 mt-1 text-emerald-500">
+                    <div className="flex items-center gap-1.5 mt-1 text-purple-500">
                         <ShieldCheck size={10} className="animate-pulse" />
                         <span className="text-[9px] font-bold uppercase tracking-widest">Neural Safety Guard</span>
                     </div>
@@ -302,15 +302,15 @@ const RiskWatchlistSidebar = () => {
                                                 disabled={watchlist.includes(token)}
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <div className="size-6 rounded-full bg-purple-500/20 flex items-center justify-center">
-                                                        <Zap size={12} className="text-purple-500" />
+                                                    <div className="size-6 rounded-full bg-violet-500/20 flex items-center justify-center">
+                                                        <Zap size={12} className="text-violet-500" />
                                                     </div>
                                                     <span className="text-sm font-black italic uppercase tracking-tighter text-slate-200">{token}</span>
                                                 </div>
                                                 {watchlist.includes(token) ? (
                                                     <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Monitored</span>
                                                 ) : (
-                                                    <TrendingUp size={12} className="text-emerald-500" />
+                                                    <TrendingUp size={12} className="text-purple-500" />
                                                 )}
                                             </button>
                                         ))}

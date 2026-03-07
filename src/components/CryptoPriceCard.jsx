@@ -57,8 +57,8 @@ export default function CryptoPriceCard({ ticker, name, onClick, variant = 'defa
             <div
                 onClick={onClick}
                 className={`flex flex-col p-3 rounded-2xl border transition-all cursor-pointer group ${theme === 'dark'
-                    ? 'bg-[#16161e] border-slate-800/50 hover:border-purple-500/50 hover:bg-purple-500/5'
-                    : 'bg-white border-gray-100 hover:border-purple-200 hover:bg-purple-50/30 shadow-sm hover:shadow-md'
+                    ? 'bg-[#16161e] border-slate-800/50 hover:border-violet-500/50 hover:bg-violet-500/5'
+                    : 'bg-white border-gray-100 hover:border-violet-200 hover:bg-violet-50/30 shadow-sm hover:shadow-md'
                     }`}
             >
                 <div className="flex justify-between items-center mb-1">
@@ -68,7 +68,7 @@ export default function CryptoPriceCard({ ticker, name, onClick, variant = 'defa
                     )}>
                         {name === 'Bitcoin' ? 'BTC' : 'ETH'}
                     </span>
-                    <span className={`text-[10px] font-bold ${isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    <span className={`text-[10px] font-bold ${isPositive ? 'text-purple-500' : 'text-rose-500'}`}>
                         {isPositive ? '+' : ''}{priceData.percent_change.toFixed(1)}%
                     </span>
                 </div>
@@ -111,7 +111,7 @@ export default function CryptoPriceCard({ ticker, name, onClick, variant = 'defa
             role="button"
             tabIndex={0}
             className={`crypto-price-card group hover:shadow-xl transition-all hover:-translate-y-1 duration-300 rounded-xl border p-4 cursor-pointer ${theme === 'dark'
-                ? 'bg-[#1e2030] border-slate-700/50 hover:border-purple-500 shadow-purple-500/5'
+                ? 'bg-[#1e2030] border-slate-700/50 hover:border-violet-500 shadow-violet-500/5'
                 : 'bg-white border-gray-100 shadow-sm'
                 }`}
         >
@@ -123,12 +123,12 @@ export default function CryptoPriceCard({ ticker, name, onClick, variant = 'defa
                             {formatPrice(priceData.current_price)}
                         </span>
                     </div>
-                    <div className={`flex items-center gap-1 text-xs font-semibold mt-1 ${isPositive ? (theme === 'dark' ? 'text-emerald-400' : 'text-green-500') : (theme === 'dark' ? 'text-rose-400' : 'text-red-500')}`}>
+                    <div className={`flex items-center gap-1 text-xs font-semibold mt-1 ${isPositive ? (theme === 'dark' ? 'text-purple-400' : 'text-green-500') : (theme === 'dark' ? 'text-rose-400' : 'text-red-500')}`}>
                         {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                         {Math.abs(priceData.percent_change).toFixed(2)}%
                     </div>
                 </div>
-                <div className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'bg-[#16161e] group-hover:bg-purple-500/10' : 'bg-gray-50 group-hover:bg-purple-50'}`}>
+                <div className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'bg-[#16161e] group-hover:bg-violet-500/10' : 'bg-gray-50 group-hover:bg-violet-50'}`}>
                     <img
                         src={`https://cryptologos.cc/logos/${name.toLowerCase()}-${ticker === 'BTCUSDT' ? 'btc' : 'eth'}-logo.png?v=026`}
                         alt={name}

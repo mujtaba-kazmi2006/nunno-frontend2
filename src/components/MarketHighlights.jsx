@@ -60,12 +60,12 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
             {/* Header / Tabs */}
             <div className={`flex flex-col p-5 gap-4 border-b ${theme === 'dark' ? 'border-white/5' : 'border-slate-100'}`}>
                 <div className="flex items-center justify-between">
-                    <h3 className={`text-[10px] font-black uppercase tracking-[0.3em] italic ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`}>
+                    <h3 className={`text-[10px] font-black uppercase tracking-[0.3em] italic ${theme === 'dark' ? 'text-violet-400' : 'text-violet-600'}`}>
                         Market Feed
                     </h3>
                     <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                        <span className="text-[10px] font-black uppercase tracking-tighter dark:text-emerald-400">Live</span>
+                        <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                        <span className="text-[10px] font-black uppercase tracking-tighter dark:text-purple-400">Live</span>
                     </div>
                 </div>
 
@@ -75,8 +75,8 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tight transition-all whitespace-nowrap ${activeTab === tab.id
-                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30'
-                                : theme === 'dark' ? 'text-slate-500 hover:text-white hover:bg-white/5' : 'text-slate-500 bg-slate-100 hover:text-purple-600 hover:bg-purple-50'
+                                ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30'
+                                : theme === 'dark' ? 'text-slate-500 hover:text-white hover:bg-white/5' : 'text-slate-500 bg-slate-100 hover:text-violet-600 hover:bg-violet-50'
                                 }`}
                         >
                             {tab.icon}
@@ -103,7 +103,7 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
                             >
                                 <div className="flex items-center justify-between w-full min-w-0">
                                     <div className="flex items-center gap-4 min-w-0">
-                                        <div className={`w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center font-black text-xs shadow-sm ${theme === 'dark' ? 'bg-black/40 text-purple-400' : 'bg-white text-purple-600'
+                                        <div className={`w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center font-black text-xs shadow-sm ${theme === 'dark' ? 'bg-black/40 text-violet-400' : 'bg-white text-violet-600'
                                             }`}>
                                             {item.symbol.substring(0, 3)}
                                         </div>
@@ -122,7 +122,7 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
                                             {formatPrice(item.price)}
                                         </span>
                                         <div className={`flex items-center gap-0.5 text-[10px] font-black px-2 py-0.5 rounded-full ${item.change >= 0
-                                            ? 'text-emerald-400 bg-emerald-500/10'
+                                            ? 'text-purple-400 bg-purple-500/10'
                                             : 'text-rose-400 bg-rose-500/10'
                                             }`}>
                                             {item.change >= 0 ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
@@ -141,7 +141,7 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
                                             e.stopPropagation();
                                             onAnalyzeChart?.(item.symbol);
                                         }}
-                                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white text-black text-[10px] font-black uppercase tracking-widest hover:bg-purple-600 hover:text-white transition-all shadow-xl shadow-black/10"
+                                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white text-black text-[10px] font-black uppercase tracking-widest hover:bg-violet-600 hover:text-white transition-all shadow-xl shadow-black/10"
                                     >
                                         <Activity size={12} />
                                         Launch Chart
@@ -165,7 +165,7 @@ const MarketHighlights = ({ onAnalyzeChart, onAnalyzeTokenomics }) => {
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center py-20 text-slate-500 opacity-50">
-                        <Activity size={40} className="mb-4 animate-pulse text-purple-500" />
+                        <Activity size={40} className="mb-4 animate-pulse text-violet-500" />
                         <span className="text-[10px] font-black uppercase tracking-[0.2em]">Aggregating Data...</span>
                     </div>
                 )}

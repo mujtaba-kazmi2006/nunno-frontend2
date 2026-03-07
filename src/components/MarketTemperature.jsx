@@ -81,7 +81,7 @@ export default function MarketTemperature({ variant = 'default' }) {
                 <div className="flex items-center gap-3">
                     <div className={cn(
                         "p-2 rounded-xl transition-colors",
-                        theme === 'dark' ? "bg-purple-500/10 text-purple-400" : "bg-purple-50 text-purple-600"
+                        theme === 'dark' ? "bg-violet-500/10 text-violet-400" : "bg-violet-50 text-violet-600"
                     )}>
                         <Thermometer size={18} />
                     </div>
@@ -94,10 +94,10 @@ export default function MarketTemperature({ variant = 'default' }) {
                     <span className={cn(
                         "text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 px-3 py-1 rounded-full transition-all",
                         theme === 'dark'
-                            ? "text-purple-400 bg-purple-500/10"
-                            : "text-purple-600 bg-purple-50 shadow-sm"
+                            ? "text-violet-400 bg-violet-500/10"
+                            : "text-violet-600 bg-violet-50 shadow-sm"
                     )}>
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
                         Live
                     </span>
                 )}

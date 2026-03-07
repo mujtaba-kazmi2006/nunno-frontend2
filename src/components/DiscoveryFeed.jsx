@@ -67,8 +67,8 @@ export default function DiscoveryFeed() {
 
     const getIcon = (type) => {
         switch (type) {
-            case 'ai_sentiment': return <Zap className="text-purple-400" size={20} />;
-            case 'trade_idea': return <TrendingUp className="text-emerald-400" size={20} />;
+            case 'ai_sentiment': return <Zap className="text-violet-400" size={20} />;
+            case 'trade_idea': return <TrendingUp className="text-purple-400" size={20} />;
             case 'news_flash': return <Newspaper className="text-blue-400" size={20} />;
             case 'analysis': return <LayoutGrid className="text-amber-400" size={20} />;
             default: return <MessageSquare className="text-slate-400" size={20} />;
@@ -101,7 +101,7 @@ export default function DiscoveryFeed() {
                             "text-5xl font-black italic tracking-tighter uppercase",
                             theme === 'dark' ? "text-white" : "text-slate-900"
                         )}>
-                            DISCOVERY <span className="text-purple-500">FEED</span>
+                            DISCOVERY <span className="text-violet-500">FEED</span>
                         </h1>
                         <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-[10px] mt-2 italic">
                             Infinite Market Intelligence Layer
@@ -120,7 +120,7 @@ export default function DiscoveryFeed() {
                                 className={cn(
                                     "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all italic",
                                     activeTab === tab
-                                        ? "bg-purple-600 text-white shadow-xl shadow-purple-500/20"
+                                        ? "bg-violet-600 text-white shadow-xl shadow-violet-500/20"
                                         : "text-slate-500 hover:text-slate-700 dark:hover:text-white"
                                 )}
                             >
@@ -150,8 +150,8 @@ export default function DiscoveryFeed() {
                                     className={cn(
                                         "group relative p-8 rounded-[2.5rem] border transition-all duration-500",
                                         theme === 'dark'
-                                            ? "bg-[#0c0c14] border-white/5 hover:border-purple-500/30"
-                                            : "bg-white border-slate-200 hover:border-purple-300 shadow-xl shadow-slate-200/50"
+                                            ? "bg-[#0c0c14] border-white/5 hover:border-violet-500/30"
+                                            : "bg-white border-slate-200 hover:border-violet-300 shadow-xl shadow-slate-200/50"
                                     )}
                                 >
                                     {/* Glass Morph Decoration */}
@@ -161,7 +161,7 @@ export default function DiscoveryFeed() {
 
                                     {/* Author & Header */}
                                     <div className="flex items-center gap-4 mb-6">
-                                        <div className="size-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-lg font-black italic shadow-lg">
+                                        <div className="size-12 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white text-lg font-black italic shadow-lg">
                                             {item.author.charAt(0)}
                                         </div>
                                         <div>
@@ -170,7 +170,7 @@ export default function DiscoveryFeed() {
                                                     "text-sm font-black uppercase tracking-tight",
                                                     theme === 'dark' ? "text-white" : "text-slate-900"
                                                 )}>{item.author}</h4>
-                                                <CheckCircle size={14} className="text-purple-500 fill-purple-500/10" />
+                                                <CheckCircle size={14} className="text-violet-500 fill-violet-500/10" />
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">
@@ -187,9 +187,9 @@ export default function DiscoveryFeed() {
                                     {/* Content */}
                                     <div className="space-y-4">
                                         {item.ticker && (
-                                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20">
-                                                <span className="size-1.5 rounded-full bg-purple-500 animate-pulse" />
-                                                <span className="text-[10px] font-black italic text-purple-500 uppercase tracking-widest">{item.ticker}</span>
+                                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20">
+                                                <span className="size-1.5 rounded-full bg-violet-500 animate-pulse" />
+                                                <span className="text-[10px] font-black italic text-violet-500 uppercase tracking-widest">{item.ticker}</span>
                                             </div>
                                         )}
 
@@ -245,8 +245,8 @@ export default function DiscoveryFeed() {
                                                 <span className="text-xs font-black italic">{item.likes}</span>
                                             </button>
 
-                                            <button className="flex items-center gap-2 text-slate-500 hover:text-purple-500 transition-all group/btn">
-                                                <div className="p-2 rounded-xl bg-white/5 group-hover/btn:bg-purple-500/10">
+                                            <button className="flex items-center gap-2 text-slate-500 hover:text-violet-500 transition-all group/btn">
+                                                <div className="p-2 rounded-xl bg-white/5 group-hover/btn:bg-violet-500/10">
                                                     <MessageSquare size={18} />
                                                 </div>
                                                 <span className="text-xs font-black italic">Reply</span>
@@ -268,7 +268,7 @@ export default function DiscoveryFeed() {
             <motion.button
                 whileHover={{ scale: 1.05, rotate: 2 }}
                 whileTap={{ scale: 0.95 }}
-                className="fixed bottom-8 right-8 z-50 size-16 rounded-[2rem] bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-2xl flex items-center justify-center hover:shadow-purple-500/40 transition-shadow overflow-hidden group"
+                className="fixed bottom-8 right-8 z-50 size-16 rounded-[2rem] bg-gradient-to-br from-violet-500 to-violet-600 text-white shadow-2xl flex items-center justify-center hover:shadow-violet-500/40 transition-shadow overflow-hidden group"
             >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                 <LayoutGrid size={24} className="relative z-10" />

@@ -33,7 +33,7 @@ function timeAgo(dateStr) {
 // ═══════════════════════════════════════════════════════════════
 function sentimentColor(sentiment) {
     switch (sentiment) {
-        case 'positive': return 'text-emerald-400';
+        case 'positive': return 'text-purple-400';
         case 'negative': return 'text-rose-400';
         default: return 'text-slate-400';
     }
@@ -41,7 +41,7 @@ function sentimentColor(sentiment) {
 
 function sentimentBg(sentiment) {
     switch (sentiment) {
-        case 'positive': return 'bg-emerald-500/10 border-emerald-500/20';
+        case 'positive': return 'bg-purple-500/10 border-purple-500/20';
         case 'negative': return 'bg-rose-500/10 border-rose-500/20';
         default: return 'bg-white/5 border-white/10';
     }
@@ -151,7 +151,7 @@ const NewsIntelligence = () => {
     if (loading && newsFeed.length === 0) {
         return (
             <div className="space-y-4">
-                <div className="h-20 rounded-[2rem] bg-purple-500/5 animate-pulse" />
+                <div className="h-20 rounded-[2rem] bg-violet-500/5 animate-pulse" />
                 <div className="flex gap-1 p-1 rounded-2xl bg-white/5">
                     {[1, 2, 3].map(i => <div key={i} className="flex-1 h-9 rounded-xl bg-white/5 animate-pulse" />)}
                 </div>
@@ -169,7 +169,7 @@ const NewsIntelligence = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleGenerateBriefing}
-                className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/20 flex items-center justify-between group overflow-hidden relative"
+                className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-violet-600 text-white shadow-lg shadow-violet-500/20 flex items-center justify-between group overflow-hidden relative"
             >
                 <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                 <div className="relative z-10 flex flex-col items-start">
@@ -187,13 +187,13 @@ const NewsIntelligence = () => {
                     className={cn(
                         "p-4 rounded-2xl relative overflow-hidden",
                         theme === 'dark'
-                            ? "bg-purple-500/10"
-                            : "bg-purple-50"
+                            ? "bg-violet-500/10"
+                            : "bg-violet-50"
                     )}
                 >
                     <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="w-3 h-3 text-purple-500" />
-                        <span className="text-[8px] font-black uppercase tracking-widest text-purple-600 italic">Neural Macro Brief</span>
+                        <Sparkles className="w-3 h-3 text-violet-500" />
+                        <span className="text-[8px] font-black uppercase tracking-widest text-violet-600 italic">Neural Macro Brief</span>
                     </div>
                     <p className="text-[10px] leading-relaxed text-slate-500 dark:text-slate-400 font-bold italic">
                         {macroSummary.substring(0, 200)}{macroSummary.length > 200 ? '...' : ''}
@@ -215,7 +215,7 @@ const NewsIntelligence = () => {
                             className={cn(
                                 "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all italic",
                                 activeTab === tab.id
-                                    ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20"
+                                    ? "bg-violet-600 text-white shadow-lg shadow-violet-500/20"
                                     : theme === 'dark' ? "text-slate-500 hover:text-white" : "text-slate-500 hover:text-slate-900"
                             )}
                         >
@@ -316,7 +316,7 @@ function BreakingFeedTab({ articles, theme, onAskNunno }) {
                         {/* Source + Time + Sentiment */}
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <span className="text-[8px] font-black uppercase tracking-widest text-purple-500 italic">
+                                <span className="text-[8px] font-black uppercase tracking-widest text-violet-500 italic">
                                     {item.source || 'INTEL'}
                                 </span>
                                 {item.sentiment && (
@@ -339,7 +339,7 @@ function BreakingFeedTab({ articles, theme, onAskNunno }) {
                         {item.coin_tags && item.coin_tags.length > 0 && (
                             <div className="flex items-center gap-1 flex-wrap">
                                 {item.coin_tags.map(tag => (
-                                    <span key={tag} className="text-[7px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                                    <span key={tag} className="text-[7px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">
                                         {tag}
                                     </span>
                                 ))}
@@ -361,7 +361,7 @@ function BreakingFeedTab({ articles, theme, onAskNunno }) {
                         <div className="flex items-center justify-between mt-1">
                             <button
                                 onClick={() => onAskNunno(item.title)}
-                                className="flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-purple-500 hover:text-purple-400 transition-all opacity-0 group-hover:opacity-100"
+                                className="flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-violet-500 hover:text-violet-400 transition-all opacity-0 group-hover:opacity-100"
                             >
                                 <Zap size={9} /> Ask Nunno
                             </button>
@@ -424,8 +424,8 @@ function SocialPulseTab({ data, theme }) {
                 theme === 'dark' ? "bg-white/[0.02]" : "bg-slate-50"
             )}>
                 <div className="flex items-center gap-2 mb-3">
-                    <Globe size={12} className="text-purple-500" />
-                    <span className="text-[9px] font-black uppercase tracking-widest text-purple-500 italic">24h Dashboard</span>
+                    <Globe size={12} className="text-violet-500" />
+                    <span className="text-[9px] font-black uppercase tracking-widest text-violet-500 italic">24h Dashboard</span>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                     <div className="text-center">
@@ -456,8 +456,8 @@ function SocialPulseTab({ data, theme }) {
                     theme === 'dark' ? "bg-white/[0.02]" : "bg-slate-50"
                 )}>
                     <div className="flex items-center gap-2 mb-3">
-                        <BarChart3 size={12} className="text-purple-500" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-purple-500 italic">Sentiment</span>
+                        <BarChart3 size={12} className="text-violet-500" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-violet-500 italic">Sentiment</span>
                     </div>
                     <div className="space-y-2">
                         {Object.entries(sentiment).map(([key, count]) => {
@@ -478,7 +478,7 @@ function SocialPulseTab({ data, theme }) {
                                             transition={{ duration: 0.8, ease: 'easeOut' }}
                                             className={cn(
                                                 "h-full rounded-full",
-                                                key === 'positive' ? "bg-emerald-500" :
+                                                key === 'positive' ? "bg-purple-500" :
                                                     key === 'negative' ? "bg-rose-500" : "bg-slate-400"
                                             )}
                                         />
@@ -619,7 +619,7 @@ function EventsTab({ events, theme }) {
                                 {/* Event coin + impact */}
                                 <div className="flex items-center gap-2 mb-1.5">
                                     {event.coin && (
-                                        <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                                        <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">
                                             {event.coin}
                                         </span>
                                     )}
@@ -682,7 +682,7 @@ function EventsTab({ events, theme }) {
                                 href={event.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-1 mt-2 text-[8px] font-black uppercase tracking-widest text-purple-500 hover:text-purple-400 opacity-0 group-hover:opacity-100 transition-all"
+                                className="flex items-center gap-1 mt-2 text-[8px] font-black uppercase tracking-widest text-violet-500 hover:text-violet-400 opacity-0 group-hover:opacity-100 transition-all"
                             >
                                 <ExternalLink size={9} /> View Details
                             </a>

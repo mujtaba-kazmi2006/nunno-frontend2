@@ -96,7 +96,7 @@ export default function CollapsibleSidebar({ isCollapsed: isMobileCollapsed, set
                             className="w-[40px] h-[40px] object-contain brightness-[1.1] drop-shadow-2xl"
                         />
                         {/* Status pin integrated with logo for high-tech look */}
-                        <div className="absolute bottom-0 right-0 size-2.5 bg-emerald-500 rounded-full border-2 border-[#08080c] shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse" />
+                        <div className="absolute bottom-0 right-0 size-2.5 bg-purple-500 rounded-full border-2 border-[#08080c] shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse" />
                     </div>
 
                     <div className={cn(
@@ -108,7 +108,7 @@ export default function CollapsibleSidebar({ isCollapsed: isMobileCollapsed, set
                             "text-[17.5px] font-black italic uppercase tracking-tighter leading-none font-heading transition-colors",
                             theme === 'dark' ? "text-white" : "text-slate-900"
                         )}>
-                            Nunno<span className="text-purple-500">Labs</span>
+                            Nunno<span className="text-violet-500">Labs</span>
                         </h1>
                         <div className="flex items-center gap-1.5 mt-1.5">
                             <span className="text-[8.5px] font-black uppercase tracking-[0.18em] text-slate-500 font-mono opacity-80">
@@ -136,20 +136,20 @@ export default function CollapsibleSidebar({ isCollapsed: isMobileCollapsed, set
                                 className={cn(
                                     "flex items-center h-[50px] px-[8px] gap-[12px] rounded-xl relative group/item transition-all duration-200",
                                     active
-                                        ? (theme === 'dark' ? "bg-white/5 text-white shadow-[inset_0_0_20px_rgba(139,92,246,0.1)]" : "bg-purple-100 text-purple-600")
-                                        : (theme === 'dark' ? "text-slate-500 hover:text-white hover:bg-white/5" : "text-slate-500 hover:text-purple-700 hover:bg-purple-50/50")
+                                        ? (theme === 'dark' ? "bg-white/5 text-white shadow-[inset_0_0_20px_rgba(139,92,246,0.1)]" : "bg-violet-100 text-violet-600")
+                                        : (theme === 'dark' ? "text-slate-500 hover:text-white hover:bg-white/5" : "text-slate-500 hover:text-violet-700 hover:bg-violet-50/50")
                                 )}
                             >
                                 <div className={cn(
                                     "w-[34px] h-[34px] rounded-lg flex items-center justify-center shrink-0 transition-all duration-200",
-                                    active ? "text-purple-400" : "group-hover/item:text-purple-400"
+                                    active ? "text-violet-400" : "group-hover/item:text-violet-400"
                                 )}>
                                     <item.icon
                                         size={20}
                                         strokeWidth={active ? 2.5 : 2}
                                     />
                                     {item.badge && !active && (
-                                        <div className="absolute top-[12px] left-[32px] w-2 h-2 bg-purple-500 rounded-full border-2 border-[#08080c] group-hover/sidebar:opacity-0 transition-opacity" />
+                                        <div className="absolute top-[12px] left-[32px] w-2 h-2 bg-violet-500 rounded-full border-2 border-[#08080c] group-hover/sidebar:opacity-0 transition-opacity" />
                                     )}
                                 </div>
                                 <span className={cn(
@@ -157,8 +157,8 @@ export default function CollapsibleSidebar({ isCollapsed: isMobileCollapsed, set
                                     "opacity-0 -translate-x-4 group-hover/sidebar:opacity-100 group-hover/sidebar:translate-x-0",
                                     isMobile && "opacity-100 translate-x-0",
                                     active
-                                        ? (theme === 'dark' ? "text-white" : "text-purple-600")
-                                        : (theme === 'dark' ? "text-slate-500 group-hover/item:text-white" : "text-slate-500 group-hover/item:text-purple-700")
+                                        ? (theme === 'dark' ? "text-white" : "text-violet-600")
+                                        : (theme === 'dark' ? "text-slate-500 group-hover/item:text-white" : "text-slate-500 group-hover/item:text-violet-700")
                                 )}>
                                     {item.label}
                                 </span>
@@ -174,7 +174,7 @@ export default function CollapsibleSidebar({ isCollapsed: isMobileCollapsed, set
                                 )}
 
                                 {active && (
-                                    <div className="absolute left-[-12px] top-1/2 -translate-y-1/2 w-[4px] h-6 bg-purple-500 rounded-full shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
+                                    <div className="absolute left-[-12px] top-1/2 -translate-y-1/2 w-[4px] h-6 bg-violet-500 rounded-full shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
                                 )}
                             </Link>
                         );
@@ -207,11 +207,11 @@ export default function CollapsibleSidebar({ isCollapsed: isMobileCollapsed, set
                             </span>
                             <div className={cn(
                                 "w-[30px] h-[16px] rounded-full relative transition-all duration-300 border",
-                                theme === 'dark' || isMobile ? "bg-purple-900/40 border-white/10" : "bg-slate-200 border-slate-300"
+                                theme === 'dark' || isMobile ? "bg-violet-900/40 border-white/10" : "bg-slate-200 border-slate-300"
                             )}>
                                 <div className={cn(
                                     "absolute top-1/2 -translate-y-1/2 size-[10px] rounded-full transition-all duration-300 shadow-sm",
-                                    theme === 'dark' ? "left-[3px] bg-purple-400" : "left-[15px] bg-white"
+                                    theme === 'dark' ? "left-[3px] bg-violet-400" : "left-[15px] bg-white"
                                 )} />
                             </div>
                         </div>
@@ -245,7 +245,7 @@ export default function CollapsibleSidebar({ isCollapsed: isMobileCollapsed, set
                             "flex items-center h-[56px] px-[8px] gap-[12px] rounded-xl transition-all duration-200 group/profile mt-2 cursor-pointer",
                             theme === 'dark' || isMobile ? "hover:bg-white/5" : "hover:bg-slate-100"
                         )}>
-                            <Link to="/settings" className="size-[34px] rounded-lg bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center shrink-0 text-white font-black italic text-[12px] shadow-lg group-hover/profile:scale-110 transition-all">
+                            <Link to="/settings" className="size-[34px] rounded-lg bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center shrink-0 text-white font-black italic text-[12px] shadow-lg group-hover/profile:scale-110 transition-all">
                                 {user?.name?.charAt(0) || 'U'}
                             </Link>
                             <div className={cn(
@@ -277,7 +277,7 @@ export default function CollapsibleSidebar({ isCollapsed: isMobileCollapsed, set
                                 theme === 'dark' || isMobile ? "hover:bg-white/5" : "hover:bg-slate-100"
                             )}
                         >
-                            <div className="w-[34px] h-[34px] rounded-lg bg-white/5 flex items-center justify-center shrink-0 text-slate-500 group-hover/login:text-purple-500">
+                            <div className="w-[34px] h-[34px] rounded-lg bg-white/5 flex items-center justify-center shrink-0 text-slate-500 group-hover/login:text-violet-500">
                                 <User size={18} />
                             </div>
                             <span className={cn(

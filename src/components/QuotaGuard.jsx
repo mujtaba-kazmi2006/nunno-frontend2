@@ -119,7 +119,7 @@ const QuotaGuard = () => {
                         >
                             <div className="flex justify-between items-center mb-6 px-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="size-10 bg-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-purple-600/20">
+                                    <div className="size-10 bg-violet-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-violet-600/20">
                                         <Zap size={20} fill="currentColor" />
                                     </div>
                                     <div>
@@ -138,7 +138,7 @@ const QuotaGuard = () => {
                             <div className="rounded-[3.5rem] overflow-hidden border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.8)]">
                                 <Suspense fallback={
                                     <div className="h-[600px] flex items-center justify-center bg-[#0c0c14]">
-                                        <div className="animate-spin size-12 border-4 border-purple-500 border-t-transparent rounded-full" />
+                                        <div className="animate-spin size-12 border-4 border-violet-500 border-t-transparent rounded-full" />
                                     </div>
                                 }>
                                     <NunnoPricing onClose={() => setShowPricingModal(false)} />

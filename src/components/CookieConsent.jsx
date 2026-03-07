@@ -47,19 +47,19 @@ export default function CookieConsent() {
                 >
                     <div className="bg-[#0c0c14] border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl shadow-black/40 backdrop-blur-xl">
                         <div className="flex items-start gap-4">
-                            <div className="size-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shrink-0">
+                            <div className="size-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 shrink-0">
                                 <Cookie size={20} />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <h4 className="text-white font-black italic uppercase tracking-tight text-sm mb-2">Cookie Notice</h4>
                                 <p className="text-slate-500 text-xs leading-relaxed font-medium mb-4">
                                     Nunno uses cookies and Google Analytics to improve your educational experience. No personal data is sold.
-                                    <a href="/privacy" className="text-purple-400 hover:text-white transition-colors ml-1">Learn more</a>
+                                    <a href="/privacy" className="text-violet-400 hover:text-white transition-colors ml-1">Learn more</a>
                                 </p>
                                 <div className="flex gap-3">
                                     <button
                                         onClick={handleAccept}
-                                        className="flex-1 py-2.5 px-4 bg-white text-black rounded-xl font-black uppercase tracking-widest text-[9px] hover:bg-purple-500 hover:text-white transition-all active:scale-95"
+                                        className="flex-1 py-2.5 px-4 bg-white text-black rounded-xl font-black uppercase tracking-widest text-[9px] hover:bg-violet-500 hover:text-white transition-all active:scale-95"
                                     >
                                         Accept
                                     </button>

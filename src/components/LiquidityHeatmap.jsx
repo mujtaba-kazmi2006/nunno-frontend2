@@ -22,7 +22,7 @@ const REFRESH_INTERVAL_MS = 30_000; // refresh every 30s (order books change fas
 function intensityToRGBA(intensity, type, alpha = 0.85) {
     // Separate colour channels for bid walls vs ask walls vs OI
     if (type === 'bid_wall' || type === 'mixed') {
-        // Bids: teal → green → yellow
+        // Bids: violet → green → yellow
         const r = Math.round(intensity * 220);
         const g = Math.round(80 + intensity * 175);
         const b = Math.round(120 - intensity * 100);

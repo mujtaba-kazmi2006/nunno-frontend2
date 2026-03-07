@@ -16,7 +16,7 @@ const PatternInfoCard = ({ pattern, onClose }) => {
                             ? 'bg-green-50 text-green-600'
                             : pattern.direction === 'bearish'
                                 ? 'bg-red-50 text-red-600'
-                                : 'bg-purple-50 text-purple-600'
+                                : 'bg-violet-50 text-violet-600'
                             }`}>
                             <TrendingUp size={22} strokeWidth={2.5} />
                         </div>
@@ -68,12 +68,12 @@ const PatternInfoCard = ({ pattern, onClose }) => {
                             </div>
                         </div>
                     </div>
-                    <div className={`p-3 rounded-2xl border ${theme === 'dark' ? 'bg-purple-500/10 border-purple-500/20' : 'bg-purple-50/50 border-purple-100/50'}`}>
-                        <div className={`text-[10px] uppercase font-black mb-1.5 tracking-widest flex items-center gap-1.5 ${theme === 'dark' ? 'text-purple-400' : 'text-purple-400'}`}>
+                    <div className={`p-3 rounded-2xl border ${theme === 'dark' ? 'bg-violet-500/10 border-violet-500/20' : 'bg-violet-50/50 border-violet-100/50'}`}>
+                        <div className={`text-[10px] uppercase font-black mb-1.5 tracking-widest flex items-center gap-1.5 ${theme === 'dark' ? 'text-violet-400' : 'text-violet-400'}`}>
                             <AlertCircle size={12} strokeWidth={3} />
                             Status
                         </div>
-                        <div className={`text-sm font-black ${theme === 'dark' ? 'text-purple-300' : 'text-purple-600'}`}>
+                        <div className={`text-sm font-black ${theme === 'dark' ? 'text-violet-300' : 'text-violet-600'}`}>
                             Simulated ⚡
                         </div>
                     </div>
@@ -98,7 +98,7 @@ const PatternInfoCard = ({ pattern, onClose }) => {
 
                 {/* Action CTA */}
                 <button className={`w-full py-3.5 rounded-2xl text-white text-xs font-black shadow-lg transition-all active:scale-[0.98] ${pattern.direction === 'bullish'
-                    ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-green-100'
+                    ? 'bg-gradient-to-br from-green-500 to-purple-600 shadow-green-100'
                     : 'bg-gradient-to-br from-red-500 to-rose-600 shadow-red-100'
                     }`}>
                     GENERATE TRADING SIGNAL

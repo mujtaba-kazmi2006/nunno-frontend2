@@ -22,8 +22,12 @@ export default function LoginSignup({ onClose }) {
     const [showTerms, setShowTerms] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [verificationCode, setVerificationCode] = useState('');
+    const [verifyingEmail, setVerifyingEmail] = useState('');
+    const [resendCooldown, setResendCooldown] = useState(0);
 
-    const { login, signup, googleLogin } = useAuth();
+    const { login, signup, googleLogin, verifyEmail, resendVerification } = useAuth();
     const navigate = useNavigate();
 
     const handleGoogleLogin = useGoogleLogin({
@@ -63,7 +67,10 @@ export default function LoginSignup({ onClose }) {
         setLoading(false);
 
         if (result.success) {
-            if (isLogin) {
+            if (result.requiresVerification) {
+                setIsVerifying(true);
+                setVerifyingEmail(formData.email);
+            } else if (isLogin) {
                 analytics.trackLogin('email');
                 onClose();
                 navigate('/dashboard');
@@ -71,6 +78,49 @@ export default function LoginSignup({ onClose }) {
                 analytics.trackSignup('email');
                 setShowOnboarding(true);
             }
+        } else {
+            if (result.requiresVerification) {
+                setIsVerifying(true);
+                setVerifyingEmail(formData.email);
+                setError('PLEASE VERIFY YOUR ACCOUNT FIRST');
+            } else {
+                setError(result.error);
+            }
+        }
+    };
+
+    const handleVerify = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        const result = await verifyEmail(verifyingEmail, verificationCode);
+        setLoading(false);
+
+        if (result.success) {
+            analytics.trackSignup('verified');
+            onClose();
+            navigate('/dashboard');
+        } else {
+            setError(result.error);
+        }
+    };
+
+    const handleResend = async () => {
+        if (resendCooldown > 0) return;
+
+        const result = await resendVerification(verifyingEmail);
+        if (result.success) {
+            setResendCooldown(60);
+            const interval = setInterval(() => {
+                setResendCooldown(prev => {
+                    if (prev <= 1) {
+                        clearInterval(interval);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
         } else {
             setError(result.error);
         }
@@ -106,8 +156,8 @@ export default function LoginSignup({ onClose }) {
                 >
                     {/* Interior Effects */}
                     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.1] pointer-events-none" />
-                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-purple-600/10 blur-[100px] rounded-full pointer-events-none" />
-                    <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-600/10 blur-[100px] rounded-full pointer-events-none" />
+                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-violet-600/10 blur-[100px] rounded-full pointer-events-none" />
+                    <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-violet-600/10 blur-[100px] rounded-full pointer-events-none" />
 
                     {/* Close Button */}
                     <button
@@ -137,7 +187,7 @@ export default function LoginSignup({ onClose }) {
                                 className="text-2xl sm:text-3xl font-black text-white italic uppercase tracking-tighter leading-none mb-1.5"
                             >
                                 {isLogin ? 'Welcome' : 'Join'}<br />
-                                <span className="text-purple-500 underline decoration-purple-500/30 underline-offset-4">
+                                <span className="text-violet-500 underline decoration-violet-500/30 underline-offset-4">
                                     {isLogin ? 'Back' : 'Nunno'}
                                 </span>
                             </motion.h2>
@@ -180,170 +230,226 @@ export default function LoginSignup({ onClose }) {
                             </div>
                         </div>
 
-                        {/* Form */}
-                        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-                            <AnimatePresence mode="popLayout">
-                                {!isLogin && (
-                                    <motion.div
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: 20 }}
-                                        className="space-y-1.5 sm:space-y-2"
+                        {/* Conditional Rendering for Verification */}
+                        {isVerifying ? (
+                            <div className="space-y-6">
+                                <div className="text-center space-y-2">
+                                    <h3 className="text-xl font-black text-violet-400 uppercase tracking-widest italic">Verify Email</h3>
+                                    <p className="text-[10px] text-slate-500 font-medium italic">Sent to {verifyingEmail}</p>
+                                </div>
+
+                                <form onSubmit={handleVerify} className="space-y-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-4 italic">6-Digit Code</label>
+                                        <input
+                                            type="text"
+                                            maxLength={6}
+                                            value={verificationCode}
+                                            onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
+                                            className="w-full text-center py-4 bg-white/5 border border-white/10 rounded-2xl text-2xl font-black tracking-[0.5em] text-violet-400 outline-none focus:border-violet-500/50 transition-all font-mono"
+                                            placeholder="000000"
+                                            required
+                                        />
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        disabled={loading || verificationCode.length !== 6}
+                                        className="w-full py-5 bg-white text-black rounded-[1.5rem] font-black uppercase tracking-widest italic hover:bg-violet-600 hover:text-white transition-all duration-500 shadow-2xl disabled:opacity-50"
                                     >
-                                        <label className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] sm:tracking-[0.3em] pl-4 italic">Full Name</label>
+                                        {loading ? 'VERIFYING...' : 'ACTIVATE NODE'}
+                                    </button>
+
+                                    <div className="text-center">
+                                        <button
+                                            type="button"
+                                            onClick={handleResend}
+                                            disabled={resendCooldown > 0}
+                                            className="text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-violet-400 transition-colors disabled:opacity-50"
+                                        >
+                                            {resendCooldown > 0 ? `RESEND IN ${resendCooldown}S` : 'RESEND CODE'}
+                                        </button>
+                                    </div>
+
+                                    <div className="text-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsVerifying(false)}
+                                            className="text-[9px] font-black text-slate-600 uppercase tracking-widest hover:text-white transition-colors underline underline-offset-4"
+                                        >
+                                            Back to Login
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        ) : (
+                            <>
+                                {/* Form */}
+                                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                                    <AnimatePresence mode="popLayout">
+                                        {!isLogin && (
+                                            <motion.div
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={{ opacity: 0, x: 20 }}
+                                                className="space-y-1.5 sm:space-y-2"
+                                            >
+                                                <label className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] sm:tracking-[0.3em] pl-4 italic">Full Name</label>
+                                                <div className="relative group/input">
+                                                    <User className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/input:text-violet-400 transition-colors" size={16} />
+                                                    <input
+                                                        type="text"
+                                                        name="name"
+                                                        value={formData.name}
+                                                        onChange={handleChange}
+                                                        required={!isLogin}
+                                                        className="w-full pl-12 sm:pl-14 pr-6 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-violet-500/50 focus:ring-4 focus:ring-violet-500/10 transition-all font-medium text-sm"
+                                                        placeholder="YOUR FULL NAME"
+                                                    />
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+
+                                    <div className="space-y-1.5 sm:space-y-2">
+                                        <label className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] sm:tracking-[0.3em] pl-4 italic">Email Address</label>
                                         <div className="relative group/input">
-                                            <User className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/input:text-purple-400 transition-colors" size={16} />
+                                            <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/input:text-violet-400 transition-colors" size={16} />
                                             <input
-                                                type="text"
-                                                name="name"
-                                                value={formData.name}
+                                                type="email"
+                                                name="email"
+                                                value={formData.email}
                                                 onChange={handleChange}
-                                                required={!isLogin}
-                                                className="w-full pl-12 sm:pl-14 pr-6 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all font-medium text-sm"
-                                                placeholder="YOUR FULL NAME"
+                                                required
+                                                className="w-full pl-12 sm:pl-14 pr-6 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-violet-500/50 focus:ring-4 focus:ring-violet-500/10 transition-all font-medium text-sm"
+                                                placeholder="YOU@EMAIL.COM"
                                             />
                                         </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                                    </div>
 
-                            <div className="space-y-1.5 sm:space-y-2">
-                                <label className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] sm:tracking-[0.3em] pl-4 italic">Email Address</label>
-                                <div className="relative group/input">
-                                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/input:text-purple-400 transition-colors" size={16} />
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full pl-12 sm:pl-14 pr-6 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all font-medium text-sm"
-                                        placeholder="YOU@EMAIL.COM"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-1.5 sm:space-y-2">
-                                <label className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] sm:tracking-[0.3em] pl-4 italic">Password</label>
-                                <div className="relative group/input">
-                                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/input:text-purple-400 transition-colors" size={16} />
-                                    <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        name="password"
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full pl-12 sm:pl-14 pr-12 sm:pr-14 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all font-medium text-sm"
-                                        placeholder="••••••••"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
-                                    >
-                                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <AnimatePresence mode="popLayout">
-                                {!isLogin && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -10 }}
-                                        className="space-y-2 sm:space-y-3"
-                                    >
-                                        <label className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] sm:tracking-[0.3em] pl-4 italic">Experience Level</label>
-                                        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                                    <div className="space-y-1.5 sm:space-y-2">
+                                        <label className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] sm:tracking-[0.3em] pl-4 italic">Password</label>
+                                        <div className="relative group/input">
+                                            <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/input:text-violet-400 transition-colors" size={16} />
+                                            <input
+                                                type={showPassword ? 'text' : 'password'}
+                                                name="password"
+                                                value={formData.password}
+                                                onChange={handleChange}
+                                                required
+                                                className="w-full pl-12 sm:pl-14 pr-12 sm:pr-14 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:border-violet-500/50 focus:ring-4 focus:ring-violet-500/10 transition-all font-medium text-sm"
+                                                placeholder="••••••••"
+                                            />
                                             <button
                                                 type="button"
-                                                onClick={() => setFormData({ ...formData, experienceLevel: 'beginner' })}
-                                                className={cn(
-                                                    "flex flex-col items-center gap-1.5 sm:gap-2 p-3 sm:p-4 rounded-[1.5rem] sm:rounded-3xl border-2 transition-all duration-300",
-                                                    formData.experienceLevel === 'beginner'
-                                                        ? "bg-purple-600 border-purple-400 text-white shadow-[0_0_30px_rgba(168,85,247,0.3)]"
-                                                        : "bg-white/5 border-white/10 text-slate-400 hover:border-white/20"
-                                                )}
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
                                             >
-                                                <Sparkles size={14} className={formData.experienceLevel === 'beginner' ? "animate-pulse" : ""} />
-                                                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest italic text-center leading-tight">Beginner</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setFormData({ ...formData, experienceLevel: 'pro' })}
-                                                className={cn(
-                                                    "flex flex-col items-center gap-1.5 sm:gap-2 p-3 sm:p-4 rounded-[1.5rem] sm:rounded-3xl border-2 transition-all duration-300",
-                                                    formData.experienceLevel === 'pro'
-                                                        ? "bg-indigo-600 border-indigo-400 text-white shadow-[0_0_30px_rgba(99,102,241,0.3)]"
-                                                        : "bg-white/5 border-white/10 text-slate-400 hover:border-white/20"
-                                                )}
-                                            >
-                                                <ChevronRight size={14} />
-                                                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest italic text-center leading-tight">Experienced</span>
+                                                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                             </button>
                                         </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                                    </div>
 
-                            <AnimatePresence mode="popLayout">
-                                {!isLogin && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -10 }}
-                                        className="mb-2 sm:mb-4 text-center cursor-default"
-                                    >
-                                        <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium italic leading-relaxed">
-                                            By signing up you agree to the <br />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowTerms(true)}
-                                                className="text-purple-400 font-black uppercase tracking-[0.1em] sm:tracking-widest hover:text-purple-300 transition-colors underline underline-offset-4"
+                                    <AnimatePresence mode="popLayout">
+                                        {!isLogin && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -10 }}
+                                                className="space-y-2 sm:space-y-3"
                                             >
-                                                Terms and Conditions
-                                            </button>
-                                            <br />of using nunnoAI
-                                        </p>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                                                <label className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] sm:tracking-[0.3em] pl-4 italic">Experience Level</label>
+                                                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setFormData({ ...formData, experienceLevel: 'beginner' })}
+                                                        className={cn(
+                                                            "flex flex-col items-center gap-1.5 sm:gap-2 p-3 sm:p-4 rounded-[1.5rem] sm:rounded-3xl border-2 transition-all duration-300",
+                                                            formData.experienceLevel === 'beginner'
+                                                                ? "bg-violet-600 border-violet-400 text-white shadow-[0_0_30px_rgba(168,85,247,0.3)]"
+                                                                : "bg-white/5 border-white/10 text-slate-400 hover:border-white/20"
+                                                        )}
+                                                    >
+                                                        <Sparkles size={14} className={formData.experienceLevel === 'beginner' ? "animate-pulse" : ""} />
+                                                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest italic text-center leading-tight">Beginner</span>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setFormData({ ...formData, experienceLevel: 'pro' })}
+                                                        className={cn(
+                                                            "flex flex-col items-center gap-1.5 sm:gap-2 p-3 sm:p-4 rounded-[1.5rem] sm:rounded-3xl border-2 transition-all duration-300",
+                                                            formData.experienceLevel === 'pro'
+                                                                ? "bg-violet-600 border-violet-400 text-white shadow-[0_0_30px_rgba(99,102,241,0.3)]"
+                                                                : "bg-white/5 border-white/10 text-slate-400 hover:border-white/20"
+                                                        )}
+                                                    >
+                                                        <ChevronRight size={14} />
+                                                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest italic text-center leading-tight">Experienced</span>
+                                                    </button>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
 
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full group/btn relative py-4 sm:py-5 bg-white text-black rounded-2xl sm:rounded-[1.5rem] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] italic hover:bg-purple-600 hover:text-white transition-all duration-500 overflow-hidden shadow-2xl flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-indigo-500 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
-                                <span className="relative z-10 flex items-center gap-3">
-                                    {loading ? (
-                                        <div className="w-5 h-5 sm:w-6 sm:h-6 border-3 sm:border-4 border-black border-t-transparent rounded-full animate-spin group-hover/btn:border-white group-hover/btn:border-t-transparent" />
-                                    ) : (
-                                        <>
-                                            {isLogin ? <LogIn size={18} /> : <UserPlus size={18} />}
-                                            {isLogin ? 'SIGN IN' : 'CREATE ACCOUNT'}
-                                        </>
-                                    )}
-                                </span>
-                            </button>
-                        </form>
+                                    <AnimatePresence mode="popLayout">
+                                        {!isLogin && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -10 }}
+                                                className="mb-2 sm:mb-4 text-center cursor-default"
+                                            >
+                                                <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium italic leading-relaxed">
+                                                    By signing up you agree to the <br />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowTerms(true)}
+                                                        className="text-violet-400 font-black uppercase tracking-[0.1em] sm:tracking-widest hover:text-violet-300 transition-colors underline underline-offset-4"
+                                                    >
+                                                        Terms and Conditions
+                                                    </button>
+                                                    <br />of using nunnoAI
+                                                </p>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
 
-                        <div className="mt-6 text-center pt-6 border-t border-white/5">
-                            <p className="text-[11px] font-medium text-slate-500 italic">
-                                {isLogin ? "New here?" : "Already have an account?"}
-                                <button
-                                    onClick={() => {
-                                        setIsLogin(!isLogin);
-                                        setError('');
-                                        setFormData({ email: '', password: '', name: '', experienceLevel: 'beginner' });
-                                    }}
-                                    className="ml-2 text-white font-black uppercase tracking-widest hover:text-purple-400 transition-colors"
-                                >
-                                    {isLogin ? 'SIGN UP' : 'LOGIN'}
-                                </button>
-                            </p>
-                        </div>
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full group/btn relative py-4 sm:py-5 bg-white text-black rounded-2xl sm:rounded-[1.5rem] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] italic hover:bg-violet-600 hover:text-white transition-all duration-500 overflow-hidden shadow-2xl flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
+                                    >
+                                        <div className="absolute inset-0 bg-gradient-to-r from-violet-400 to-violet-500 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                                        <span className="relative z-10 flex items-center gap-3">
+                                            {loading ? (
+                                                <div className="w-5 h-5 sm:w-6 sm:h-6 border-3 sm:border-4 border-black border-t-transparent rounded-full animate-spin group-hover/btn:border-white group-hover/btn:border-t-transparent" />
+                                            ) : (
+                                                <>
+                                                    {isLogin ? <LogIn size={18} /> : <UserPlus size={18} />}
+                                                    {isLogin ? 'SIGN IN' : 'CREATE ACCOUNT'}
+                                                </>
+                                            )}
+                                        </span>
+                                    </button>
+                                </form>
+
+                                <div className="mt-6 text-center pt-6 border-t border-white/5">
+                                    <p className="text-[11px] font-medium text-slate-500 italic">
+                                        {isLogin ? "New here?" : "Already have an account?"}
+                                        <button
+                                            onClick={() => {
+                                                setIsLogin(!isLogin);
+                                                setError('');
+                                                setFormData({ email: '', password: '', name: '', experienceLevel: 'beginner' });
+                                            }}
+                                            className="ml-2 text-white font-black uppercase tracking-widest hover:text-violet-400 transition-colors"
+                                        >
+                                            {isLogin ? 'SIGN UP' : 'LOGIN'}
+                                        </button>
+                                    </p>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </motion.div>
 
@@ -366,8 +472,8 @@ export default function LoginSignup({ onClose }) {
                             >
                                 <div className="p-8 border-b border-white/5 flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20">
-                                            <Sparkles size={18} className="text-purple-400" />
+                                        <div className="p-2 rounded-xl bg-violet-500/10 border border-violet-500/20">
+                                            <Sparkles size={18} className="text-violet-400" />
                                         </div>
                                         <h3 className="text-lg font-black text-white italic uppercase tracking-tight">Legal & Policies</h3>
                                     </div>
@@ -381,7 +487,7 @@ export default function LoginSignup({ onClose }) {
                                 <div className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-8">
                                     {/* Refund Policy */}
                                     <section className="space-y-4">
-                                        <h4 className="text-purple-400 font-black uppercase tracking-widest text-xs border-b border-purple-400/20 pb-2">Refund Policy for Nunno</h4>
+                                        <h4 className="text-violet-400 font-black uppercase tracking-widest text-xs border-b border-violet-400/20 pb-2">Refund Policy for Nunno</h4>
                                         <div className="text-slate-300 text-sm leading-relaxed space-y-4">
                                             <p className="italic text-xs text-slate-500">Effective Date: Feb 15, 2026 | Website: nunno.cloud</p>
                                             <p>Thank you for choosing Nunno. We strive to provide the highest quality cloud solutions and services. To ensure we can maintain our infrastructure and provide consistent value, we have established the following Refund Policy.</p>
@@ -441,7 +547,7 @@ export default function LoginSignup({ onClose }) {
                                 <div className="p-8 border-t border-white/5 bg-[#0c0c14]">
                                     <button
                                         onClick={() => setShowTerms(false)}
-                                        className="w-full py-4 bg-white text-black font-black uppercase tracking-widest italic rounded-2xl hover:bg-purple-600 hover:text-white transition-all duration-300 shadow-xl"
+                                        className="w-full py-4 bg-white text-black font-black uppercase tracking-widest italic rounded-2xl hover:bg-violet-600 hover:text-white transition-all duration-300 shadow-xl"
                                     >
                                         I Understand and Agree
                                     </button>

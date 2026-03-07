@@ -423,7 +423,7 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                             className={`flex gap-3 md:gap-4 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
                         >
                             <div className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden ${message.role === 'user'
-                                ? 'bg-gradient-to-br from-purple-600 to-indigo-600 text-white'
+                                ? 'bg-gradient-to-br from-violet-600 to-violet-600 text-white'
                                 : (theme === 'dark' ? 'bg-[#1e2030] border border-white/5' : 'bg-white border border-slate-200 shadow-xl')
                                 }`}>
                                 {message.role === 'user' ? <User size={18} /> : <img src="/logo.png" alt="Nunno AI" className="w-6 h-6 object-contain" />}
@@ -434,20 +434,20 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                             >
                                 <div
                                     className={`px-4 py-3 md:px-5 md:py-4 rounded-[1.5rem] md:rounded-[2rem] shadow-2xl border backdrop-blur-md transition-all ${message.role === 'user'
-                                        ? 'bg-purple-600/90 text-white border-purple-500 rounded-tr-sm'
+                                        ? 'bg-violet-600/90 text-white border-violet-500 rounded-tr-sm'
                                         : message.isIntelResponse
-                                            ? (theme === 'dark' ? 'bg-indigo-500/5 border-indigo-500/20 text-slate-100 rounded-tl-sm w-full' : 'bg-indigo-50 border-indigo-100 text-slate-800 rounded-tl-sm w-full')
+                                            ? (theme === 'dark' ? 'bg-violet-500/5 border-violet-500/20 text-slate-100 rounded-tl-sm w-full' : 'bg-indigo-50 border-indigo-100 text-slate-800 rounded-tl-sm w-full')
                                             : message.isSystem
                                                 ? (theme === 'dark' ? 'bg-slate-900/50 border-slate-700/50 text-slate-400 italic text-[11px] font-mono' : 'bg-slate-100 border-slate-200 text-slate-500 italic text-[11px] font-mono')
                                                 : (theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-100 rounded-tl-sm' : 'bg-white border-slate-200 text-slate-800 rounded-tl-sm shadow-xl')
                                         }`}
                                 >
                                     {message.isIntelResponse && (
-                                        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-indigo-500/10">
-                                            <div className="p-1.5 rounded-lg bg-indigo-500/10">
-                                                <Activity size={14} className="text-indigo-400" />
+                                        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-violet-500/10">
+                                            <div className="p-1.5 rounded-lg bg-violet-500/10">
+                                                <Activity size={14} className="text-violet-400" />
                                             </div>
-                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">Intelligence Feed // {message.symbol}</span>
+                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Intelligence Feed // {message.symbol}</span>
                                         </div>
                                     )}
 
@@ -483,16 +483,16 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                                                         const fmtCell = (t) => {
                                                             const ps = t.split('**');
                                                             if (ps.length <= 1) return t;
-                                                            return ps.map((p, j) => j % 2 === 1 ? <strong key={j} className="text-purple-400 font-black">{p}</strong> : p);
+                                                            return ps.map((p, j) => j % 2 === 1 ? <strong key={j} className="text-violet-400 font-black">{p}</strong> : p);
                                                         };
                                                         rendered.push(
-                                                            <div key={`tbl-${li}`} className="my-4 w-full max-w-full overflow-x-auto rounded-2xl border border-purple-500/20 bg-white/[0.02] dark:bg-white/[0.015] shadow-lg shadow-purple-500/5 backdrop-blur-sm">
+                                                            <div key={`tbl-${li}`} className="my-4 w-full max-w-full overflow-x-auto rounded-2xl border border-violet-500/20 bg-white/[0.02] dark:bg-white/[0.015] shadow-lg shadow-violet-500/5 backdrop-blur-sm">
                                                                 <table className="w-full min-w-max text-[12px] border-collapse">
                                                                     {hdCells.length > 0 && (
                                                                         <thead>
-                                                                            <tr className={`border-b ${theme === 'dark' ? 'border-purple-500/20 bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent' : 'border-purple-200 bg-purple-50'}`}>
+                                                                            <tr className={`border-b ${theme === 'dark' ? 'border-violet-500/20 bg-gradient-to-r from-violet-500/10 via-violet-500/5 to-transparent' : 'border-violet-200 bg-violet-50'}`}>
                                                                                 {hdCells.map((c, ci) => (
-                                                                                    <th key={ci} className={`px-4 py-3 text-left font-black uppercase tracking-widest text-[10px] whitespace-nowrap ${theme === 'dark' ? 'text-purple-300' : 'text-purple-600'}`}>
+                                                                                    <th key={ci} className={`px-4 py-3 text-left font-black uppercase tracking-widest text-[10px] whitespace-nowrap ${theme === 'dark' ? 'text-violet-300' : 'text-violet-600'}`}>
                                                                                         {fmtCell(c)}
                                                                                     </th>
                                                                                 ))}
@@ -501,7 +501,7 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                                                                     )}
                                                                     <tbody>
                                                                         {bdRows.map((row, ri) => (
-                                                                            <tr key={ri} className={`border-b transition-colors duration-200 ${theme === 'dark' ? 'border-white/5 hover:bg-purple-500/[0.06]' : 'border-slate-100 hover:bg-purple-50/50'} ${ri % 2 === 0 ? (theme === 'dark' ? 'bg-white/[0.01]' : 'bg-slate-50/50') : 'bg-transparent'}`}>
+                                                                            <tr key={ri} className={`border-b transition-colors duration-200 ${theme === 'dark' ? 'border-white/5 hover:bg-violet-500/[0.06]' : 'border-slate-100 hover:bg-violet-50/50'} ${ri % 2 === 0 ? (theme === 'dark' ? 'bg-white/[0.01]' : 'bg-slate-50/50') : 'bg-transparent'}`}>
                                                                                 {row.map((cell, ci) => (
                                                                                     <td key={ci} className={`px-4 py-2.5 whitespace-nowrap ${ci === 0 ? (theme === 'dark' ? 'font-semibold text-slate-300' : 'font-semibold text-slate-700') : (theme === 'dark' ? 'text-slate-200 font-mono tabular-nums' : 'text-slate-600 font-mono tabular-nums')}`}>
                                                                                         {fmtCell(cell)}
@@ -525,7 +525,7 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                                                 const headingMatch = cLine.match(/^###\s*(.+)/);
                                                 if (headingMatch) {
                                                     rendered.push(
-                                                        <h3 key={li} className={`text-[14px] font-black uppercase tracking-widest mt-5 mb-2 pb-1.5 border-b ${theme === 'dark' ? 'text-purple-400 border-purple-500/20' : 'text-purple-600 border-purple-200'}`}>
+                                                        <h3 key={li} className={`text-[14px] font-black uppercase tracking-widest mt-5 mb-2 pb-1.5 border-b ${theme === 'dark' ? 'text-violet-400 border-violet-500/20' : 'text-violet-600 border-violet-200'}`}>
                                                             {headingMatch[1]}
                                                         </h3>
                                                     );
@@ -537,8 +537,8 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                                                     const bContent = cLine.replace(/^\s*[-•]\s/, '');
                                                     rendered.push(
                                                         <div key={li} className="flex gap-2 items-start pl-2 my-0.5">
-                                                            <span className="text-purple-500 mt-1 text-[8px]">●</span>
-                                                            <span>{bContent.split('**').map((p, j) => j % 2 === 1 ? <strong key={j} className="text-purple-400 font-black">{p}</strong> : p)}</span>
+                                                            <span className="text-violet-500 mt-1 text-[8px]">●</span>
+                                                            <span>{bContent.split('**').map((p, j) => j % 2 === 1 ? <strong key={j} className="text-violet-400 font-black">{p}</strong> : p)}</span>
                                                         </div>
                                                     );
                                                     li++;
@@ -548,7 +548,7 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                                                 rendered.push(
                                                     <span key={li}>
                                                         {cLine.split('**').map((part, pi) =>
-                                                            pi % 2 === 1 ? <strong key={pi} className="text-purple-400 font-black">{part}</strong> : part
+                                                            pi % 2 === 1 ? <strong key={pi} className="text-violet-400 font-black">{part}</strong> : part
                                                         )}
                                                         {'\n'}
                                                     </span>
@@ -564,7 +564,7 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                                     {message.pattern && (
                                         <div className={`mt-4 pt-3 border-t flex items-center justify-between gap-4 text-[10px] ${message.role === 'user' ? 'border-white/10' : (theme === 'dark' ? 'border-slate-800' : 'border-slate-100')}`}>
                                             <div className="flex items-center gap-2">
-                                                <span className={`px-2.5 py-1 rounded-lg font-black uppercase tracking-widest transition-all ${message.pattern.direction === 'bullish' ? (theme === 'dark' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-700') :
+                                                <span className={`px-2.5 py-1 rounded-lg font-black uppercase tracking-widest transition-all ${message.pattern.direction === 'bullish' ? (theme === 'dark' ? 'bg-purple-500/20 text-purple-400' : 'bg-purple-100 text-purple-700') :
                                                     message.pattern.direction === 'bearish' ? (theme === 'dark' ? 'bg-rose-500/20 text-rose-400' : 'bg-rose-100 text-rose-700') :
                                                         (theme === 'dark' ? 'bg-orange-900/40 text-orange-400' : 'bg-orange-100 text-orange-700')
                                                     }`}>
@@ -578,8 +578,8 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                                 </div>
                                 {message.role === 'assistant' && !message.isSystem && (
                                     <div className="flex gap-4 items-center pl-2 opacity-30 hover:opacity-100 transition-opacity">
-                                        <button className="text-[10px] uppercase font-black tracking-widest hover:text-purple-500 transition-colors">Copy Intel</button>
-                                        <button className="text-[10px] uppercase font-black tracking-widest hover:text-purple-500 transition-colors">Explain Pattern</button>
+                                        <button className="text-[10px] uppercase font-black tracking-widest hover:text-violet-500 transition-colors">Copy Intel</button>
+                                        <button className="text-[10px] uppercase font-black tracking-widest hover:text-violet-500 transition-colors">Explain Pattern</button>
                                     </div>
                                 )}
                             </div>
@@ -596,7 +596,7 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                         <div className="flex items-center gap-4 bg-transparent border-none shadow-none outline-none">
                             <ThinkingLoader />
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-purple-400/60 uppercase tracking-[0.2em] animate-pulse italic">Thinking Engine</span>
+                                <span className="text-[10px] font-black text-violet-400/60 uppercase tracking-[0.2em] animate-pulse italic">Thinking Engine</span>
                                 <span className="text-[9px] text-slate-500/60 font-bold uppercase tracking-widest truncate max-w-[200px]">{loadingStatus}</span>
                             </div>
                         </div>
@@ -629,8 +629,8 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                                         }
                                     }}
                                     className={`px-4 py-2.5 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 border whitespace-nowrap active:scale-95 ${theme === 'dark'
-                                        ? 'bg-[#1e2030] border-slate-700/50 text-slate-300 hover:border-purple-500 hover:text-white shadow-xl'
-                                        : 'bg-white border-slate-200 text-slate-600 hover:border-purple-300 hover:text-purple-600 hover:bg-white shadow-md'
+                                        ? 'bg-[#1e2030] border-slate-700/50 text-slate-300 hover:border-violet-500 hover:text-white shadow-xl'
+                                        : 'bg-white border-slate-200 text-slate-600 hover:border-violet-300 hover:text-violet-600 hover:bg-white shadow-md'
                                         }`}
                                 >
                                     {pattern.icon}
@@ -647,8 +647,8 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                             onClick={() => setIsActionMenuOpen(!isActionMenuOpen)}
                             disabled={isLoading}
                             className={`p-2.5 md:p-3.5 rounded-2xl transition-all shadow-2xl border flex items-center justify-center active:scale-90 ${isActionMenuOpen
-                                ? 'bg-purple-600 border-purple-500 text-white'
-                                : (theme === 'dark' ? 'bg-[#1e2030] border-white/5 text-slate-400 hover:text-purple-400' : 'bg-white border-slate-200 text-slate-500 hover:text-purple-600 shadow-xl')
+                                ? 'bg-violet-600 border-violet-500 text-white'
+                                : (theme === 'dark' ? 'bg-[#1e2030] border-white/5 text-slate-400 hover:text-violet-400' : 'bg-white border-slate-200 text-slate-500 hover:text-violet-600 shadow-xl')
                                 }`}
                         >
                             <Plus size={isActionMenuOpen ? 22 : 20} className={`transition-transform duration-500 ${isActionMenuOpen ? 'rotate-90 scale-110' : ''}`} />
@@ -666,7 +666,7 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                                     <div className="p-3 space-y-1">
                                         {[
                                             { label: 'Deep Scan Chart', desc: 'Full AI data extraction', icon: <Sparkles size={18} />, color: 'purple', action: handleAnalyzeChart },
-                                            { label: 'Detect Live Patterns', desc: 'Find patterns on chart', icon: <Microscope size={18} />, color: 'emerald', action: handleDetectLivePatterns },
+                                            { label: 'Detect Live Patterns', desc: 'Find patterns on chart', icon: <Microscope size={18} />, color: 'purple', action: handleDetectLivePatterns },
                                             { label: 'Pattern Briefing', desc: 'Details on active setup', icon: <Layers size={18} />, color: 'blue', action: () => { setInputValue("Analyze current chart patterns"); handleSendMessage(); } },
                                             { label: 'Market Sentiment', desc: 'Fear & Greed analysis', icon: <Target size={18} />, color: 'amber', action: () => { setInputValue("What is the current market sentiment?"); handleSendMessage(); } }
                                         ].map((item, idx) => (
@@ -708,7 +708,7 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                             }}
                             placeholder="Connect vision into intelligence..."
                             disabled={isLoading}
-                            className={`w-full px-4 md:px-6 py-3 md:py-4 border rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all text-[13px] md:text-sm disabled:opacity-50 resize-none font-medium custom-scrollbar ${theme === 'dark'
+                            className={`w-full px-4 md:px-6 py-3 md:py-4 border rounded-2xl focus:outline-none focus:ring-4 focus:ring-violet-500/20 transition-all text-[13px] md:text-sm disabled:opacity-50 resize-none font-medium custom-scrollbar ${theme === 'dark'
                                 ? 'bg-[#1e2030] border-white/5 text-slate-100 placeholder:text-slate-600'
                                 : 'bg-white border-slate-200 text-slate-800 placeholder:text-slate-400 shadow-inner'
                                 }`}
@@ -726,7 +726,7 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                                 <button
                                     onClick={handleSendMessage}
                                     disabled={!inputValue.trim()}
-                                    className="p-2 md:p-2.5 bg-gradient-to-tr from-purple-600 to-indigo-600 text-white rounded-xl hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:scale-110 active:scale-95 transition-all shadow-lg disabled:opacity-0 disabled:scale-90 flex-shrink-0"
+                                    className="p-2 md:p-2.5 bg-gradient-to-tr from-violet-600 to-violet-600 text-white rounded-xl hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:scale-110 active:scale-95 transition-all shadow-lg disabled:opacity-0 disabled:scale-90 flex-shrink-0"
                                 >
                                     <Send size={16} />
                                 </button>

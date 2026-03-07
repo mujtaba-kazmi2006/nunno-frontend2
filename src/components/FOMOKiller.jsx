@@ -152,7 +152,7 @@ const FOMOKiller = ({ watchlist = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT'] }
                             {/* Warnings List */}
                             {loading ? (
                                 <div className="text-center py-12">
-                                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-purple-500 border-t-transparent"></div>
+                                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-violet-500 border-t-transparent"></div>
                                     <p className="text-slate-500 font-bold mt-4">Scanning markets...</p>
                                 </div>
                             ) : activeWarnings.length > 0 ? (
@@ -166,8 +166,8 @@ const FOMOKiller = ({ watchlist = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT'] }
                                     "text-center py-12 rounded-2xl border",
                                     theme === 'dark' ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
                                 )}>
-                                    <Shield className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
-                                    <p className="text-emerald-400 font-black text-lg mb-2">
+                                    <Shield className="w-12 h-12 text-purple-500 mx-auto mb-4" />
+                                    <p className="text-purple-400 font-black text-lg mb-2">
                                         All Clear! ✅
                                     </p>
                                     <p className="text-slate-500 font-bold text-sm">
@@ -186,7 +186,7 @@ const FOMOKiller = ({ watchlist = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT'] }
                                     "w-full py-3 rounded-xl font-black uppercase tracking-widest text-sm transition-all",
                                     loading
                                         ? "bg-slate-700 text-slate-400 cursor-not-allowed"
-                                        : "bg-purple-600 text-white hover:bg-purple-500"
+                                        : "bg-violet-600 text-white hover:bg-violet-500"
                                 )}
                             >
                                 {loading ? 'Scanning...' : 'Scan Again'}
@@ -248,7 +248,7 @@ const FOMOWarningCard = ({ warning, theme }) => {
             className={cn(
                 "rounded-2xl border p-5 cursor-pointer transition-all",
                 getWarningColor(warning.warning_level),
-                showDetails && "ring-2 ring-purple-500/50"
+                showDetails && "ring-2 ring-violet-500/50"
             )}
             onClick={() => setShowDetails(!showDetails)}
         >
@@ -288,15 +288,15 @@ const FOMOWarningCard = ({ warning, theme }) => {
             {warning.advice && (
                 <div className={cn(
                     "p-3 sm:p-4 rounded-xl border",
-                    theme === 'dark' ? "bg-purple-500/10 border-purple-500/20" : "bg-purple-50 border-purple-200"
+                    theme === 'dark' ? "bg-violet-500/10 border-violet-500/20" : "bg-violet-50 border-violet-200"
                 )}>
                     <div className="flex items-center gap-2 mb-2">
-                        <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-purple-400" />
-                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-purple-400">
+                        <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-violet-400" />
+                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-violet-400">
                             What To Do
                         </span>
                     </div>
-                    <p className="text-purple-200 font-medium text-xs sm:text-sm leading-relaxed">
+                    <p className="text-violet-200 font-medium text-xs sm:text-sm leading-relaxed">
                         {warning.advice}
                     </p>
                 </div>

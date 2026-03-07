@@ -13,6 +13,13 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         const loadUser = async () => {
+            // Retrieve or generate a persistent device fingerprint
+            let fingerprint = localStorage.getItem('nunno_device_fingerprint');
+            if (!fingerprint) {
+                fingerprint = window.crypto.randomUUID() || Math.random().toString(36).substring(2);
+                localStorage.setItem('nunno_device_fingerprint', fingerprint);
+            }
+
             if (token) {
                 try {
                     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -20,8 +27,22 @@ export function AuthProvider({ children }) {
                     setUser(response.data);
                 } catch (error) {
                     console.error('Failed to load user:', error);
-                    // Token invalid, clear it
                     logout();
+                }
+            } else {
+                // Try IP-based auto-login WITH device fingerprint
+                try {
+                    const response = await axios.post('/api/auth/ip-auto-login', {
+                        device_fingerprint: fingerprint
+                    });
+                    if (response.data.token) {
+                        setToken(response.data.token);
+                        setUser(response.data.user);
+                        localStorage.setItem('token', response.data.token);
+                        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+                    }
+                } catch (error) {
+                    console.log('No valid IP+Device session found');
                 }
             }
             setLoading(false);
@@ -32,23 +53,47 @@ export function AuthProvider({ children }) {
 
     const login = async (email, password) => {
         try {
-            const response = await axios.post('/api/auth/login', { email, password });
+            const fingerprint = localStorage.getItem('nunno_device_fingerprint');
+            const response = await axios.post('/api/auth/login', {
+                email,
+                password,
+                device_fingerprint: fingerprint
+            });
             setToken(response.data.token);
             setUser(response.data.user);
             localStorage.setItem('token', response.data.token);
             axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
             return { success: true };
         } catch (error) {
+            const detail = error.response?.data?.detail;
+            const requiresVerification = error.response?.headers?.['x-requires-verification'] === 'true';
+
             return {
                 success: false,
-                error: error.response?.data?.detail || 'Login failed'
+                error: detail || 'Login failed',
+                requiresVerification
             };
         }
     };
 
     const signup = async (email, password, name, experienceLevel = 'pro') => {
         try {
-            const response = await axios.post('/api/auth/signup', { email, password, name, experience_level: experienceLevel });
+            const fingerprint = localStorage.getItem('nunno_device_fingerprint');
+            const response = await axios.post('/api/auth/signup', {
+                email,
+                password,
+                name,
+                experience_level: experienceLevel,
+                device_fingerprint: fingerprint
+            });
+            if (response.data.requires_verification) {
+                return {
+                    success: true,
+                    requiresVerification: true,
+                    email: response.data.email
+                };
+            }
+
             setToken(response.data.token);
             setUser(response.data.user);
             localStorage.setItem('token', response.data.token);
@@ -62,9 +107,41 @@ export function AuthProvider({ children }) {
         }
     };
 
+    const verifyEmail = async (email, code) => {
+        try {
+            const response = await axios.post('/api/auth/verify-email', { email, code });
+            setToken(response.data.token);
+            setUser(response.data.user);
+            localStorage.setItem('token', response.data.token);
+            axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+            return { success: true };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data?.detail || 'Verification failed'
+            };
+        }
+    };
+
+    const resendVerification = async (email) => {
+        try {
+            await axios.post(`/api/auth/resend-verification?email=${email}`);
+            return { success: true };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data?.detail || 'Resend failed'
+            };
+        }
+    };
+
     const googleLogin = async (googleToken) => {
         try {
-            const response = await axios.post('/api/auth/google', { token: googleToken });
+            const fingerprint = localStorage.getItem('nunno_device_fingerprint');
+            const response = await axios.post('/api/auth/google', {
+                token: googleToken,
+                device_fingerprint: fingerprint
+            });
             setToken(response.data.token);
             setUser(response.data.user);
             localStorage.setItem('token', response.data.token);
@@ -115,6 +192,8 @@ export function AuthProvider({ children }) {
             token,
             login,
             signup,
+            verifyEmail,
+            resendVerification,
             googleLogin,
             logout,
             loading,

@@ -138,12 +138,12 @@ export default function TutorialOverlay({ isOpen, onClose, experienceLevel }) {
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className={`pointer-events-auto bg-[#0a0a0f] border border-purple-500/50 rounded-[2rem] shadow-[0_0_50px_rgba(139,92,246,0.3)] w-full ${isCenter ? 'max-w-md' : 'max-w-xs sm:max-w-sm'} overflow-hidden relative ring-1 ring-white/10`}
+                            className={`pointer-events-auto bg-[#0a0a0f] border border-violet-500/50 rounded-[2rem] shadow-[0_0_50px_rgba(139,92,246,0.3)] w-full ${isCenter ? 'max-w-md' : 'max-w-xs sm:max-w-sm'} overflow-hidden relative ring-1 ring-white/10`}
                         >
                             {/* Status bar */}
                             <div className="h-1 w-full bg-white/5">
                                 <motion.div
-                                    className="h-full bg-purple-500 shadow-[0_0_10px_rgba(139,92,246,0.8)]"
+                                    className="h-full bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.8)]"
                                     initial={{ width: 0 }}
                                     animate={{ width: `${((currentStep + 1) / tutorialSteps.length) * 100}%` }}
                                 />
@@ -153,8 +153,8 @@ export default function TutorialOverlay({ isOpen, onClose, experienceLevel }) {
                                 {/* Header */}
                                 <div className="flex justify-between items-center mb-4">
                                     <span className="flex items-center gap-2">
-                                        <div className="size-2 bg-purple-500 rounded-full animate-pulse" />
-                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-400 italic">
+                                        <div className="size-2 bg-violet-500 rounded-full animate-pulse" />
+                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-violet-400 italic">
                                             Tutorial: Step {currentStep + 1}
                                         </span>
                                     </span>
@@ -168,7 +168,7 @@ export default function TutorialOverlay({ isOpen, onClose, experienceLevel }) {
 
                                 {/* Icon & Title */}
                                 <div className="flex items-start gap-4 mb-5">
-                                    <div className="size-11 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0 text-purple-400">
+                                    <div className="size-11 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0 text-violet-400">
                                         {step.id === 'welcome' && <span className="text-xl">👋</span>}
                                         {step.id === 'chat_intro' && <MessageSquare size={20} />}
                                         {step.id === 'roast_demo' && <Zap size={20} />}
@@ -204,7 +204,7 @@ export default function TutorialOverlay({ isOpen, onClose, experienceLevel }) {
 
                                     <button
                                         onClick={handleNext}
-                                        className="flex-1 py-3 sm:py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-black uppercase tracking-widest italic text-[10px] sm:text-xs shadow-lg shadow-purple-500/20 transition-all flex items-center justify-center gap-2 group"
+                                        className="flex-1 py-3 sm:py-4 bg-violet-600 hover:bg-violet-500 text-white rounded-2xl font-black uppercase tracking-widest italic text-[10px] sm:text-xs shadow-lg shadow-violet-500/20 transition-all flex items-center justify-center gap-2 group"
                                     >
                                         {step.actionLabel || (isLastStep ? 'Finish' : 'Next')}
                                         <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />

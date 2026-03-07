@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, memo, forwardRef } from 'react'
-import { Send, Loader, Sparkles, TrendingUp, DollarSign, BookOpen, Square, Zap, Plus, PieChart, Info, Bot, User as UserIcon, Flame, AlertOctagon, Globe } from 'lucide-react'
+import { Send, Loader, Sparkles, TrendingUp, TrendingDown, Search, ExternalLink, Activity, DollarSign, BookOpen, Square, Zap, Plus, PieChart, Info, Bot, User as UserIcon, Flame, AlertOctagon, Globe, ShieldAlert, Newspaper, BarChart3 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import EducationalCard from './EducationalCard'
 import NunnoLogo from './NunnoLogo'
@@ -11,6 +11,15 @@ import { cn } from '../utils/cn'
 import ThinkingLoader from './ThinkingLoader'
 import { analytics } from '../utils/analytics'
 import LoginSignup from './LoginSignup'
+import {
+    WebSearchCard,
+    TokenomicsCard,
+    OnChainCard,
+    RoastCard,
+    FOMOCard,
+    NewsSentimentCard,
+    MarketOverviewCard
+} from './chat/ToolCards'
 
 // Helper: format inline text (bold markers)
 function formatInlineText(text) {
@@ -80,13 +89,13 @@ function formatMessageContent(content) {
                 }
 
                 elements.push(
-                    <div key={`table-${i}`} className="my-6 w-full max-w-full overflow-x-auto rounded-2xl border border-purple-500/20 bg-white/[0.02] dark:bg-white/[0.015] shadow-lg shadow-purple-500/5">
+                    <div key={`table - ${i} `} className="my-6 w-full max-w-full overflow-x-auto rounded-2xl border border-violet-500/20 bg-white/[0.02] dark:bg-white/[0.015] shadow-lg shadow-violet-500/5">
                         <table className="w-full min-w-max text-sm border-collapse">
                             {headerCells.length > 0 && (
                                 <thead>
-                                    <tr className="border-b border-purple-500/20 bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent sticky top-0 z-10">
+                                    <tr className="border-b border-violet-500/20 bg-gradient-to-r from-violet-500/10 via-violet-500/5 to-transparent sticky top-0 z-10">
                                         {headerCells.map((cell, ci) => (
-                                            <th key={ci} className="px-5 py-3.5 text-left font-black text-purple-400 dark:text-purple-300 uppercase tracking-widest text-[11px] whitespace-nowrap">
+                                            <th key={ci} className="px-5 py-3.5 text-left font-black text-violet-400 dark:text-violet-300 uppercase tracking-widest text-[11px] whitespace-nowrap">
                                                 {formatInlineText(cell)}
                                             </th>
                                         ))}
@@ -98,7 +107,7 @@ function formatMessageContent(content) {
                                     <tr
                                         key={ri}
                                         className={cn(
-                                            "border-b border-white/5 transition-colors duration-200 hover:bg-purple-500/[0.06]",
+                                            "border-b border-white/5 transition-colors duration-200 hover:bg-violet-500/[0.06]",
                                             ri % 2 === 0 ? "bg-white/[0.01]" : "bg-transparent"
                                         )}
                                     >
@@ -121,7 +130,7 @@ function formatMessageContent(content) {
             } else {
                 tableLines.forEach((tl, ti) => {
                     elements.push(
-                        <p key={`p-${i}-${ti}`} className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4 msg-fade-in">
+                        <p key={`p - ${i} -${ti} `} className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4 msg-fade-in">
                             {formatInlineText(tl)}
                         </p>
                     );
@@ -203,7 +212,7 @@ const MessageItem = memo(forwardRef(({ message, onDeepAnalysis }, ref) => {
                 </div>
                 <span className={cn(
                     "text-[10px] font-black uppercase tracking-[0.3em] italic",
-                    isAssistant ? "text-purple-600 dark:text-purple-400" : "text-slate-400 dark:text-slate-500"
+                    isAssistant ? "text-violet-600 dark:text-violet-400" : "text-slate-400 dark:text-slate-500"
                 )}>
                     {isAssistant ? "Nunno Intelligence" : "You"}
                 </span>
@@ -216,29 +225,41 @@ const MessageItem = memo(forwardRef(({ message, onDeepAnalysis }, ref) => {
                 "w-full px-0 group",
                 isAssistant ? "text-left" : "text-right"
             )}>
-                {/* Render Educational Cards if data exists */}
-                {isAssistant && message.dataUsed?.technical && (
-                    <div className="flex flex-col gap-6 mb-8 max-w-2xl">
-                        {(Array.isArray(message.dataUsed.technical)
-                            ? message.dataUsed.technical
-                            : [message.dataUsed.technical]
-                        ).map((data, idx) => (
-                            <div
-                                key={idx}
-                                className="msg-fade-in"
-                                style={{ animationDelay: `${idx * 80}ms` }}
-                            >
-                                <EducationalCard
-                                    data={data}
-                                    onDeepAnalysis={onDeepAnalysis}
-                                />
+                {/* ── AGENTIC TOOL ARTIFACTS ── */}
+                {isAssistant && message.dataUsed && (
+                    <div className="flex flex-col gap-2 mb-4 w-full max-w-2xl">
+                        {/* Web Research Results */}
+                        {message.dataUsed.web_search && <WebSearchCard results={message.dataUsed.web_search} />}
+                        {message.dataUsed.deep_research && <WebSearchCard results={message.dataUsed.deep_research} />}
+
+                        {/* Market Intel Cards */}
+                        {message.dataUsed.tokenomics && <TokenomicsCard data={message.dataUsed.tokenomics} />}
+                        {message.dataUsed.onchain && <OnChainCard data={message.dataUsed.onchain} />}
+                        {message.dataUsed.news_sentiment && <NewsSentimentCard data={message.dataUsed.news_sentiment} />}
+                        {message.dataUsed.market_overview && <MarketOverviewCard data={message.dataUsed.market_overview} />}
+
+                        {/* Specialized Analysis */}
+                        {message.dataUsed.roast && <RoastCard data={message.dataUsed.roast} />}
+                        {message.dataUsed.fomo && <FOMOCard data={message.dataUsed.fomo} />}
+
+                        {/* Legacy Technical Analysis Card */}
+                        {message.dataUsed.technical && (
+                            <div className="flex flex-col gap-6 mb-4">
+                                {(Array.isArray(message.dataUsed.technical)
+                                    ? message.dataUsed.technical
+                                    : [message.dataUsed.technical]
+                                ).map((data, idx) => (
+                                    <div key={idx} className="msg-fade-in" style={{ animationDelay: `${idx * 80} ms` }}>
+                                        <EducationalCard data={data} onDeepAnalysis={onDeepAnalysis} />
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                        )}
                     </div>
                 )}
 
                 {/* Determine if we should show message text */}
-                {(message.content || (!message.dataUsed?.technical)) && (
+                {(message.content || (!message.dataUsed || Object.keys(message.dataUsed).length === 0)) && (
                     <div className={cn(
                         "relative inline-block",
                         isAssistant ? "w-full max-w-full sm:max-w-3xl" : "w-fit max-w-[85%]"
@@ -247,25 +268,25 @@ const MessageItem = memo(forwardRef(({ message, onDeepAnalysis }, ref) => {
                             "relative z-10 text-lg leading-relaxed px-6 py-4 rounded-3xl",
                             isAssistant
                                 ? "bg-white/5 dark:bg-white/[0.03] border border-white/10 dark:text-slate-200 shadow-xl shadow-black/5"
-                                : "bg-gradient-to-br from-purple-600 to-indigo-700 text-white font-medium shadow-2xl shadow-purple-500/20"
+                                : "bg-gradient-to-br from-violet-600 to-indigo-700 text-white font-medium shadow-2xl shadow-violet-500/20"
                         )}>
                             {isAssistant ? formatMessageContent(message.content) : message.content}
                         </div>
 
                         {!isAssistant && (
-                            <div className="absolute inset-0 bg-purple-500/10 rounded-full scale-75 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                            <div className="absolute inset-0 bg-violet-500/10 rounded-full scale-75 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                         )}
 
                         {isAssistant && message.content && (
-                            <div className="absolute -left-2 top-4 w-1 h-8 bg-purple-500/50 rounded-full" />
+                            <div className="absolute -left-2 top-4 w-1 h-8 bg-violet-500/50 rounded-full" />
                         )}
                     </div>
                 )}
 
                 {isAssistant && message.toolCalls && message.toolCalls.length > 0 && (
-                    <div className="mt-6 flex items-center gap-3 text-[10px] text-purple-400 dark:text-purple-500/60 font-black uppercase tracking-[.25em] italic opacity-80 pl-2">
-                        <div className="size-1.5 rounded-full bg-purple-500 animate-pulse" />
-                        <span>Analysis Node: {message.toolCalls.join(' / ')}</span>
+                    <div className="mt-6 flex items-center gap-3 text-[10px] text-violet-400 dark:text-violet-500/60 font-black uppercase tracking-[.25em] italic opacity-80 pl-2">
+                        <div className="size-1.5 rounded-full bg-violet-500 animate-pulse" />
+                        <span>Neural Execution Node: {message.toolCalls.join(' + ')}</span>
                     </div>
                 )}
             </div>
@@ -361,7 +382,7 @@ export default function ChatInterface({ userAge }) {
 
     const handleDeepAnalysis = (ticker) => {
         if (!ticker) return;
-        handleSend(`Provide a Deep Lab Breakdown for ${ticker}. Focus on high-level technical intent and structural sentiment.`);
+        handleSend(`Provide a Deep Lab Breakdown for ${ticker}.Focus on high - level technical intent and structural sentiment.`);
     }
 
     useEffect(() => {
@@ -472,7 +493,7 @@ export default function ChatInterface({ userAge }) {
                         });
                     }
                     else if (chunk.type === 'error') {
-                        fullContent += `\n\n⚠️ Error: ${chunk.content}`;
+                        fullContent += `\n\n⚠️ Error: ${chunk.content} `;
                         setMessages(prev => {
                             const newMessages = [...prev];
                             const lastMsgIndex = newMessages.length - 1;
@@ -508,7 +529,7 @@ export default function ChatInterface({ userAge }) {
                 const lastMsgIndex = newMessages.length - 1;
                 newMessages[lastMsgIndex] = {
                     ...newMessages[lastMsgIndex],
-                    content: (newMessages[lastMsgIndex].content || '') + `\n\n😅 Connection error: ${error.message}`
+                    content: (newMessages[lastMsgIndex].content || '') + `\n\n😅 Connection error: ${error.message} `
                 };
                 return newMessages;
             });
@@ -547,11 +568,11 @@ export default function ChatInterface({ userAge }) {
         try {
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
             const token = localStorage.getItem('token')
-            const response = await fetch(`${API_URL}/api/v1/analyze/feed-nunno`, {
+            const response = await fetch(`${API_URL} /api/v1 / analyze / feed - nunno`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token} `
                 },
                 body: JSON.stringify({
                     symbol: 'BTCUSDT',
@@ -666,14 +687,14 @@ export default function ChatInterface({ userAge }) {
                                 initial={{ y: 10, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.2, duration: 0.4 }}
-                                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.3em]"
+                                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] sm:tracking-[0.3em]"
                             >
                                 <img src="/logo.png" alt="" className="size-3.5 object-contain" />
                                 <span>Intelligence Center Active</span>
                             </motion.div>
                             <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-slate-800 dark:text-white tracking-tighter leading-none italic uppercase max-w-[95vw] sm:max-w-full px-2 lg:mt-4">
                                 FINANCE, <br className="block sm:hidden" />
-                                <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent underline decoration-purple-500/30 underline-offset-4 sm:underline-offset-8">SIMPLIFIED.</span>
+                                <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400 bg-clip-text text-transparent underline decoration-violet-500/30 underline-offset-4 sm:underline-offset-8">SIMPLIFIED.</span>
                             </h1>
 
                             <p className="hidden md:block text-slate-500 dark:text-slate-400 text-base lg:text-lg max-w-xl mx-auto font-medium leading-relaxed italic px-4 text-center">
@@ -703,7 +724,7 @@ export default function ChatInterface({ userAge }) {
                     {isLoading && (
                         <div className="flex items-center gap-4 mb-12 pl-4 py-2">
                             <ThinkingLoader />
-                            <span className="thinking-status-text text-[10px] font-black text-purple-400 dark:text-purple-500/60 uppercase tracking-[0.25em] italic">
+                            <span className="thinking-status-text text-[10px] font-black text-violet-400 dark:text-violet-500/60 uppercase tracking-[0.25em] italic">
                                 {loadingStatus || 'Processing...'}
                                 <span className="status-cursor" />
                             </span>
@@ -716,7 +737,7 @@ export default function ChatInterface({ userAge }) {
                 {showScrollDown && (
                     <button
                         onClick={() => { scrollToBottom(true); setShowScrollDown(false); }}
-                        className="sticky bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-purple-600/90 hover:bg-purple-500 text-white text-[10px] font-black uppercase tracking-[0.15em] shadow-xl shadow-purple-500/30 transition-all active:scale-95 backdrop-blur-sm border border-purple-400/20"
+                        className="sticky bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-violet-600/90 hover:bg-violet-500 text-white text-[10px] font-black uppercase tracking-[0.15em] shadow-xl shadow-violet-500/30 transition-all active:scale-95 backdrop-blur-sm border border-violet-400/20"
                     >
                         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M6 2v8M2 6l4 4 4-4" />
@@ -742,15 +763,15 @@ export default function ChatInterface({ userAge }) {
                     )}
                 >
                     {isInitialState && (
-                        <div className="absolute inset-0 rounded-[3rem] bg-gradient-to-br from-purple-500/10 via-pink-400/5 to-transparent pointer-events-none opacity-50" />
+                        <div className="absolute inset-0 rounded-[3rem] bg-gradient-to-br from-violet-500/10 via-pink-400/5 to-transparent pointer-events-none opacity-50" />
                     )}
 
                     {/* Centered / Bottom Input Design */}
                     <div
                         id="chat-input-container"
                         className={cn(
-                            "relative bg-white dark:bg-[#0c0c14] rounded-2xl sm:rounded-[2rem] shadow-2xl border border-purple-100/50 dark:border-white/10 p-2 sm:p-4 group ring-1 ring-white/5",
-                            !isInitialState && "hover:border-purple-500/30 transition-[border-color]"
+                            "relative bg-white dark:bg-[#0c0c14] rounded-2xl sm:rounded-[2rem] shadow-2xl border border-violet-100/50 dark:border-white/10 p-2 sm:p-4 group ring-1 ring-white/5",
+                            !isInitialState && "hover:border-violet-500/30 transition-[border-color]"
                         )}
                     >
                         <div className="relative flex gap-2 sm:gap-4 items-center">
@@ -761,8 +782,8 @@ export default function ChatInterface({ userAge }) {
                                     className={cn(
                                         "p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl transition-all duration-500 shadow-lg",
                                         isActionMenuOpen
-                                            ? "bg-purple-600 text-white rotate-45 scale-110 shadow-purple-500/40"
-                                            : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-purple-600 dark:hover:text-purple-400"
+                                            ? "bg-violet-600 text-white rotate-45 scale-110 shadow-violet-500/40"
+                                            : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-violet-600 dark:hover:text-violet-400"
                                     )}
                                 >
                                     <Plus size={20} className="sm:w-[22px] sm:h-[22px]" />
@@ -771,42 +792,42 @@ export default function ChatInterface({ userAge }) {
                                     <motion.div
                                         initial={{ opacity: 0, scale: 0.9, y: 15 }}
                                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                                        className="absolute bottom-full mb-6 left-0 w-72 bg-white dark:bg-[#12121a] rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] border border-purple-100/50 dark:border-white/10 overflow-hidden z-50 p-2 space-y-2"
+                                        className="absolute bottom-full mb-6 left-0 w-72 bg-white dark:bg-[#12121a] rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] border border-violet-100/50 dark:border-white/10 overflow-hidden z-50 p-2 space-y-2"
                                     >
-                                        <button onClick={() => setWebSearchEnabled(!webSearchEnabled)} className={cn("w-full flex items-center gap-4 p-4 rounded-2xl text-sm font-bold transition-all group", webSearchEnabled ? "bg-purple-500/10 dark:bg-purple-500/20 border border-purple-500/30" : "hover:bg-purple-50 dark:hover:bg-white/5")}>
-                                            <div className={cn("size-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg", webSearchEnabled ? "bg-purple-600 text-white shadow-purple-500/40" : "bg-purple-500/10 text-purple-500")}>
+                                        <button onClick={() => setWebSearchEnabled(!webSearchEnabled)} className={cn("w-full flex items-center gap-4 p-4 rounded-2xl text-sm font-bold transition-all group", webSearchEnabled ? "bg-violet-500/10 dark:bg-violet-500/20 border border-violet-500/30" : "hover:bg-violet-50 dark:hover:bg-white/5")}>
+                                            <div className={cn("size-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg", webSearchEnabled ? "bg-violet-600 text-white shadow-violet-500/40" : "bg-violet-500/10 text-violet-500")}>
                                                 <Globe size={20} className={cn(webSearchEnabled && "animate-pulse")} />
                                             </div>
                                             <div className="flex flex-col items-start text-left">
-                                                <span className={cn("italic uppercase tracking-tight", webSearchEnabled ? "text-purple-600 dark:text-purple-400" : "text-slate-700 dark:text-slate-200")}>
+                                                <span className={cn("italic uppercase tracking-tight", webSearchEnabled ? "text-violet-600 dark:text-violet-400" : "text-slate-700 dark:text-slate-200")}>
                                                     {webSearchEnabled ? "Research Mode: ON" : "Web Intelligence"}
                                                 </span>
                                                 <span className="text-[10px] text-slate-500 font-medium">Live neural web scanning</span>
                                             </div>
-                                            {webSearchEnabled && <div className="ml-auto size-2 rounded-full bg-purple-500 animate-pulse" />}
+                                            {webSearchEnabled && <div className="ml-auto size-2 rounded-full bg-violet-500 animate-pulse" />}
                                         </button>
-                                        <button onClick={() => { handleFeedNunno(); setIsActionMenuOpen(false); }} className="w-full flex items-center gap-4 p-4 hover:bg-purple-50 dark:hover:bg-white/5 rounded-2xl text-slate-700 dark:text-slate-200 text-sm font-bold transition-all group">
+                                        <button onClick={() => { handleFeedNunno(); setIsActionMenuOpen(false); }} className="w-full flex items-center gap-4 p-4 hover:bg-violet-50 dark:hover:bg-white/5 rounded-2xl text-slate-700 dark:text-slate-200 text-sm font-bold transition-all group">
                                             <div className="size-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform"><Zap size={20} /></div>
                                             <div className="flex flex-col items-start">
                                                 <span className="italic uppercase tracking-tight">Market Briefing</span>
                                                 <span className="text-[10px] text-slate-500 font-medium">Instant AI data compression</span>
                                             </div>
                                         </button>
-                                        <button onClick={() => { handleSuggestionClick("Show me my portfolio breakdown"); setIsActionMenuOpen(false); }} className="w-full flex items-center gap-4 p-4 hover:bg-purple-50 dark:hover:bg-white/5 rounded-2xl text-slate-700 dark:text-slate-200 text-sm font-bold transition-all group">
-                                            <div className="size-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform"><PieChart size={20} /></div>
+                                        <button onClick={() => { handleSuggestionClick("Show me my portfolio breakdown"); setIsActionMenuOpen(false); }} className="w-full flex items-center gap-4 p-4 hover:bg-violet-50 dark:hover:bg-white/5 rounded-2xl text-slate-700 dark:text-slate-200 text-sm font-bold transition-all group">
+                                            <div className="size-10 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-500 group-hover:scale-110 transition-transform"><PieChart size={20} /></div>
                                             <div className="flex flex-col items-start">
                                                 <span className="italic uppercase tracking-tight">Portfolio Analysis</span>
                                                 <span className="text-[10px] text-slate-500 font-medium">Neural asset breakdown</span>
                                             </div>
                                         </button>
-                                        <button onClick={() => { handleSuggestionClick("Roast this coin: BTCUSDT"); setIsActionMenuOpen(false); }} className="w-full flex items-center gap-4 p-4 hover:bg-purple-50 dark:hover:bg-white/5 rounded-2xl text-slate-700 dark:text-slate-200 text-sm font-bold transition-all group">
+                                        <button onClick={() => { handleSuggestionClick("Roast this coin: BTCUSDT"); setIsActionMenuOpen(false); }} className="w-full flex items-center gap-4 p-4 hover:bg-violet-50 dark:hover:bg-white/5 rounded-2xl text-slate-700 dark:text-slate-200 text-sm font-bold transition-all group">
                                             <div className="size-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform"><Flame size={20} /></div>
                                             <div className="flex flex-col items-start">
                                                 <span className="italic uppercase tracking-tight">Roast My Coin</span>
                                                 <span className="text-[10px] text-slate-500 font-medium">Brutal reality check</span>
                                             </div>
                                         </button>
-                                        <button onClick={() => { handleSuggestionClick("Check FOMO signals for BTCUSDT, ETHUSDT, SOLUSDT"); setIsActionMenuOpen(false); }} className="w-full flex items-center gap-4 p-4 hover:bg-purple-50 dark:hover:bg-white/5 rounded-2xl text-slate-700 dark:text-slate-200 text-sm font-bold transition-all group">
+                                        <button onClick={() => { handleSuggestionClick("Check FOMO signals for BTCUSDT, ETHUSDT, SOLUSDT"); setIsActionMenuOpen(false); }} className="w-full flex items-center gap-4 p-4 hover:bg-violet-50 dark:hover:bg-white/5 rounded-2xl text-slate-700 dark:text-slate-200 text-sm font-bold transition-all group">
                                             <div className="size-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform"><AlertOctagon size={20} /></div>
                                             <div className="flex flex-col items-start">
                                                 <span className="italic uppercase tracking-tight">FOMO Killer</span>
@@ -848,8 +869,8 @@ export default function ChatInterface({ userAge }) {
                                         disabled={!input.trim()}
                                         className={cn(
                                             "h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 flex items-center justify-center rounded-xl sm:rounded-2xl transition-all duration-500",
-                                            "bg-white text-black hover:bg-purple-600 hover:text-white",
-                                            "shadow-xl shadow-black/5 dark:shadow-purple-500/10",
+                                            "bg-white text-black hover:bg-violet-600 hover:text-white",
+                                            "shadow-xl shadow-black/5 dark:shadow-violet-500/10",
                                             "hover:scale-110 active:scale-95 disabled:hover:scale-100",
                                             "disabled:opacity-20 disabled:grayscale"
                                         )}
@@ -870,9 +891,9 @@ export default function ChatInterface({ userAge }) {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.4 + i * 0.1 }}
                                     onClick={() => handleSuggestionClick(s.text)}
-                                    className="flex items-center gap-3 sm:gap-4 p-3 sm:p-5 bg-white/5 dark:bg-white/[0.03] hover:bg-white/10 dark:hover:bg-white/[0.08] border border-white/5 hover:border-purple-500/30 rounded-2xl sm:rounded-3xl text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-bold transition-all group"
+                                    className="flex items-center gap-3 sm:gap-4 p-3 sm:p-5 bg-white/5 dark:bg-white/[0.03] hover:bg-white/10 dark:hover:bg-white/[0.08] border border-white/5 hover:border-violet-500/30 rounded-2xl sm:rounded-3xl text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-bold transition-all group"
                                 >
-                                    <div className="size-8 sm:size-10 rounded-xl sm:rounded-2xl bg-white/5 flex items-center justify-center text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-all ring-1 ring-white/10 flex-shrink-0">
+                                    <div className="size-8 sm:size-10 rounded-xl sm:rounded-2xl bg-white/5 flex items-center justify-center text-violet-400 group-hover:bg-violet-600 group-hover:text-white transition-all ring-1 ring-white/10 flex-shrink-0">
                                         {s.icon}
                                     </div>
                                     <span className="italic uppercase tracking-tight text-left">{s.text}</span>

@@ -35,7 +35,7 @@ export default function PredictionChart({ data, support, resistance, currentPric
                         <div
                             key={index}
                             className={`px-3 py-1 rounded-xl border text-[9px] font-black uppercase tracking-tight ${level.type === 'support'
-                                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                                ? 'bg-purple-500/10 border-purple-500/20 text-purple-400'
                                 : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
                                 }`}
                         >

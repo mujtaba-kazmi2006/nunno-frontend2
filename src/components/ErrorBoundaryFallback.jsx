@@ -7,7 +7,7 @@ export default function ErrorBoundaryFallback({ error, resetErrorBoundary }) {
             <div className="max-w-xl w-full">
                 {/* Decorative Background Glow */}
                 <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[600px] bg-purple-600/10 blur-[120px] rounded-full" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[600px] bg-violet-600/10 blur-[120px] rounded-full" />
                 </div>
 
                 <div className="relative z-10 text-center">
@@ -36,7 +36,7 @@ export default function ErrorBoundaryFallback({ error, resetErrorBoundary }) {
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <button
                             onClick={resetErrorBoundary}
-                            className="flex-1 sm:flex-none px-8 py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-[10px] italic hover:bg-purple-600 hover:text-white transition-all active:scale-95 flex items-center justify-center gap-3 shadow-xl"
+                            className="flex-1 sm:flex-none px-8 py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-[10px] italic hover:bg-violet-600 hover:text-white transition-all active:scale-95 flex items-center justify-center gap-3 shadow-xl"
                         >
                             <RefreshCcw size={16} />
                             Re-establish Link

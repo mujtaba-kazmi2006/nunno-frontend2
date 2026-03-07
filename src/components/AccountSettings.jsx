@@ -68,7 +68,7 @@ export default function AccountSettings() {
     ];
 
     return (
-        <div className={`min-h-[100dvh] py-6 sm:py-8 px-4 transition-colors duration-500 pb-24 md:pb-8 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-purple-50'}`}>
+        <div className={`min-h-[100dvh] py-6 sm:py-8 px-4 transition-colors duration-500 pb-24 md:pb-8 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-violet-50'}`}>
             <div className="max-w-5xl mx-auto">
                 {/* Header */}
                 <div className="mb-6 pl-12 md:pl-0">
@@ -86,8 +86,8 @@ export default function AccountSettings() {
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`flex items-center gap-2 px-4 sm:px-6 py-4 font-black uppercase tracking-widest text-[10px] sm:text-xs transition-all whitespace-nowrap italic relative ${activeTab === tab.id
-                                        ? (theme === 'dark' ? 'text-purple-400 bg-purple-500/5' : 'text-purple-600 bg-purple-50')
-                                        : (theme === 'dark' ? 'text-slate-500 hover:text-slate-200 hover:bg-white/5' : 'text-gray-500 hover:text-purple-600 hover:bg-gray-50')
+                                        ? (theme === 'dark' ? 'text-violet-400 bg-violet-500/5' : 'text-violet-600 bg-violet-50')
+                                        : (theme === 'dark' ? 'text-slate-500 hover:text-slate-200 hover:bg-white/5' : 'text-gray-500 hover:text-violet-600 hover:bg-gray-50')
                                         }`}
                                 >
                                     <Icon size={16} className="sm:size-5" />
@@ -95,7 +95,7 @@ export default function AccountSettings() {
                                     {activeTab === tab.id && (
                                         <motion.div
                                             layoutId="activeTab"
-                                            className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500"
+                                            className="absolute bottom-0 left-0 right-0 h-1 bg-violet-500"
                                         />
                                     )}
                                 </button>
@@ -109,11 +109,11 @@ export default function AccountSettings() {
                             <div className="space-y-8">
                                 <div className="flex flex-col sm:flex-row items-center gap-6 mb-10">
                                     <div className="relative group">
-                                        <div className={`w-20 h-20 sm:w-28 sm:h-28 rounded-3xl flex items-center justify-center text-white text-3xl sm:text-4xl font-black italic shadow-2xl transition-transform group-hover:rotate-6 ${theme === 'dark' ? 'bg-gradient-to-br from-purple-600 to-indigo-600' : 'bg-gradient-to-br from-purple-500 to-purple-400'}`}>
+                                        <div className={`w-20 h-20 sm:w-28 sm:h-28 rounded-3xl flex items-center justify-center text-white text-3xl sm:text-4xl font-black italic shadow-2xl transition-transform group-hover:rotate-6 ${theme === 'dark' ? 'bg-gradient-to-br from-violet-600 to-violet-600' : 'bg-gradient-to-br from-violet-500 to-violet-400'}`}>
                                             {formData.name.charAt(0)}
                                         </div>
-                                        <button className={`absolute -bottom-2 -right-2 rounded-2xl p-2.5 shadow-2xl border-2 transition-all hover:scale-110 active:scale-95 ${theme === 'dark' ? 'bg-[#0c0c14] border-white/10 hover:border-purple-500/50' : 'bg-white border-purple-200 hover:bg-purple-50'}`}>
-                                            <Camera size={18} className={theme === 'dark' ? 'text-purple-400' : 'text-purple-600'} />
+                                        <button className={`absolute -bottom-2 -right-2 rounded-2xl p-2.5 shadow-2xl border-2 transition-all hover:scale-110 active:scale-95 ${theme === 'dark' ? 'bg-[#0c0c14] border-white/10 hover:border-violet-500/50' : 'bg-white border-violet-200 hover:bg-violet-50'}`}>
+                                            <Camera size={18} className={theme === 'dark' ? 'text-violet-400' : 'text-violet-600'} />
                                         </button>
                                     </div>
                                     <div className="text-center sm:text-left">
@@ -128,8 +128,8 @@ export default function AccountSettings() {
                                             <span className={cn(
                                                 "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest italic",
                                                 user?.is_early_bird
-                                                    ? "bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-500/30"
-                                                    : (theme === 'dark' ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-100 text-purple-700')
+                                                    ? "bg-gradient-to-r from-violet-500 to-violet-600 text-white shadow-lg shadow-violet-500/30"
+                                                    : (theme === 'dark' ? 'bg-violet-500/10 text-violet-400' : 'bg-violet-100 text-violet-700')
                                             )}>
                                                 {user?.is_early_bird ? "Early Bird Pro" : `${user?.tier || 'Free'} Specialist`}
                                             </span>
@@ -153,7 +153,7 @@ export default function AccountSettings() {
                                             name="name"
                                             value={formData.name}
                                             onChange={handleInputChange}
-                                            className={`w-full px-4 py-3 border-2 rounded-2xl outline-none transition-all font-bold ${theme === 'dark' ? 'bg-[#0c0c14] border-white/5 text-slate-200 focus:border-purple-500/50' : 'bg-white border-gray-100 text-gray-900 focus:border-purple-500 focus:ring-4 focus:ring-purple-100'}`}
+                                            className={`w-full px-4 py-3 border-2 rounded-2xl outline-none transition-all font-bold ${theme === 'dark' ? 'bg-[#0c0c14] border-white/5 text-slate-200 focus:border-violet-500/50' : 'bg-white border-gray-100 text-gray-900 focus:border-violet-500 focus:ring-4 focus:ring-violet-100'}`}
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -165,7 +165,7 @@ export default function AccountSettings() {
                                             name="email"
                                             value={formData.email}
                                             onChange={handleInputChange}
-                                            className={`w-full px-4 py-3 border-2 rounded-2xl outline-none transition-all font-bold ${theme === 'dark' ? 'bg-[#0c0c14] border-white/5 text-slate-200 focus:border-purple-500/50' : 'bg-white border-gray-100 text-gray-900 focus:border-purple-500 focus:ring-4 focus:ring-purple-100'}`}
+                                            className={`w-full px-4 py-3 border-2 rounded-2xl outline-none transition-all font-bold ${theme === 'dark' ? 'bg-[#0c0c14] border-white/5 text-slate-200 focus:border-violet-500/50' : 'bg-white border-gray-100 text-gray-900 focus:border-violet-500 focus:ring-4 focus:ring-violet-100'}`}
                                         />
                                     </div>
                                 </div>
@@ -185,7 +185,7 @@ export default function AccountSettings() {
                                                 type="button"
                                                 onClick={() => setFormData(prev => ({ ...prev, language: lang.id }))}
                                                 className={`p-4 rounded-[1.5rem] border-2 text-left transition-all group active:scale-95 ${formData.language === lang.id
-                                                    ? 'border-purple-500 bg-purple-500/10 shadow-[0_0_20px_rgba(168,85,247,0.15)]'
+                                                    ? 'border-violet-500 bg-violet-500/10 shadow-[0_0_24px_rgba(55,159,157,0.25)]'
                                                     : theme === 'dark' ? 'border-white/5 bg-white/[0.02] hover:border-white/10' : 'border-gray-100 bg-white hover:bg-gray-50'
                                                     }`}
                                             >
@@ -197,7 +197,7 @@ export default function AccountSettings() {
                                 </div>
 
                                 {status.message && (
-                                    <div className={`md:col-span-2 p-4 rounded-xl text-sm font-bold uppercase tracking-wider ${status.type === 'success' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+                                    <div className={`md:col-span-2 p-4 rounded-xl text-sm font-bold uppercase tracking-wider ${status.type === 'success' ? 'bg-purple-500/10 text-purple-500' : 'bg-rose-500/10 text-rose-500'}`}>
                                         {status.type === 'success' ? '✅' : '⚠️'} {status.message}
                                     </div>
                                 )}
@@ -205,7 +205,7 @@ export default function AccountSettings() {
                                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
                                     <button
                                         onClick={handleSave}
-                                        className={`flex items-center justify-center gap-3 px-8 py-4 text-white rounded-[1.25rem] font-black uppercase tracking-[.15em] italic text-xs transition-all shadow-2xl active:scale-95 group w-full sm:w-auto ${theme === 'dark' ? 'bg-purple-600 hover:bg-purple-500' : 'bg-purple-600 hover:bg-purple-700'}`}
+                                        className={`flex items-center justify-center gap-3 px-8 py-4 text-white rounded-[1.25rem] font-black uppercase tracking-[.15em] italic text-xs transition-all shadow-2xl active:scale-95 group w-full sm:w-auto ${theme === 'dark' ? 'bg-violet-600 hover:bg-violet-500' : 'bg-violet-600 hover:bg-violet-700'}`}
                                     >
                                         <Save size={18} className="group-hover:scale-110 transition-transform" />
                                         Commit Changes
@@ -218,7 +218,7 @@ export default function AccountSettings() {
                                                 window.location.href = '/dashboard?tutorial=force';
                                             }
                                         }}
-                                        className={`flex items-center justify-center gap-3 px-8 py-4 rounded-[1.25rem] font-black uppercase tracking-[.15em] italic text-xs transition-all border-2 active:scale-95 w-full sm:w-auto ${theme === 'dark' ? 'border-purple-500/30 text-purple-400 hover:bg-purple-500/10' : 'border-purple-200 text-purple-600 hover:bg-purple-50'}`}
+                                        className={`flex items-center justify-center gap-3 px-8 py-4 rounded-[1.25rem] font-black uppercase tracking-[.15em] italic text-xs transition-all border-2 active:scale-95 w-full sm:w-auto ${theme === 'dark' ? 'border-violet-500/30 text-violet-400 hover:bg-violet-500/10' : 'border-violet-200 text-violet-600 hover:bg-violet-50'}`}
                                     >
                                         <Zap size={18} />
                                         Neural Reset
@@ -230,14 +230,14 @@ export default function AccountSettings() {
                         {/* Security Tab */}
                         {activeTab === 'security' && (
                             <div className="space-y-8">
-                                <div className={`border-l-4 p-5 rounded-2xl mb-8 ${theme === 'dark' ? 'bg-purple-500/5 border-purple-500/50' : 'bg-purple-50 border-purple-600'}`}>
+                                <div className={`border-l-4 p-5 rounded-2xl mb-8 ${theme === 'dark' ? 'bg-violet-500/5 border-violet-500/50' : 'bg-violet-50 border-violet-600'}`}>
                                     <div className="flex items-start gap-4">
-                                        <div className={`p-2 rounded-xl ${theme === 'dark' ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-100 text-purple-600'}`}>
+                                        <div className={`p-2 rounded-xl ${theme === 'dark' ? 'bg-violet-500/10 text-violet-400' : 'bg-violet-100 text-violet-600'}`}>
                                             <Shield size={20} />
                                         </div>
                                         <div>
-                                            <h4 className={`text-xs font-black uppercase tracking-widest mb-1 italic ${theme === 'dark' ? 'text-purple-300' : 'text-purple-900'}`}>Security Protocol</h4>
-                                            <p className={`text-[11px] sm:text-xs font-medium leading-relaxed ${theme === 'dark' ? 'text-purple-200/60' : 'text-purple-700'}`}>
+                                            <h4 className={`text-xs font-black uppercase tracking-widest mb-1 italic ${theme === 'dark' ? 'text-violet-300' : 'text-violet-900'}`}>Security Protocol</h4>
+                                            <p className={`text-[11px] sm:text-xs font-medium leading-relaxed ${theme === 'dark' ? 'text-violet-200/60' : 'text-violet-700'}`}>
                                                 Maintain institutional safety: Use 8+ characters including mixed cases, numbers, and neural entropy (symbols).
                                             </p>
                                         </div>
@@ -254,7 +254,7 @@ export default function AccountSettings() {
                                             name="currentPassword"
                                             value={formData.currentPassword}
                                             onChange={handleInputChange}
-                                            className={`w-full px-4 py-3 border-2 rounded-2xl outline-none transition-all font-bold ${theme === 'dark' ? 'bg-[#0c0c14] border-white/5 text-slate-200 focus:border-purple-500/50' : 'bg-white border-gray-100 text-gray-900 focus:border-purple-500 focus:ring-4 focus:ring-purple-100'}`}
+                                            className={`w-full px-4 py-3 border-2 rounded-2xl outline-none transition-all font-bold ${theme === 'dark' ? 'bg-[#0c0c14] border-white/5 text-slate-200 focus:border-violet-500/50' : 'bg-white border-gray-100 text-gray-900 focus:border-violet-500 focus:ring-4 focus:ring-violet-100'}`}
                                             placeholder="Enter current password"
                                         />
                                     </div>
@@ -269,7 +269,7 @@ export default function AccountSettings() {
                                                 name="newPassword"
                                                 value={formData.newPassword}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 border-2 rounded-2xl outline-none transition-all font-bold ${theme === 'dark' ? 'bg-[#0c0c14] border-white/5 text-slate-200 focus:border-purple-500/50' : 'bg-white border-gray-100 text-gray-900 focus:border-purple-500 focus:ring-4 focus:ring-purple-100'}`}
+                                                className={`w-full px-4 py-3 border-2 rounded-2xl outline-none transition-all font-bold ${theme === 'dark' ? 'bg-[#0c0c14] border-white/5 text-slate-200 focus:border-violet-500/50' : 'bg-white border-gray-100 text-gray-900 focus:border-violet-500 focus:ring-4 focus:ring-violet-100'}`}
                                                 placeholder="New password"
                                             />
                                         </div>
@@ -282,7 +282,7 @@ export default function AccountSettings() {
                                                 name="confirmPassword"
                                                 value={formData.confirmPassword}
                                                 onChange={handleInputChange}
-                                                className={`w-full px-4 py-3 border-2 rounded-2xl outline-none transition-all font-bold ${theme === 'dark' ? 'bg-[#0c0c14] border-white/5 text-slate-200 focus:border-purple-500/50' : 'bg-white border-gray-100 text-gray-900 focus:border-purple-500 focus:ring-4 focus:ring-purple-100'}`}
+                                                className={`w-full px-4 py-3 border-2 rounded-2xl outline-none transition-all font-bold ${theme === 'dark' ? 'bg-[#0c0c14] border-white/5 text-slate-200 focus:border-violet-500/50' : 'bg-white border-gray-100 text-gray-900 focus:border-violet-500 focus:ring-4 focus:ring-violet-100'}`}
                                                 placeholder="Repeat password"
                                             />
                                         </div>
@@ -291,7 +291,7 @@ export default function AccountSettings() {
 
                                 <button
                                     onClick={handleSave}
-                                    className={`flex items-center justify-center gap-3 px-8 py-4 text-white rounded-[1.25rem] font-black uppercase tracking-[.15em] italic text-xs transition-all shadow-2xl active:scale-95 group w-full sm:w-auto ${theme === 'dark' ? 'bg-purple-600 hover:bg-purple-500' : 'bg-purple-600 hover:bg-purple-700'}`}
+                                    className={`flex items-center justify-center gap-3 px-8 py-4 text-white rounded-[1.25rem] font-black uppercase tracking-[.15em] italic text-xs transition-all shadow-2xl active:scale-95 group w-full sm:w-auto ${theme === 'dark' ? 'bg-violet-600 hover:bg-violet-500' : 'bg-violet-600 hover:bg-violet-700'}`}
                                 >
                                     <Lock size={18} className="group-hover:rotate-12 transition-transform" />
                                     Update Security Link
@@ -330,7 +330,7 @@ export default function AccountSettings() {
                                                     initial={{ width: 0 }}
                                                     animate={{ width: `${Math.min(100, ((user?.tokens_used_today || 0) / (user?.limits?.daily_token_limit || 15000)) * 100)}%` }}
                                                     transition={{ duration: 1.5, ease: "easeOut" }}
-                                                    className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                                                    className="h-full bg-gradient-to-r from-blue-600 to-violet-500 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                                                 />
                                             </div>
                                         </div>
@@ -341,14 +341,14 @@ export default function AccountSettings() {
                                     <div className={`p-5 sm:p-8 rounded-[2rem] border transition-all hover:scale-[1.02] ${theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-gray-50 border-gray-100 shadow-sm'}`}>
                                         <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 mb-6">
                                             <div className="flex items-center gap-4">
-                                                <div className="bg-purple-500/10 p-3 rounded-2xl text-purple-500"><Shield size={24} /></div>
+                                                <div className="bg-violet-500/10 p-3 rounded-2xl text-violet-500"><Shield size={24} /></div>
                                                 <div className="flex flex-col">
                                                     <h4 className={`text-sm font-black uppercase tracking-widest italic ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Market Scans</h4>
                                                     <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter italic">Deep Asset Investigation</span>
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <span className={`text-[10px] font-black italic uppercase px-2.5 py-1 rounded-lg ${theme === 'dark' ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-100 text-purple-700'}`}>
+                                                <span className={`text-[10px] font-black italic uppercase px-2.5 py-1 rounded-lg ${theme === 'dark' ? 'bg-violet-500/10 text-violet-400' : 'bg-violet-100 text-violet-700'}`}>
                                                     {((user?.searches_today || 0) / (user?.limits?.daily_searches || 1)).toLocaleString(undefined, { style: 'percent' })} Load
                                                 </span>
                                             </div>
@@ -363,7 +363,7 @@ export default function AccountSettings() {
                                                     initial={{ width: 0 }}
                                                     animate={{ width: `${Math.min(100, ((user?.searches_today || 0) / (user?.limits?.daily_searches || 10)) * 100)}%` }}
                                                     transition={{ duration: 1.5, ease: "easeOut" }}
-                                                    className="h-full bg-gradient-to-r from-purple-600 to-pink-500 shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+                                                    className="h-full bg-gradient-to-r from-violet-600 to-pink-500 shadow-[0_0_15px_rgba(168,85,247,0.3)]"
                                                 />
                                             </div>
                                         </div>
@@ -371,13 +371,13 @@ export default function AccountSettings() {
                                     </div>
                                     <div className={`p-6 rounded-2xl border transition-all ${theme === 'dark' ? 'bg-slate-800/50 border-slate-700/50' : 'bg-gray-50 border-gray-200 shadow-sm'}`}>
                                         <div className="flex items-center gap-3 mb-4">
-                                            <div className="bg-emerald-500/10 p-2 rounded-lg text-emerald-500"><Bell size={20} /></div>
+                                            <div className="bg-purple-500/10 p-2 rounded-lg text-purple-500"><Bell size={20} /></div>
                                             <h4 className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>Daily Chat Quota</h4>
                                         </div>
                                         <div className="relative pt-1">
                                             <div className="flex mb-2 items-center justify-between">
                                                 <div>
-                                                    <span className={`text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full ${theme === 'dark' ? 'text-emerald-400 bg-emerald-200/10' : 'text-emerald-600 bg-emerald-100'}`}>
+                                                    <span className={`text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full ${theme === 'dark' ? 'text-purple-400 bg-purple-200/10' : 'text-purple-600 bg-purple-100'}`}>
                                                         {((user?.chat_messages_today || 0) / (user?.limits?.daily_chat_messages || 1)).toLocaleString(undefined, { style: 'percent' })} Used
                                                     </span>
                                                 </div>
@@ -388,7 +388,7 @@ export default function AccountSettings() {
                                                 </div>
                                             </div>
                                             <div className={`overflow-hidden h-2 mb-4 text-xs flex rounded ${theme === 'dark' ? 'bg-slate-700' : 'bg-gray-200'}`}>
-                                                <div style={{ width: `${Math.min(100, ((user?.chat_messages_today || 0) / (user?.limits?.daily_chat_messages || 20)) * 100)}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-emerald-500 transition-all duration-500"></div>
+                                                <div style={{ width: `${Math.min(100, ((user?.chat_messages_today || 0) / (user?.limits?.daily_chat_messages || 20)) * 100)}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-purple-500 transition-all duration-500"></div>
                                             </div>
                                         </div>
                                         <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Explicit message count for chat interactions. Limits reset daily.</p>
@@ -418,7 +418,7 @@ export default function AccountSettings() {
                                 <div className="grid grid-cols-1 gap-3">
                                     {[
                                         { id: 'emailNotifications', icon: Mail, label: 'Direct Protocol Update', sub: 'Receive institutional briefings via email', color: 'purple' },
-                                        { id: 'marketAlerts', icon: Bell, label: 'Volatility Triggers', sub: 'Critical notifications for delta market flux', color: 'emerald' },
+                                        { id: 'marketAlerts', icon: Bell, label: 'Volatility Triggers', sub: 'Critical notifications for delta market flux', color: 'purple' },
                                         { id: 'weeklyReport', icon: Activity, label: 'Mission Summary', sub: 'Consolidated performance overview (7-day cycle)', color: 'blue' }
                                     ].map((item) => (
                                         <div key={item.id} className={`flex items-center justify-between p-5 rounded-[1.5rem] border transition-all ${theme === 'dark' ? 'bg-white/[0.02] border-white/5 hover:bg-white/[0.04]' : 'bg-gray-50 border-gray-100'}`}>
@@ -439,7 +439,7 @@ export default function AccountSettings() {
                                                     onChange={handleInputChange}
                                                     className="sr-only peer"
                                                 />
-                                                <div className={`w-12 h-6 rounded-full peer transition-all duration-300 ${theme === 'dark' ? 'bg-white/5 group-hover:bg-white/10' : 'bg-gray-200'} peer-checked:after:translate-x-6 after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all after:shadow-lg peer-checked:bg-purple-600`}></div>
+                                                <div className={`w-12 h-6 rounded-full peer transition-all duration-300 ${theme === 'dark' ? 'bg-white/5 group-hover:bg-white/10' : 'bg-gray-200'} peer-checked:after:translate-x-6 after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all after:shadow-lg peer-checked:bg-violet-600`}></div>
                                             </label>
                                         </div>
                                     ))}
@@ -447,7 +447,7 @@ export default function AccountSettings() {
 
                                 <button
                                     onClick={handleSave}
-                                    className={`flex items-center justify-center gap-3 px-8 py-4 text-white rounded-[1.25rem] font-black uppercase tracking-[.15em] italic text-xs transition-all shadow-2xl active:scale-95 group w-full sm:w-auto ${theme === 'dark' ? 'bg-purple-600 hover:bg-purple-500' : 'bg-purple-600 hover:bg-purple-700'}`}
+                                    className={`flex items-center justify-center gap-3 px-8 py-4 text-white rounded-[1.25rem] font-black uppercase tracking-[.15em] italic text-xs transition-all shadow-2xl active:scale-95 group w-full sm:w-auto ${theme === 'dark' ? 'bg-violet-600 hover:bg-violet-500' : 'bg-violet-600 hover:bg-violet-700'}`}
                                 >
                                     <Save size={18} />
                                     Save Frequency
@@ -462,17 +462,17 @@ export default function AccountSettings() {
                                 <div className={cn(
                                     "border-2 p-6 sm:p-8 rounded-[2.5rem] transition-all relative overflow-hidden group shadow-2xl",
                                     user?.is_early_bird
-                                        ? "bg-gradient-to-br from-purple-900/40 via-[#1e2030]/10 to-[#1e2030]/40 border-purple-500/40"
+                                        ? "bg-gradient-to-br from-violet-900/40 via-[#1e2030]/10 to-[#1e2030]/40 border-violet-500/40"
                                         : user?.tier === 'free'
                                             ? (theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-gray-50 border-gray-100')
-                                            : (theme === 'dark' ? 'bg-purple-600/10 border-purple-500/30' : 'bg-purple-50 border-purple-200')
+                                            : (theme === 'dark' ? 'bg-violet-600/10 border-violet-500/30' : 'bg-violet-50 border-violet-200')
                                 )}>
                                     {user?.is_early_bird && (
                                         <div className="absolute -top-4 -right-4 bg-amber-500 text-white px-8 py-4 rotate-12 font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl z-20">
                                             LIFETIME EARLY BIRD
                                         </div>
                                     )}
-                                    <div className="absolute top-0 left-0 w-64 h-64 bg-purple-500/10 blur-[100px] -translate-y-1/2 -translate-x-1/2" />
+                                    <div className="absolute top-0 left-0 w-64 h-64 bg-violet-500/10 blur-[100px] -translate-y-1/2 -translate-x-1/2" />
 
                                     <div className="relative flex flex-col sm:flex-row items-center sm:items-start justify-between gap-8 sm:gap-4 mb-8">
                                         <div className="text-center sm:text-left">
@@ -482,14 +482,14 @@ export default function AccountSettings() {
                                                 </h3>
                                                 <span className={cn(
                                                     "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest text-white shadow-xl",
-                                                    user?.is_early_bird ? "bg-amber-500 shadow-amber-500/20" : "bg-emerald-500 shadow-emerald-500/20"
+                                                    user?.is_early_bird ? "bg-amber-500 shadow-amber-500/20" : "bg-purple-500 shadow-purple-500/20"
                                                 )}>
                                                     {user?.is_early_bird ? "Founder Status" : "Active"}
                                                 </span>
                                             </div>
                                             <p className={cn(
                                                 "text-4xl font-black italic uppercase tracking-tighter sm:mb-2",
-                                                user?.is_early_bird ? "bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent" : "text-purple-400"
+                                                user?.is_early_bird ? "bg-gradient-to-r from-violet-400 to-violet-400 bg-clip-text text-transparent" : "text-violet-400"
                                             )}>
                                                 Elite Intelligence
                                             </p>
@@ -519,7 +519,7 @@ export default function AccountSettings() {
                                             <>
                                                 <button
                                                     onClick={() => window.location.href = '/pricing'}
-                                                    className={`px-8 py-4 text-white rounded-[1.25rem] font-black uppercase tracking-[.15em] italic text-xs transition-all shadow-2xl active:scale-95 w-full sm:w-auto ${theme === 'dark' ? 'bg-purple-600 hover:bg-purple-500' : 'bg-purple-600 hover:bg-purple-700'}`}
+                                                    className={`px-8 py-4 text-white rounded-[1.25rem] font-black uppercase tracking-[.15em] italic text-xs transition-all shadow-2xl active:scale-95 w-full sm:w-auto ${theme === 'dark' ? 'bg-violet-600 hover:bg-violet-500' : 'bg-violet-600 hover:bg-violet-700'}`}
                                                 >
                                                     {user?.tier === 'free' ? 'Unlock Elite Access' : 'Switch Protocol'}
                                                 </button>
@@ -543,12 +543,12 @@ export default function AccountSettings() {
                                         </div>
                                     ) : (
                                         <div className={`flex flex-col sm:flex-row items-center gap-6 p-6 rounded-[2rem] border transition-all ${theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-gray-50 border-gray-100'}`}>
-                                            <div className="size-16 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500"><CreditCard size={32} /></div>
+                                            <div className="size-16 rounded-2xl bg-violet-500/10 flex items-center justify-center text-violet-500"><CreditCard size={32} /></div>
                                             <div className="flex-1 text-center sm:text-left">
                                                 <p className={`text-lg font-black italic tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-gray-950'}`}>•••• •••• •••• 4242</p>
                                                 <p className={`text-[10px] font-black uppercase tracking-widest text-slate-500 italic`}>Protocol Expiry: 12/25</p>
                                             </div>
-                                            <button className={`px-6 py-3 font-black uppercase tracking-[0.2em] italic text-[10px] rounded-xl transition-all ${theme === 'dark' ? 'text-purple-400 hover:bg-purple-500/10' : 'text-purple-600 hover:bg-purple-50'}`}>
+                                            <button className={`px-6 py-3 font-black uppercase tracking-[0.2em] italic text-[10px] rounded-xl transition-all ${theme === 'dark' ? 'text-violet-400 hover:bg-violet-500/10' : 'text-violet-600 hover:bg-violet-50'}`}>
                                                 Update Link
                                             </button>
                                         </div>
@@ -576,7 +576,7 @@ export default function AccountSettings() {
                                                         </div>
                                                         <div className="text-right flex flex-col items-end gap-1.5">
                                                             <p className={`text-sm font-black italic ${theme === 'dark' ? 'text-white' : 'text-gray-950'}`}>{invoice.amount}</p>
-                                                            <span className={`inline-block px-2 py-0.5 text-[8px] rounded-md font-black uppercase tracking-widest leading-none ${theme === 'dark' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-green-100 text-green-700'}`}>
+                                                            <span className={`inline-block px-2 py-0.5 text-[8px] rounded-md font-black uppercase tracking-widest leading-none ${theme === 'dark' ? 'bg-purple-500/10 text-purple-400' : 'bg-green-100 text-green-700'}`}>
                                                                 {invoice.status}
                                                             </span>
                                                         </div>

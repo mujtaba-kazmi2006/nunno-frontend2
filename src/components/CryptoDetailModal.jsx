@@ -157,7 +157,7 @@ export default function CryptoDetailModal({ isOpen, onClose, initialTicker = "BT
                         <select
                             value={ticker}
                             onChange={(e) => setTicker(e.target.value)}
-                            className={`border text-lg rounded-xl focus:ring-purple-500 focus:border-purple-500 block w-full md:w-64 p-2.5 font-bold shadow-sm transition-colors ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700 text-slate-100' : 'bg-white border-gray-200 text-gray-900'}`}
+                            className={`border text-lg rounded-xl focus:ring-violet-500 focus:border-violet-500 block w-full md:w-64 p-2.5 font-bold shadow-sm transition-colors ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700 text-slate-100' : 'bg-white border-gray-200 text-gray-900'}`}
                         >
                             {tokens.map(t => (
                                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -171,7 +171,7 @@ export default function CryptoDetailModal({ isOpen, onClose, initialTicker = "BT
                                 key={tf}
                                 onClick={() => setTimeframe(tf)}
                                 className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${timeframe === tf
-                                    ? (theme === 'dark' ? 'bg-purple-600 text-white shadow-sm' : 'bg-white text-purple-600 shadow-sm')
+                                    ? (theme === 'dark' ? 'bg-violet-600 text-white shadow-sm' : 'bg-white text-violet-600 shadow-sm')
                                     : (theme === 'dark' ? 'text-slate-400 hover:text-slate-200' : 'text-gray-500 hover:text-gray-700')
                                     }`}
                             >
@@ -192,7 +192,7 @@ export default function CryptoDetailModal({ isOpen, onClose, initialTicker = "BT
                 <div className="p-6 md:p-8">
                     {loading || !data ? (
                         <div className="h-80 flex items-center justify-center space-y-4 flex-col">
-                            <div className={`w-12 h-12 border-4 rounded-full animate-spin ${theme === 'dark' ? 'border-[#16161e] border-t-purple-500' : 'border-purple-200 border-t-purple-600'}`}></div>
+                            <div className={`w-12 h-12 border-4 rounded-full animate-spin ${theme === 'dark' ? 'border-[#16161e] border-t-violet-500' : 'border-violet-200 border-t-violet-600'}`}></div>
                             <p className={theme === 'dark' ? 'text-slate-500' : 'text-gray-400 font-medium'}>Loading market data...</p>
                         </div>
                     ) : (
@@ -201,7 +201,7 @@ export default function CryptoDetailModal({ isOpen, onClose, initialTicker = "BT
                                 <h2 className={`text-4xl font-extrabold ${theme === 'dark' ? 'text-slate-100' : 'text-gray-900'}`}>
                                     {formatPrice(data.current_price)}
                                 </h2>
-                                <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-bold ${isPositive ? (theme === 'dark' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-green-100 text-green-700') : (theme === 'dark' ? 'bg-rose-500/10 text-rose-400' : 'bg-red-100 text-red-700')
+                                <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-bold ${isPositive ? (theme === 'dark' ? 'bg-purple-500/10 text-purple-400' : 'bg-green-100 text-green-700') : (theme === 'dark' ? 'bg-rose-500/10 text-rose-400' : 'bg-red-100 text-red-700')
                                     }`}>
                                     {isPositive ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
                                     {Math.abs(data.percent_change).toFixed(2)}%

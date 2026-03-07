@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../utils/cn';
+import SEO from './SEO';
 
 // --- Sub-Components ---
 
@@ -33,14 +34,14 @@ const AcademyFeatureCard = ({ icon: Icon, title, description, badge, active, onC
             className={cn(
                 "p-5 rounded-2xl border transition-all cursor-pointer relative overflow-hidden group mb-4",
                 active
-                    ? "bg-purple-600 border-purple-400 text-white shadow-lg shadow-purple-900/20"
+                    ? "bg-violet-600 border-violet-400 text-white shadow-lg shadow-violet-900/20"
                     : (theme === 'dark' ? "bg-white/[0.03] border-white/5 text-slate-400 hover:bg-white/5" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50")
             )}
         >
             <div className="flex items-center gap-4 relative z-10">
                 <div className={cn(
                     "p-3 rounded-xl",
-                    active ? "bg-white/20" : "bg-purple-500/10 text-purple-500"
+                    active ? "bg-white/20" : "bg-violet-500/10 text-violet-500"
                 )}>
                     <Icon size={20} />
                 </div>
@@ -48,14 +49,14 @@ const AcademyFeatureCard = ({ icon: Icon, title, description, badge, active, onC
                     <div className="flex items-center gap-2">
                         <h3 className="font-black uppercase italic tracking-widest text-sm">{title}</h3>
                         {badge && (
-                            <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-purple-400/20 text-purple-400 uppercase tracking-tighter">
+                            <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-violet-400/20 text-violet-400 uppercase tracking-tighter">
                                 {badge}
                             </span>
                         )}
                     </div>
                     <p className={cn(
                         "text-[10px] font-medium leading-tight mt-1",
-                        active ? "text-purple-100" : "text-slate-500"
+                        active ? "text-violet-100" : "text-slate-500"
                     )}>{description}</p>
                 </div>
                 <ChevronRight size={16} className={cn("transition-transform", active ? "rotate-90" : "group-hover:translate-x-1")} />
@@ -102,10 +103,10 @@ const TimeTravelSimulator = () => {
             <header className="flex items-center justify-between mb-4">
                 <div>
                     <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">Historical Simulation</h2>
-                    <p className="text-purple-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1">N.E.S (Neural Experience System)</p>
+                    <p className="text-violet-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1">N.E.S (Neural Experience System)</p>
                 </div>
                 <div className="flex gap-2">
-                    <span className="px-3 py-1.5 bg-purple-500/20 text-purple-400 rounded-xl text-[9px] font-black uppercase tracking-widest">Scenario #{activeScenario + 1}</span>
+                    <span className="px-3 py-1.5 bg-violet-500/20 text-violet-400 rounded-xl text-[9px] font-black uppercase tracking-widest">Scenario #{activeScenario + 1}</span>
                 </div>
             </header>
 
@@ -115,7 +116,7 @@ const TimeTravelSimulator = () => {
             )}>
                 {step === 0 && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-8">
-                        <Target size={48} className="mx-auto text-purple-500 mb-4" />
+                        <Target size={48} className="mx-auto text-violet-500 mb-4" />
                         <h3 className="text-xl font-black text-white mb-2 italic uppercase">Temporal Jump Ready</h3>
                         <p className="text-slate-400 max-w-md mx-auto mb-6 text-sm font-medium">
                             We've isolated a critical market inflection point. You will enter the market with no knowledge of the future.
@@ -131,7 +132,7 @@ const TimeTravelSimulator = () => {
 
                 {step === 1 && (
                     <motion.div initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="space-y-6">
-                        <div className="flex items-center gap-4 text-purple-400 font-black uppercase tracking-widest text-[10px]">
+                        <div className="flex items-center gap-4 text-violet-400 font-black uppercase tracking-widest text-[10px]">
                             <Compass size={14} />
                             Location: {currentScenario.date}
                         </div>
@@ -142,16 +143,16 @@ const TimeTravelSimulator = () => {
                                 <p className="text-slate-400 text-sm leading-relaxed font-medium">
                                     {currentScenario.context}
                                 </p>
-                                <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 grid grid-cols-2 gap-4">
+                                <div className="p-4 rounded-2xl bg-violet-500/10 border border-violet-500/20 grid grid-cols-2 gap-4">
                                     <div>
-                                        <div className="text-[8px] font-black text-purple-400 uppercase tracking-widest mb-1">Price</div>
+                                        <div className="text-[8px] font-black text-violet-400 uppercase tracking-widest mb-1">Price</div>
                                         <div className="text-lg font-black text-white">{currentScenario.price_start}</div>
                                     </div>
                                     <div>
-                                        <div className="text-[8px] font-black text-purple-400 uppercase tracking-widest mb-1">RSI (14)</div>
+                                        <div className="text-[8px] font-black text-violet-400 uppercase tracking-widest mb-1">RSI (14)</div>
                                         <div className={cn(
                                             "text-lg font-black",
-                                            currentScenario.indicators.rsi > 70 ? "text-rose-500" : currentScenario.indicators.rsi < 30 ? "text-emerald-500" : "text-white"
+                                            currentScenario.indicators.rsi > 70 ? "text-rose-500" : currentScenario.indicators.rsi < 30 ? "text-purple-500" : "text-white"
                                         )}>{currentScenario.indicators.rsi}</div>
                                     </div>
                                 </div>
@@ -160,13 +161,13 @@ const TimeTravelSimulator = () => {
                             {/* Mock Chart Area */}
                             <div className="h-48 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center overflow-hidden relative">
                                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.1),transparent)]" />
-                                <div className="relative text-purple-500 flex flex-col items-center gap-2">
+                                <div className="relative text-violet-500 flex flex-col items-center gap-2">
                                     <Activity size={20} className="animate-pulse" />
                                     <span className="text-[8px] font-black uppercase tracking-[0.3em]">Temporal Feed Active</span>
                                 </div>
                                 <div className="absolute bottom-6 left-0 right-0 h-16 flex items-end justify-around px-8 opacity-30">
                                     {[30, 45, 60, 55, 75, 85, 95].map((h, i) => (
-                                        <div key={i} className="w-3 bg-emerald-500 rounded-t-sm" style={{ height: `${h}%` }} />
+                                        <div key={i} className="w-3 bg-purple-500 rounded-t-sm" style={{ height: `${h}%` }} />
                                     ))}
                                 </div>
                             </div>
@@ -175,7 +176,7 @@ const TimeTravelSimulator = () => {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => { setChoice('long'); setStep(2); }}
-                                className="flex-1 py-4 bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest italic hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/20 text-xs"
+                                className="flex-1 py-4 bg-purple-500 text-white rounded-2xl font-black uppercase tracking-widest italic hover:bg-purple-600 transition-colors shadow-lg shadow-purple-500/20 text-xs"
                             >
                                 GO LONG (BUY)
                             </button>
@@ -202,7 +203,7 @@ const TimeTravelSimulator = () => {
                                 "text-2xl font-black italic uppercase tracking-tighter mb-1",
                                 (choice === 'long' && currentScenario.indicators.rsi > 70) || (choice === 'short' && currentScenario.indicators.rsi < 30)
                                     ? "text-rose-500"
-                                    : "text-emerald-500"
+                                    : "text-purple-500"
                             )}>
                                 {choice === 'wait' ? "SAFE PLAY" :
                                     ((choice === 'long' && currentScenario.indicators.rsi > 70) || (choice === 'short' && currentScenario.indicators.rsi < 30)
@@ -213,7 +214,7 @@ const TimeTravelSimulator = () => {
 
                         <div className="bg-black/20 p-6 rounded-2xl border border-white/5 text-left">
                             <div className="flex items-center gap-3 mb-4">
-                                <Brain size={20} className="text-purple-500" />
+                                <Brain size={20} className="text-violet-500" />
                                 <h4 className="font-black text-white uppercase italic tracking-widest text-sm">Nunno's Analysis</h4>
                             </div>
                             <p className="text-slate-200 font-bold mb-2 text-sm">{currentScenario.result}</p>
@@ -227,7 +228,7 @@ const TimeTravelSimulator = () => {
                                         setChoice(null);
                                         setActiveScenario((s) => (s + 1) % scenarios.length);
                                     }}
-                                    className="px-6 py-3 bg-purple-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] hover:scale-105 transition-all flex items-center gap-3 shadow-xl shadow-purple-500/20"
+                                    className="px-6 py-3 bg-violet-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] hover:scale-105 transition-all flex items-center gap-3 shadow-xl shadow-violet-500/20"
                                 >
                                     <RotateCcw size={14} />
                                     Next Scenario
@@ -260,7 +261,7 @@ const CandlestickNinja = () => {
 const DeJargonizer = () => {
     return (
         <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
-            <Brain size={48} className="text-purple-400 animate-pulse" />
+            <Brain size={48} className="text-violet-400 animate-pulse" />
             <div>
                 <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white mb-2">De-Jargonizer</h2>
                 <p className="text-slate-400 max-w-sm font-medium text-sm">
@@ -275,7 +276,7 @@ const DeJargonizer = () => {
 const SafeFailChallenges = () => {
     return (
         <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
-            <ShieldAlert size={48} className="text-emerald-500" />
+            <ShieldAlert size={48} className="text-purple-500" />
             <div>
                 <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white mb-2">Missions</h2>
                 <p className="text-slate-400 max-w-sm font-medium text-sm">
@@ -290,8 +291,8 @@ const SafeFailChallenges = () => {
 const DiscoveryIntro = () => {
     return (
         <div className="space-y-6 flex flex-col items-center justify-center h-full text-center">
-            <div className="size-20 rounded-full bg-purple-500/20 flex items-center justify-center animate-pulse">
-                <Info size={40} className="text-purple-500" />
+            <div className="size-20 rounded-full bg-violet-500/20 flex items-center justify-center animate-pulse">
+                <Info size={40} className="text-violet-500" />
             </div>
             <div className="max-w-md">
                 <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white mb-3">Discovery Mode</h2>
@@ -301,7 +302,7 @@ const DiscoveryIntro = () => {
                     Tap them to get an instant Nunno Card explanation.
                 </p>
             </div>
-            <button className="px-10 py-3 bg-purple-600 text-white rounded-2xl font-black uppercase tracking-widest italic hover:bg-purple-500 transition-all shadow-xl shadow-purple-500/20 text-sm">
+            <button className="px-10 py-3 bg-violet-600 text-white rounded-2xl font-black uppercase tracking-widest italic hover:bg-violet-500 transition-all shadow-xl shadow-violet-500/20 text-sm">
                 ACTIVE DISCOVERY
             </button>
             <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest italic">
@@ -343,8 +344,8 @@ const ComingSoonOverlay = () => {
         <div className="fixed inset-0 z-[1100] flex flex-col items-center justify-center p-6 text-center bg-black/60 backdrop-blur-[20px] overflow-hidden pointer-events-auto">
             {/* Ambient Background Glows */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse" />
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-600/20 rounded-full blur-[120px] animate-pulse" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-violet-600/20 rounded-full blur-[120px] animate-pulse" />
             </div>
 
             <motion.div
@@ -354,12 +355,12 @@ const ComingSoonOverlay = () => {
                 className="max-w-2xl relative z-10 w-full px-4"
             >
                 <div className="mb-8 inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">Phase 2: Neural Training</span>
                 </div>
 
                 <h2 className="text-5xl sm:text-7xl lg:text-8xl font-black italic uppercase tracking-tighter text-white mb-6 leading-[0.9] drop-shadow-2xl overflow-visible pr-4 md:pr-8">
-                    COMING <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">SOON</span>
+                    COMING <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-violet-400">SOON</span>
                 </h2>
 
                 <p className="text-slate-300 text-sm md:text-lg font-medium max-w-md mx-auto mb-10 leading-relaxed opacity-80">
@@ -382,12 +383,12 @@ const ComingSoonOverlay = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter your terminal ID (email)"
-                                className="w-full sm:flex-1 px-6 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-sm placeholder:text-slate-500"
+                                className="w-full sm:flex-1 px-6 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-medium focus:outline-none focus:ring-2 focus:ring-violet-500/50 transition-all text-sm placeholder:text-slate-500"
                             />
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full sm:w-auto px-10 py-4 bg-purple-600 hover:bg-purple-500 disabled:bg-purple-800 text-white rounded-2xl font-black uppercase tracking-widest italic transition-all shadow-xl shadow-purple-600/20 active:scale-95 text-xs whitespace-nowrap"
+                                className="w-full sm:w-auto px-10 py-4 bg-violet-600 hover:bg-violet-500 disabled:bg-violet-800 text-white rounded-2xl font-black uppercase tracking-widest italic transition-all shadow-xl shadow-violet-600/20 active:scale-95 text-xs whitespace-nowrap"
                             >
                                 {loading ? 'Syncing...' : 'Join Waitlist'}
                             </button>
@@ -397,9 +398,9 @@ const ComingSoonOverlay = () => {
                             key="success-message"
                             initial={{ opacity: 0, scale: 0.5 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="bg-purple-500/10 border border-purple-500/20 p-8 rounded-[2.5rem] backdrop-blur-md max-w-md mx-auto"
+                            className="bg-violet-500/10 border border-violet-500/20 p-8 rounded-[2.5rem] backdrop-blur-md max-w-md mx-auto"
                         >
-                            <div className="size-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl shadow-purple-500/40">
+                            <div className="size-16 bg-violet-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl shadow-violet-500/40">
                                 <Check size={32} className="text-white" strokeWidth={4} />
                             </div>
                             <h3 className="text-white font-black italic uppercase tracking-tighter text-xl mb-2">Access Reserved</h3>
@@ -435,6 +436,12 @@ const NunnoAcademy = () => {
 
     return (
         <div className="h-full flex flex-col overflow-hidden bg-transparent pt-12 px-4 sm:px-8 pb-6 relative">
+            <SEO
+                title="Nunno Academy — Master Crypto Literacy"
+                description="Learn technical analysis and market structure with Nunno's AI-powered simulations and educational missions."
+                path="/academy"
+                schemaType="Course"
+            />
             <ComingSoonOverlay />
             <div className="max-w-7xl mx-auto w-full flex flex-col h-full opacity-20 filter grayscale pointer-events-none">
 
@@ -442,9 +449,9 @@ const NunnoAcademy = () => {
                 <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6 pl-14 md:pl-0">
                     <div className="space-y-1">
                         <div className="flex items-center gap-3">
-                            <GraduationCap className="hidden md:block text-purple-500" size={28} />
+                            <GraduationCap className="hidden md:block text-violet-500" size={28} />
                             <h1 className="text-4xl font-black italic uppercase tracking-tighter text-white">
-                                Nunno <span className="text-purple-500">Academy</span>
+                                Nunno <span className="text-violet-500">Academy</span>
                             </h1>
                         </div>
                         <p className="text-slate-500 font-black uppercase tracking-[0.2em] text-[10px]">
@@ -460,7 +467,7 @@ const NunnoAcademy = () => {
                         <div className="h-8 w-px bg-white/10" />
                         <div className="text-center">
                             <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Learning Streak</div>
-                            <div className="text-xl font-black text-emerald-500 italic">3 DAYS</div>
+                            <div className="text-xl font-black text-purple-500 italic">3 DAYS</div>
                         </div>
                     </div>
                 </header>
@@ -482,7 +489,7 @@ const NunnoAcademy = () => {
                             />
                         ))}
 
-                        <div className="p-6 rounded-[2rem] bg-gradient-to-br from-indigo-600 to-purple-700 mt-4 relative overflow-hidden group cursor-pointer shadow-xl shadow-indigo-600/20">
+                        <div className="p-6 rounded-[2rem] bg-gradient-to-br from-violet-600 to-violet-700 mt-4 relative overflow-hidden group cursor-pointer shadow-xl shadow-violet-600/20">
                             <div className="relative z-10">
                                 <h3 className="text-white font-black uppercase italic tracking-widest mb-1 text-base">Final Exam</h3>
                                 <p className="text-indigo-100 text-[9px] font-medium leading-relaxed">
@@ -501,7 +508,7 @@ const NunnoAcademy = () => {
                         theme === 'dark' ? "bg-white/[0.02] border border-white/5 shadow-2xl" : "bg-white border border-slate-200 shadow-xl"
                     )}>
                         {/* Decorative background element */}
-                        <div className="absolute -top-24 -right-24 size-96 bg-purple-500/5 blur-[100px] rounded-full pointer-events-none" />
+                        <div className="absolute -top-24 -right-24 size-96 bg-violet-500/5 blur-[100px] rounded-full pointer-events-none" />
 
                         <AnimatePresence mode="wait">
                             <motion.div

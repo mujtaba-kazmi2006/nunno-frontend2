@@ -113,14 +113,14 @@ export default function EducationalCard({ data, onDeepAnalysis }) {
                         {getBiasIcon(safeBias)}
                     </div>
                     <div className="card-title">
-                        <h4 className="text-xl font-black italic uppercase tracking-tighter dark:text-white">{data.ticker} <span className="text-purple-500">Analysis</span></h4>
+                        <h4 className="text-xl font-black italic uppercase tracking-tighter dark:text-white">{data.ticker} <span className="text-violet-500">Analysis</span></h4>
                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{data.interval || '1h'} timeframe intelligence</span>
                     </div>
                 </div>
 
                 <button
                     onClick={handleLaunchChart}
-                    className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-purple-500/20 active:scale-95 group"
+                    className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-violet-500/20 active:scale-95 group"
                 >
                     <Maximize2 size={12} className="group-hover:scale-110 transition-transform" />
                     <span>Focus Chart</span>
@@ -144,7 +144,7 @@ export default function EducationalCard({ data, onDeepAnalysis }) {
                                 </motion.span>
                             )}
                         </div>
-                        <span className={`text-[10px] font-black ${data.multi_timeframe.sync_score >= 75 ? 'text-emerald-400' : data.multi_timeframe.sync_score >= 50 ? 'text-amber-400' : 'text-slate-500'}`}>
+                        <span className={`text-[10px] font-black ${data.multi_timeframe.sync_score >= 75 ? 'text-purple-400' : data.multi_timeframe.sync_score >= 50 ? 'text-amber-400' : 'text-slate-500'}`}>
                             {data.multi_timeframe.sync_score}% Aligned
                         </span>
                     </div>
@@ -156,11 +156,11 @@ export default function EducationalCard({ data, onDeepAnalysis }) {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.08 }}
                                 className={`flex-1 text-center py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-wider transition-all ${tf.bias === 'bullish'
-                                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                                        ? 'bg-purple-500/10 border-purple-500/20 text-purple-400'
                                         : tf.bias === 'bearish'
                                             ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
                                             : 'bg-white/5 border-white/10 text-slate-500'
-                                    } ${tf.is_primary ? 'ring-1 ring-purple-500/40' : ''}`}
+                                    } ${tf.is_primary ? 'ring-1 ring-violet-500/40' : ''}`}
                                 title={`${tf.interval}: ${tf.bias}${tf.rsi ? ` (RSI: ${tf.rsi})` : ''}`}
                             >
                                 {tf.interval}
@@ -173,7 +173,7 @@ export default function EducationalCard({ data, onDeepAnalysis }) {
                             animate={{ width: `${data.multi_timeframe.sync_score}%` }}
                             transition={{ duration: 1.2, ease: 'easeOut' }}
                             className={`h-full rounded-full ${data.multi_timeframe.sync_score >= 75
-                                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
+                                    ? 'bg-gradient-to-r from-purple-500 to-purple-400'
                                     : data.multi_timeframe.sync_score >= 50
                                         ? 'bg-gradient-to-r from-amber-500 to-amber-400'
                                         : 'bg-gradient-to-r from-slate-500 to-slate-400'
@@ -198,7 +198,7 @@ export default function EducationalCard({ data, onDeepAnalysis }) {
                         {/* Mobile Overlay Button for Chart */}
                         <button
                             onClick={handleLaunchChart}
-                            className="sm:hidden absolute bottom-4 right-4 p-3 rounded-full bg-purple-600 text-white shadow-xl active:scale-90"
+                            className="sm:hidden absolute bottom-4 right-4 p-3 rounded-full bg-violet-600 text-white shadow-xl active:scale-90"
                         >
                             <Maximize2 size={18} />
                         </button>
@@ -258,7 +258,7 @@ export default function EducationalCard({ data, onDeepAnalysis }) {
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: index * 0.05 }}
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-tight transition-all ${signalType === 'bullish' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-tight transition-all ${signalType === 'bullish' ? 'bg-purple-500/10 border-purple-500/20 text-purple-400' :
                                         signalType === 'bearish' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
                                             'bg-white/5 border-white/10 text-slate-400'
                                         }`}
@@ -275,9 +275,9 @@ export default function EducationalCard({ data, onDeepAnalysis }) {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-[1.5rem] bg-emerald-500/[0.03] border border-emerald-500/10">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500/60 block mb-1">Floor</span>
-                        <span className="text-sm font-mono font-black text-emerald-400">
+                    <div className="p-4 rounded-[1.5rem] bg-purple-500/[0.03] border border-purple-500/10">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-purple-500/60 block mb-1">Floor</span>
+                        <span className="text-sm font-mono font-black text-purple-400">
                             {typeof data.key_levels?.support === 'number' ? formatPrice(data.key_levels.support) : (data.key_levels?.support || '$0.00')}
                         </span>
                     </div>
@@ -291,33 +291,33 @@ export default function EducationalCard({ data, onDeepAnalysis }) {
                     {/* NEW: Trade Thesis - 3-Path Scenario */}
                     {data.trade_thesis && (
                         <div className="space-y-3">
-                            <h5 className="text-[10px] font-black uppercase tracking-[0.3em] italic text-purple-400">Trade Thesis</h5>
+                            <h5 className="text-[10px] font-black uppercase tracking-[0.3em] italic text-violet-400">Trade Thesis</h5>
                             <div className="space-y-2">
                                 {/* Primary Path */}
                                 <motion.div
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: 0.1 }}
-                                    className="p-3 rounded-2xl bg-emerald-500/[0.06] border border-emerald-500/15"
+                                    className="p-3 rounded-2xl bg-purple-500/[0.06] border border-purple-500/15"
                                 >
                                     <div className="flex items-center justify-between mb-1.5">
                                         <div className="flex items-center gap-2">
-                                            <Target size={12} className="text-emerald-400" />
-                                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">{data.trade_thesis.primary?.label}</span>
+                                            <Target size={12} className="text-purple-400" />
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-purple-400">{data.trade_thesis.primary?.label}</span>
                                         </div>
-                                        <span className="text-xs font-black text-emerald-400">{data.trade_thesis.primary?.probability}%</span>
+                                        <span className="text-xs font-black text-purple-400">{data.trade_thesis.primary?.probability}%</span>
                                     </div>
                                     <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mb-2">
                                         <motion.div
                                             initial={{ width: 0 }}
                                             animate={{ width: `${data.trade_thesis.primary?.probability}%` }}
                                             transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
-                                            className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
+                                            className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full"
                                         />
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <span className="text-[10px] text-slate-500">{data.trade_thesis.primary?.description}</span>
-                                        <span className="text-[10px] font-mono font-bold text-emerald-400 ml-2 whitespace-nowrap">
+                                        <span className="text-[10px] font-mono font-bold text-purple-400 ml-2 whitespace-nowrap">
                                             {data.trade_thesis.primary?.target ? formatPrice(data.trade_thesis.primary.target) : ''}
                                         </span>
                                     </div>
@@ -390,7 +390,7 @@ export default function EducationalCard({ data, onDeepAnalysis }) {
 
             <div className="card-footer bg-black/40 p-6 border-t border-white/5 space-y-4">
                 <div className="flex flex-col gap-2 pb-3">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400 italic">Neural Interpretation:</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400 italic">Neural Interpretation:</span>
                     <p className="text-sm text-slate-400 leading-relaxed font-medium">{data.explanation}</p>
                 </div>
 
@@ -413,7 +413,7 @@ export default function EducationalCard({ data, onDeepAnalysis }) {
                                             navigate(`/?chat=${encodeURIComponent(action.message)}`);
                                         }
                                     }}
-                                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-purple-500/10 hover:border-purple-500/30 text-[10px] font-bold text-slate-400 hover:text-purple-300 transition-all active:scale-[0.97] group"
+                                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-violet-500/10 hover:border-violet-500/30 text-[10px] font-bold text-slate-400 hover:text-violet-300 transition-all active:scale-[0.97] group"
                                     title={action.description}
                                 >
                                     <span>{action.label}</span>
@@ -434,9 +434,9 @@ export default function EducationalCard({ data, onDeepAnalysis }) {
 
                     <button
                         onClick={() => onDeepAnalysis?.(data.ticker)}
-                        className="flex-[2] flex items-center justify-center gap-3 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-purple-500/20 active:scale-[0.98] group"
+                        className="flex-[2] flex items-center justify-center gap-3 py-4 rounded-xl bg-gradient-to-r from-violet-600 to-violet-600 hover:from-violet-500 hover:to-violet-500 text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-violet-500/20 active:scale-[0.98] group"
                     >
-                        <Brain size={16} className="group-hover:scale-110 transition-transform text-purple-200" />
+                        <Brain size={16} className="group-hover:scale-110 transition-transform text-violet-200" />
                         Deep Lab Breakdown
                     </button>
                 </div>

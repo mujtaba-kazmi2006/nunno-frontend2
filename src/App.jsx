@@ -29,10 +29,10 @@ class ErrorBoundary extends React.Component {
             return (
                 <div className="flex h-dvh items-center justify-center bg-[#020205] text-white p-12 text-center">
                     <div className="max-w-md">
-                        <h1 className="text-4xl font-black text-purple-500 mb-4 tracking-tighter">APP_STABILITY_MODE</h1>
+                        <h1 className="text-4xl font-black text-violet-500 mb-4 tracking-tighter">APP_STABILITY_MODE</h1>
                         <p className="text-slate-400 mb-8 italic">"Even in chaos, there is opportunity." - Nunno</p>
                         <p className="text-sm text-slate-500 mb-8">A technical disruption occurred. We are working on fixing it now. Your data remains safe.</p>
-                        <button onClick={() => window.location.reload()} className="px-8 py-3 bg-purple-600 hover:bg-purple-500 rounded-full font-bold transition-all transform active:scale-95 shadow-[0_0_20px_rgba(139,92,246,0.3)]">RELOAD_PAGE</button>
+                        <button onClick={() => window.location.reload()} className="px-8 py-3 bg-violet-600 hover:bg-violet-500 rounded-full font-bold transition-all transform active:scale-95 shadow-[0_0_20px_rgba(139,92,246,0.3)]">RELOAD_PAGE</button>
                     </div>
                 </div>
             );
@@ -59,7 +59,7 @@ const OnChainBiasPanel = lazy(() => import('./components/OnChainBiasPanel'))
 function LoadingFallback() {
     return (
         <div className="flex items-center justify-center h-full">
-            <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin"></div>
         </div>
     )
 }
@@ -143,8 +143,8 @@ function Dashboard({ userAge }) {
                             className={cn(
                                 "absolute left-[-40px] top-[30%] -translate-y-1/2 w-10 h-20 rounded-l-3xl flex items-center justify-center transition-all pointer-events-auto",
                                 theme === 'dark'
-                                    ? "bg-[#08080c] text-purple-400 hover:text-white"
-                                    : "bg-white text-purple-600 hover:text-purple-800",
+                                    ? "bg-[#08080c] text-violet-400 hover:text-white"
+                                    : "bg-white text-violet-600 hover:text-violet-800",
                                 !isNewsOpen && "opacity-80 hover:opacity-100"
                             )}
                             title={isNewsOpen ? "Close News" : "Open News"}
@@ -193,8 +193,8 @@ function Dashboard({ userAge }) {
                             className={cn(
                                 "absolute left-[-40px] top-[50%] -translate-y-1/2 w-10 h-20 rounded-l-3xl flex items-center justify-center transition-all pointer-events-auto",
                                 theme === 'dark'
-                                    ? "bg-[#08080c] text-emerald-400 hover:text-white"
-                                    : "bg-white text-emerald-600 hover:text-emerald-800",
+                                    ? "bg-[#08080c] text-purple-400 hover:text-white"
+                                    : "bg-white text-purple-600 hover:text-purple-800",
                                 !isRiskOpen && "opacity-80 hover:opacity-100"
                             )}
                             title={isRiskOpen ? "Close Risk Monitor" : "Open Risk Monitor"}
@@ -241,8 +241,8 @@ function Dashboard({ userAge }) {
                             className={cn(
                                 "absolute left-[-40px] top-[70%] -translate-y-1/2 w-10 h-20 rounded-l-3xl flex items-center justify-center transition-all pointer-events-auto",
                                 theme === 'dark'
-                                    ? "bg-[#08080c] text-purple-400 hover:text-white"
-                                    : "bg-white text-purple-600 hover:text-purple-800",
+                                    ? "bg-[#08080c] text-violet-400 hover:text-white"
+                                    : "bg-white text-violet-600 hover:text-violet-800",
                                 !isMarketOpen && "opacity-80 hover:opacity-100"
                             )}
                             title={isMarketOpen ? "Close Market Info" : "Open Market Info"}
@@ -271,8 +271,8 @@ function Dashboard({ userAge }) {
                                 <div className="flex flex-col">
                                     <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Market Intelligence</h4>
                                     <div className="flex items-center gap-1.5 mt-1">
-                                        <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                        <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Live Pulse</span>
+                                        <span className="size-1.5 rounded-full bg-purple-500 animate-pulse" />
+                                        <span className="text-[9px] font-bold text-purple-500 uppercase tracking-widest">Live Pulse</span>
                                     </div>
                                 </div>
                             </header>
@@ -283,7 +283,7 @@ function Dashboard({ userAge }) {
                                 </section>
 
                                 <div className={cn(
-                                    "h-px bg-gradient-to-r from-transparent via-purple-100 to-transparent",
+                                    "h-px bg-gradient-to-r from-transparent via-violet-100 to-transparent",
                                     theme === 'dark' && "via-slate-700/50"
                                 )} />
 
@@ -295,7 +295,7 @@ function Dashboard({ userAge }) {
                                 </section>
 
                                 <div className={cn(
-                                    "h-px bg-gradient-to-r from-transparent via-purple-100 to-transparent",
+                                    "h-px bg-gradient-to-r from-transparent via-violet-100 to-transparent",
                                     theme === 'dark' && "via-slate-700/50"
                                 )} />
 
@@ -325,8 +325,8 @@ function MainLayout({ children }) {
 
     return (
         <div className={cn(
-            "flex h-dvh overflow-hidden relative selection:bg-purple-500/30 main-layout",
-            theme === 'dark' ? 'bg-[#020205]' : 'bg-gradient-to-br from-purple-50 via-white to-purple-50/30'
+            "flex h-dvh overflow-hidden relative selection:bg-violet-500/30 main-layout",
+            theme === 'dark' ? 'bg-[#020205]' : 'bg-gradient-to-br from-violet-50 via-white to-violet-50/30'
         )}>
             <div className={cn(
                 "absolute top-[-5%] right-[-5%] w-[70%] h-[70%] rounded-full pointer-events-none transition-all duration-1000 will-change-transform opacity-30",
@@ -346,8 +346,8 @@ function MainLayout({ children }) {
                         className={cn(
                             "p-2.5 rounded-2xl transition-all active:scale-95 shadow-2xl border backdrop-blur-xl",
                             theme === 'dark'
-                                ? 'bg-[#1e2030]/90 text-purple-400 border-white/10'
-                                : 'bg-white/90 text-purple-600 border-purple-100'
+                                ? 'bg-[#1e2030]/90 text-violet-400 border-white/10'
+                                : 'bg-white/90 text-violet-600 border-violet-100'
                         )}
                     >
                         <Menu size={24} strokeWidth={3} className="drop-shadow-lg" />

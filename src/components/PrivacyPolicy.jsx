@@ -14,12 +14,12 @@ export default function PrivacyPolicy() {
 
                 <header className="mb-16">
                     <div className="flex items-center gap-4 mb-6">
-                        <div className="size-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-500">
+                        <div className="size-12 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-500">
                             <Shield size={24} />
                         </div>
                         <div>
                             <h1 className="text-3xl sm:text-4xl font-black italic uppercase tracking-tighter">
-                                Privacy <span className="text-purple-500">Policy</span>
+                                Privacy <span className="text-violet-500">Policy</span>
                             </h1>
                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Last Updated: February 25, 2026</p>
                         </div>
@@ -35,9 +35,9 @@ export default function PrivacyPolicy() {
                     <section>
                         <h2 className="text-white text-lg font-black italic uppercase tracking-tight mb-4">2. Data We Collect</h2>
                         <ul className="space-y-3 list-none">
-                            <li className="flex gap-3"><span className="size-1.5 rounded-full bg-purple-500 mt-2 shrink-0" /><span><strong className="text-white">Account Information:</strong> Email address and display name provided during sign-up (including Google OAuth).</span></li>
-                            <li className="flex gap-3"><span className="size-1.5 rounded-full bg-purple-500 mt-2 shrink-0" /><span><strong className="text-white">Usage Data:</strong> Queries submitted, features accessed, and session analytics to improve the educational experience.</span></li>
-                            <li className="flex gap-3"><span className="size-1.5 rounded-full bg-purple-500 mt-2 shrink-0" /><span><strong className="text-white">Device Data:</strong> Browser type, screen resolution, and IP address collected automatically for service optimization.</span></li>
+                            <li className="flex gap-3"><span className="size-1.5 rounded-full bg-violet-500 mt-2 shrink-0" /><span><strong className="text-white">Account Information:</strong> Email address and display name provided during sign-up (including Google OAuth).</span></li>
+                            <li className="flex gap-3"><span className="size-1.5 rounded-full bg-violet-500 mt-2 shrink-0" /><span><strong className="text-white">Usage Data:</strong> Queries submitted, features accessed, and session analytics to improve the educational experience.</span></li>
+                            <li className="flex gap-3"><span className="size-1.5 rounded-full bg-violet-500 mt-2 shrink-0" /><span><strong className="text-white">Device Data:</strong> Browser type, screen resolution, and IP address collected automatically for service optimization.</span></li>
                         </ul>
                     </section>
 
@@ -62,7 +62,7 @@ export default function PrivacyPolicy() {
                     </section>
 
                     <section className="pt-8 border-t border-white/5">
-                        <p className="text-slate-600 text-xs italic">For privacy concerns, contact: <a href="mailto:privacy@nunno.finance" className="text-purple-400 hover:text-white transition-colors">privacy@nunno.finance</a></p>
+                        <p className="text-slate-600 text-xs italic">For privacy concerns, contact: <a href="mailto:privacy@nunno.finance" className="text-violet-400 hover:text-white transition-colors">privacy@nunno.finance</a></p>
                     </section>
                 </div>
             </div>

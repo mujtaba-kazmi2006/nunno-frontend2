@@ -80,7 +80,7 @@ export default function HelpSupport() {
     };
 
     return (
-        <div className={`min-h-[100dvh] py-8 px-4 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-purple-50'}`}>
+        <div className={`min-h-[100dvh] py-8 px-4 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-violet-50'}`}>
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12">
@@ -90,15 +90,15 @@ export default function HelpSupport() {
 
                 {/* Quick Links */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                    <div className={`rounded-xl p-6 shadow-md border hover:shadow-lg transition-all cursor-pointer ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 hover:border-purple-500/50' : 'bg-white border-gray-200 hover:border-purple-300'}`}>
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${theme === 'dark' ? 'bg-purple-500/10' : 'bg-purple-100'}`}>
-                            <Book className={theme === 'dark' ? 'text-purple-400' : 'text-purple-600'} size={24} />
+                    <div className={`rounded-xl p-6 shadow-md border hover:shadow-lg transition-all cursor-pointer ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 hover:border-violet-500/50' : 'bg-white border-gray-200 hover:border-violet-300'}`}>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${theme === 'dark' ? 'bg-violet-500/10' : 'bg-violet-100'}`}>
+                            <Book className={theme === 'dark' ? 'text-violet-400' : 'text-violet-600'} size={24} />
                         </div>
                         <h3 className={`text-lg font-bold mb-2 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>Documentation</h3>
                         <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Comprehensive guides and tutorials</p>
                     </div>
 
-                    <div className={`rounded-xl p-6 shadow-md border hover:shadow-lg transition-all cursor-pointer ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 hover:border-purple-500/50' : 'bg-white border-gray-200 hover:border-purple-300'}`}>
+                    <div className={`rounded-xl p-6 shadow-md border hover:shadow-lg transition-all cursor-pointer ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 hover:border-violet-500/50' : 'bg-white border-gray-200 hover:border-violet-300'}`}>
                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${theme === 'dark' ? 'bg-green-500/10' : 'bg-green-100'}`}>
                             <MessageCircle className="text-green-500" size={24} />
                         </div>
@@ -106,9 +106,9 @@ export default function HelpSupport() {
                         <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Chat with our support team</p>
                     </div>
 
-                    <div className={`rounded-xl p-6 shadow-md border hover:shadow-lg transition-all cursor-pointer ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 hover:border-purple-500/50' : 'bg-white border-gray-200 hover:border-purple-300'}`}>
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${theme === 'dark' ? 'bg-purple-500/10' : 'bg-purple-100'}`}>
-                            <Mail className={theme === 'dark' ? 'text-purple-400' : 'text-purple-600'} size={24} />
+                    <div className={`rounded-xl p-6 shadow-md border hover:shadow-lg transition-all cursor-pointer ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 hover:border-violet-500/50' : 'bg-white border-gray-200 hover:border-violet-300'}`}>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${theme === 'dark' ? 'bg-violet-500/10' : 'bg-violet-100'}`}>
+                            <Mail className={theme === 'dark' ? 'text-violet-400' : 'text-violet-600'} size={24} />
                         </div>
                         <h3 className={`text-lg font-bold mb-2 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>Email Support</h3>
                         <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>support@nunnofinance.com</p>
@@ -128,7 +128,7 @@ export default function HelpSupport() {
                                     key={cat.id}
                                     onClick={() => setActiveCategory(cat.id)}
                                     className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${activeCategory === cat.id
-                                        ? (theme === 'dark' ? 'bg-purple-600 text-white' : 'bg-purple-600 text-white shadow-md')
+                                        ? (theme === 'dark' ? 'bg-violet-600 text-white' : 'bg-violet-600 text-white shadow-md')
                                         : (theme === 'dark' ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
                                         }`}
                                 >
@@ -144,7 +144,7 @@ export default function HelpSupport() {
                         {filteredFaqs.map((faq, index) => (
                             <div
                                 key={index}
-                                className={`border-2 rounded-xl overflow-hidden transition-all ${theme === 'dark' ? (expandedFaq === index ? 'border-purple-500/50' : 'border-slate-800 hover:border-slate-700') : (expandedFaq === index ? 'border-purple-300' : 'border-gray-200 hover:border-purple-300')}`}
+                                className={`border-2 rounded-xl overflow-hidden transition-all ${theme === 'dark' ? (expandedFaq === index ? 'border-violet-500/50' : 'border-slate-800 hover:border-slate-700') : (expandedFaq === index ? 'border-violet-300' : 'border-gray-200 hover:border-violet-300')}`}
                             >
                                 <button
                                     onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
@@ -152,7 +152,7 @@ export default function HelpSupport() {
                                 >
                                     <span className={`font-semibold pr-4 ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>{faq.question}</span>
                                     {expandedFaq === index ? (
-                                        <ChevronUp className={theme === 'dark' ? 'text-purple-400' : 'text-purple-600'} size={20} />
+                                        <ChevronUp className={theme === 'dark' ? 'text-violet-400' : 'text-violet-600'} size={20} />
                                     ) : (
                                         <ChevronDown className="text-slate-500" size={20} />
                                     )}
@@ -184,7 +184,7 @@ export default function HelpSupport() {
                                     value={contactForm.name}
                                     onChange={handleInputChange}
                                     required
-                                    className={`w-full px-4 py-3 border-2 rounded-xl outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-200 focus:border-purple-500' : 'bg-white border-gray-200 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200'}`}
+                                    className={`w-full px-4 py-3 border-2 rounded-xl outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-200 focus:border-violet-500' : 'bg-white border-gray-200 text-gray-900 focus:border-violet-500 focus:ring-2 focus:ring-violet-200'}`}
                                     placeholder="John Doe"
                                 />
                             </div>
@@ -198,7 +198,7 @@ export default function HelpSupport() {
                                     value={contactForm.email}
                                     onChange={handleInputChange}
                                     required
-                                    className={`w-full px-4 py-3 border-2 rounded-xl outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-200 focus:border-purple-500' : 'bg-white border-gray-200 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200'}`}
+                                    className={`w-full px-4 py-3 border-2 rounded-xl outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-200 focus:border-violet-500' : 'bg-white border-gray-200 text-gray-900 focus:border-violet-500 focus:ring-2 focus:ring-violet-200'}`}
                                     placeholder="john@example.com"
                                 />
                             </div>
@@ -214,7 +214,7 @@ export default function HelpSupport() {
                                 value={contactForm.subject}
                                 onChange={handleInputChange}
                                 required
-                                className={`w-full px-4 py-3 border-2 rounded-xl outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-200 focus:border-purple-500' : 'bg-white border-gray-200 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200'}`}
+                                className={`w-full px-4 py-3 border-2 rounded-xl outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-200 focus:border-violet-500' : 'bg-white border-gray-200 text-gray-900 focus:border-violet-500 focus:ring-2 focus:ring-violet-200'}`}
                                 placeholder="How can we help?"
                             />
                         </div>
@@ -229,14 +229,14 @@ export default function HelpSupport() {
                                 onChange={handleInputChange}
                                 required
                                 rows={6}
-                                className={`w-full px-4 py-3 border-2 rounded-xl outline-none transition-all resize-none ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-200 focus:border-purple-500' : 'bg-white border-gray-200 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-200'}`}
+                                className={`w-full px-4 py-3 border-2 rounded-xl outline-none transition-all resize-none ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-slate-200 focus:border-violet-500' : 'bg-white border-gray-200 text-gray-900 focus:border-violet-500 focus:ring-2 focus:ring-violet-200'}`}
                                 placeholder="Tell us more about your question or issue..."
                             />
                         </div>
 
                         <button
                             type="submit"
-                            className={`flex items-center gap-2 px-6 py-3 text-white rounded-xl font-semibold transition-all shadow-md hover:shadow-lg ${theme === 'dark' ? 'bg-purple-600 hover:bg-purple-700' : 'bg-purple-600 hover:bg-purple-700'}`}
+                            className={`flex items-center gap-2 px-6 py-3 text-white rounded-xl font-semibold transition-all shadow-md hover:shadow-lg ${theme === 'dark' ? 'bg-violet-600 hover:bg-violet-700' : 'bg-violet-600 hover:bg-violet-700'}`}
                         >
                             <Send size={20} />
                             Send Message

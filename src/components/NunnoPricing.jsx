@@ -4,6 +4,7 @@ import { Check, Zap, TrendingUp, Crown, Sparkles, Brain, Activity, Wallet, Newsp
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { analytics } from '../utils/analytics';
+import SEO from './SEO';
 
 const ComingSoonOverlay = ({ onClose }) => {
     const [email, setEmail] = useState('');
@@ -40,8 +41,8 @@ const ComingSoonOverlay = ({ onClose }) => {
         >
             {/* Ambient Background Glows */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse" />
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-600/20 rounded-full blur-[120px] animate-pulse" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-violet-600/20 rounded-full blur-[120px] animate-pulse" />
             </div>
 
             <motion.div
@@ -51,12 +52,12 @@ const ComingSoonOverlay = ({ onClose }) => {
                 className="max-w-2xl relative z-10 w-full px-4"
             >
                 <div className="mb-8 inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">Phase 2: Global Expansion</span>
                 </div>
 
                 <h2 className="text-5xl sm:text-7xl lg:text-8xl font-black italic uppercase tracking-tighter text-white mb-6 leading-[0.9] drop-shadow-2xl overflow-visible pr-4 md:pr-8">
-                    FREE <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">UNFOLD</span>
+                    FREE <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-violet-400">UNFOLD</span>
                 </h2>
 
                 <p className="text-slate-300 text-sm md:text-lg font-medium max-w-md mx-auto mb-10 leading-relaxed opacity-80">
@@ -79,12 +80,12 @@ const ComingSoonOverlay = ({ onClose }) => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Reserve your trader handle (email)"
-                                className="w-full sm:flex-1 px-6 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all text-sm placeholder:text-slate-500"
+                                className="w-full sm:flex-1 px-6 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-sm placeholder:text-slate-500"
                             />
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full sm:w-auto px-10 py-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 text-white rounded-2xl font-black uppercase tracking-widest italic transition-all shadow-xl shadow-emerald-600/20 active:scale-95 text-xs whitespace-nowrap"
+                                className="w-full sm:w-auto px-10 py-4 bg-purple-600 hover:bg-purple-500 disabled:bg-purple-800 text-white rounded-2xl font-black uppercase tracking-widest italic transition-all shadow-xl shadow-purple-600/20 active:scale-95 text-xs whitespace-nowrap"
                             >
                                 {loading ? 'Processing...' : 'Reserve Access'}
                             </button>
@@ -94,9 +95,9 @@ const ComingSoonOverlay = ({ onClose }) => {
                             key="pricing-success"
                             initial={{ opacity: 0, scale: 0.5 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="bg-emerald-500/10 border border-emerald-500/20 p-8 rounded-[2.5rem] backdrop-blur-md max-w-md mx-auto"
+                            className="bg-purple-500/10 border border-purple-500/20 p-8 rounded-[2.5rem] backdrop-blur-md max-w-md mx-auto"
                         >
-                            <div className="size-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl shadow-emerald-500/40">
+                            <div className="size-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl shadow-purple-500/40">
                                 <Check size={32} className="text-white" strokeWidth={4} />
                             </div>
                             <h3 className="text-white font-black italic uppercase tracking-tighter text-xl mb-2">Priority Locked</h3>
@@ -207,25 +208,31 @@ export default function NunnoPricing({ onClose }) {
     ];
 
     return (
-        <div className={`min-h-dvh py-12 px-4 transition-colors duration-500 relative ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-purple-50'}`}>
+        <div className={`min-h-dvh py-12 px-4 transition-colors duration-500 relative ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-gradient-to-br from-gray-50 to-violet-50'}`}>
+            <SEO
+                title="Pricing — High-Performance AI Intelligence"
+                description="Choose the right intelligence node for your trading journey. High-limit searches and elite indicators."
+                path="/pricing"
+                schemaType="OfferCatalog"
+            />
             <ComingSoonOverlay onClose={onClose} />
             <div className="max-w-7xl mx-auto opacity-20 filter grayscale pointer-events-none">
                 {/* Header */}
                 <div className="text-center mb-16">
                     <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>
-                        Choose Your <span className={theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}>Nunno</span> Plan
+                        Choose Your <span className={theme === 'dark' ? 'text-violet-400' : 'text-violet-600'}>Nunno</span> Plan
                     </h1>
                     <p className={`text-lg md:text-xl mb-8 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>
                         AI-powered financial education and analysis for every level
                     </p>
 
                     {/* Billing Toggle */}
-                    <div className={`inline-flex items-center rounded-full p-1.5 shadow-lg border-2 transition-colors ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-purple-100'}`}>
+                    <div className={`inline-flex items-center rounded-full p-1.5 shadow-lg border-2 transition-colors ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-violet-100'}`}>
                         <button
                             onClick={() => setBillingCycle('monthly')}
                             className={`px-6 py-2.5 rounded-full transition-all font-medium ${billingCycle === 'monthly'
-                                ? (theme === 'dark' ? 'bg-purple-600 text-white shadow-md' : 'bg-purple-600 text-white shadow-md')
-                                : (theme === 'dark' ? 'text-slate-400 hover:text-slate-200' : 'text-gray-600 hover:text-purple-600')
+                                ? (theme === 'dark' ? 'bg-violet-600 text-white shadow-md' : 'bg-violet-600 text-white shadow-md')
+                                : (theme === 'dark' ? 'text-slate-400 hover:text-slate-200' : 'text-gray-600 hover:text-violet-600')
                                 }`}
                         >
                             Monthly
@@ -233,12 +240,12 @@ export default function NunnoPricing({ onClose }) {
                         <button
                             onClick={() => setBillingCycle('annual')}
                             className={`px-6 py-2.5 rounded-full transition-all font-medium ${billingCycle === 'annual'
-                                ? (theme === 'dark' ? 'bg-purple-600 text-white shadow-md' : 'bg-purple-600 text-white shadow-md')
-                                : (theme === 'dark' ? 'text-slate-400 hover:text-slate-200' : 'text-gray-600 hover:text-purple-600')
+                                ? (theme === 'dark' ? 'bg-violet-600 text-white shadow-md' : 'bg-violet-600 text-white shadow-md')
+                                : (theme === 'dark' ? 'text-slate-400 hover:text-slate-200' : 'text-gray-600 hover:text-violet-600')
                                 }`}
                         >
                             Annual
-                            <span className="ml-2 text-xs bg-green-500 text-white px-2 py-1 rounded-full">
+                            <span className="ml-2 text-xs bg-violet-500 text-white px-2 py-1 rounded-full">
                                 Save 20%
                             </span>
                         </button>
@@ -255,20 +262,20 @@ export default function NunnoPricing({ onClose }) {
                             <div
                                 key={index}
                                 className={`relative rounded-2xl p-8 transition-all duration-300 transform hover:-translate-y-1 ${plan.popular
-                                    ? (theme === 'dark' ? 'border-4 border-purple-500 shadow-2xl shadow-purple-500/10' : 'border-4 border-purple-500 shadow-2xl shadow-purple-200')
+                                    ? (theme === 'dark' ? 'border-4 border-violet-500 shadow-2xl shadow-violet-500/10' : 'border-4 border-violet-500 shadow-2xl shadow-violet-200')
                                     : (theme === 'dark' ? 'bg-[#1e2030] border-2 border-slate-700/50 shadow-lg' : 'bg-white border-2 border-gray-200 shadow-lg')
                                     } ${theme === 'dark' && plan.popular ? 'bg-[#1e2030]' : ''}`}
                             >
                                 {plan.popular && (
                                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-full text-center">
-                                        <span className={`px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg whitespace-nowrap ${theme === 'dark' ? 'bg-purple-600 text-white' : 'bg-purple-600 text-white'}`}>
+                                        <span className={`px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg whitespace-nowrap ${theme === 'dark' ? 'bg-violet-600 text-white' : 'bg-violet-600 text-white'}`}>
                                             Most Popular
                                         </span>
                                     </div>
                                 )}
 
-                                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 border-2 transition-colors ${theme === 'dark' ? 'bg-purple-500/10 border-purple-500/20' : 'bg-purple-100 border-purple-200'}`}>
-                                    <Icon className={`w-7 h-7 ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`} />
+                                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 border-2 transition-colors ${theme === 'dark' ? 'bg-violet-500/10 border-violet-500/20' : 'bg-violet-100 border-violet-200'}`}>
+                                    <Icon className={`w-7 h-7 ${theme === 'dark' ? 'text-violet-400' : 'text-violet-600'}`} />
                                 </div>
 
                                 <h3 className={`text-2xl font-bold mb-2 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>{plan.name}</h3>
@@ -283,18 +290,18 @@ export default function NunnoPricing({ onClose }) {
                                 </div>
 
                                 {/* Usage Stats */}
-                                <div className={`rounded-xl p-4 mb-6 space-y-2 border transition-colors ${theme === 'dark' ? 'bg-slate-900/50 border-slate-700/50' : 'bg-purple-50 border-purple-100'}`}>
+                                <div className={`rounded-xl p-4 mb-6 space-y-2 border transition-colors ${theme === 'dark' ? 'bg-slate-900/50 border-slate-700/50' : 'bg-violet-50 border-violet-100'}`}>
                                     <div className="flex justify-between text-sm">
                                         <span className={`font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Tokens</span>
-                                        <span className={`font-bold ${theme === 'dark' ? 'text-purple-400' : 'text-purple-700'}`}>{plan.tokens}</span>
+                                        <span className={`font-bold ${theme === 'dark' ? 'text-violet-400' : 'text-violet-700'}`}>{plan.tokens}</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className={`font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Daily Searches</span>
-                                        <span className={`font-bold ${theme === 'dark' ? 'text-purple-400' : 'text-purple-700'}`}>{plan.searches}</span>
+                                        <span className={`font-bold ${theme === 'dark' ? 'text-violet-400' : 'text-violet-700'}`}>{plan.searches}</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className={`font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Search Limit</span>
-                                        <span className={`font-bold ${theme === 'dark' ? 'text-purple-400' : 'text-purple-700'}`}>{plan.searchLimit} chars</span>
+                                        <span className={`font-bold ${theme === 'dark' ? 'text-violet-400' : 'text-violet-700'}`}>{plan.searchLimit} chars</span>
                                     </div>
                                 </div>
 
@@ -302,8 +309,8 @@ export default function NunnoPricing({ onClose }) {
                                 <ul className="space-y-3 mb-8">
                                     {plan.features.map((feature, i) => (
                                         <li key={i} className="flex items-start">
-                                            <div className={`w-5 h-5 rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5 ${theme === 'dark' ? 'bg-green-500/10' : 'bg-purple-100'}`}>
-                                                <Check className={`w-3 h-3 ${theme === 'dark' ? 'text-green-500' : 'text-purple-600'}`} />
+                                            <div className={`w-5 h-5 rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5 ${theme === 'dark' ? 'bg-violet-500/10' : 'bg-violet-100'}`}>
+                                                <Check className={`w-3 h-3 ${theme === 'dark' ? 'text-violet-400' : 'text-violet-600'}`} />
                                             </div>
                                             <span className={`text-sm ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>{feature}</span>
                                         </li>
@@ -312,8 +319,8 @@ export default function NunnoPricing({ onClose }) {
 
                                 <button
                                     className={`w-full py-3 rounded-xl font-semibold transition-all shadow-md ${plan.popular
-                                        ? (theme === 'dark' ? 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg' : 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg')
-                                        : (theme === 'dark' ? 'bg-slate-800 text-slate-200 border-2 border-slate-700 hover:bg-slate-700' : 'bg-white text-purple-600 border-2 border-purple-600 hover:bg-purple-50')
+                                        ? (theme === 'dark' ? 'bg-violet-600 text-white hover:bg-violet-700 hover:shadow-lg' : 'bg-violet-600 text-white hover:bg-violet-700 hover:shadow-lg')
+                                        : (theme === 'dark' ? 'bg-slate-800 text-slate-200 border-2 border-slate-700 hover:bg-slate-700' : 'bg-white text-violet-600 border-2 border-violet-600 hover:bg-violet-50')
                                         }`}
                                 >
                                     Get Started
@@ -324,10 +331,10 @@ export default function NunnoPricing({ onClose }) {
                 </div>
 
                 {/* Pro Plan Info */}
-                <div className={`mt-16 rounded-2xl p-6 md:p-10 border-4 shadow-xl transition-colors ${theme === 'dark' ? 'bg-[#1e2030] border-purple-500/30 shadow-purple-500/5' : 'bg-white border-purple-200 shadow-xl'}`}>
+                <div className={`mt-16 rounded-2xl p-6 md:p-10 border-4 shadow-xl transition-colors ${theme === 'dark' ? 'bg-[#1e2030] border-violet-500/30 shadow-violet-500/5' : 'bg-white border-violet-200 shadow-xl'}`}>
                     <div className="text-center">
-                        <div className={`inline-block rounded-full px-4 py-2 mb-4 ${theme === 'dark' ? 'bg-purple-500/10' : 'bg-purple-100'}`}>
-                            <span className={`font-bold text-sm ${theme === 'dark' ? 'text-purple-400' : 'text-purple-700'}`}>ELITE PLAN</span>
+                        <div className={`inline-block rounded-full px-4 py-2 mb-4 ${theme === 'dark' ? 'bg-violet-500/10' : 'bg-violet-100'}`}>
+                            <span className={`font-bold text-sm ${theme === 'dark' ? 'text-violet-400' : 'text-violet-700'}`}>ELITE PLAN</span>
                         </div>
                         <h3 className={`text-2xl md:text-3xl font-bold mb-4 ${theme === 'dark' ? 'text-slate-100' : 'text-gray-800'}`}>
                             Need More Power? Try Our Elite Plan
@@ -336,20 +343,20 @@ export default function NunnoPricing({ onClose }) {
                             Get 900,000 tokens per month with 300 daily searches for ultimate financial analysis
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                            <div className={`text-center rounded-xl p-6 border-2 transition-colors ${theme === 'dark' ? 'bg-slate-900/50 border-slate-700/50' : 'bg-purple-50 border-purple-100'}`}>
-                                <div className={`text-3xl md:text-4xl font-bold ${theme === 'dark' ? 'text-purple-400' : 'text-purple-700'}`}>900K</div>
+                            <div className={`text-center rounded-xl p-6 border-2 transition-colors ${theme === 'dark' ? 'bg-slate-900/50 border-slate-700/50' : 'bg-violet-50 border-violet-100'}`}>
+                                <div className={`text-3xl md:text-4xl font-bold ${theme === 'dark' ? 'text-violet-400' : 'text-violet-700'}`}>900K</div>
                                 <div className={`text-sm font-medium mt-1 ${theme === 'dark' ? 'text-slate-500' : 'text-gray-600'}`}>Tokens/month</div>
                             </div>
-                            <div className={`text-center rounded-xl p-6 border-2 transition-colors ${theme === 'dark' ? 'bg-slate-900/50 border-slate-700/50' : 'bg-purple-50 border-purple-100'}`}>
-                                <div className={`text-3xl md:text-4xl font-bold ${theme === 'dark' ? 'text-purple-400' : 'text-purple-700'}`}>300</div>
+                            <div className={`text-center rounded-xl p-6 border-2 transition-colors ${theme === 'dark' ? 'bg-slate-900/50 border-slate-700/50' : 'bg-violet-50 border-violet-100'}`}>
+                                <div className={`text-3xl md:text-4xl font-bold ${theme === 'dark' ? 'text-violet-400' : 'text-violet-700'}`}>300</div>
                                 <div className={`text-sm font-medium mt-1 ${theme === 'dark' ? 'text-slate-500' : 'text-gray-600'}`}>Searches/day</div>
                             </div>
-                            <div className={`text-center rounded-xl p-6 border-2 transition-colors ${theme === 'dark' ? 'bg-slate-900/50 border-slate-700/50' : 'bg-purple-50 border-purple-100'}`}>
-                                <div className={`text-3xl md:text-4xl font-bold ${theme === 'dark' ? 'text-purple-400' : 'text-purple-700'}`}>3,000</div>
+                            <div className={`text-center rounded-xl p-6 border-2 transition-colors ${theme === 'dark' ? 'bg-slate-900/50 border-slate-700/50' : 'bg-violet-50 border-violet-100'}`}>
+                                <div className={`text-3xl md:text-4xl font-bold ${theme === 'dark' ? 'text-violet-400' : 'text-violet-700'}`}>3,000</div>
                                 <div className={`text-sm font-medium mt-1 ${theme === 'dark' ? 'text-slate-500' : 'text-gray-600'}`}>Chars/search</div>
                             </div>
                         </div>
-                        <button className={`px-10 py-4 rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl w-full md:w-auto ${theme === 'dark' ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-purple-600 text-white hover:bg-purple-700'}`}>
+                        <button className={`px-10 py-4 rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl w-full md:w-auto ${theme === 'dark' ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-violet-600 text-white hover:bg-violet-700'}`}>
                             Start Elite for $100/month
                         </button>
                     </div>
@@ -357,17 +364,17 @@ export default function NunnoPricing({ onClose }) {
 
                 {/* Trust Indicators */}
                 <div className="mt-12 text-center pb-8">
-                    <div className={`inline-flex flex-col md:flex-row items-center md:space-x-8 space-y-4 md:space-y-0 rounded-2xl md:rounded-full px-8 py-4 shadow-lg border-2 transition-colors ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-purple-100'}`}>
+                    <div className={`inline-flex flex-col md:flex-row items-center md:space-x-8 space-y-4 md:space-y-0 rounded-2xl md:rounded-full px-8 py-4 shadow-lg border-2 transition-colors ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50' : 'bg-white border-violet-100'}`}>
                         <div className="flex items-center space-x-2">
-                            <div className={`w-2 h-2 rounded-full ${theme === 'dark' ? 'bg-purple-400' : 'bg-purple-500'}`}></div>
+                            <div className={`w-2 h-2 rounded-full ${theme === 'dark' ? 'bg-violet-400' : 'bg-violet-500'}`}></div>
                             <span className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-700'}`}>Powered by Nunno Private Intelligence</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                            <div className={`w-2 h-2 rounded-full ${theme === 'dark' ? 'bg-purple-400' : 'bg-purple-500'}`}></div>
+                            <div className={`w-2 h-2 rounded-full ${theme === 'dark' ? 'bg-violet-400' : 'bg-violet-500'}`}></div>
                             <span className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-700'}`}>Cancel anytime</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                            <div className={`w-2 h-2 rounded-full ${theme === 'dark' ? 'bg-purple-400' : 'bg-purple-500'}`}></div>
+                            <div className={`w-2 h-2 rounded-full ${theme === 'dark' ? 'bg-violet-400' : 'bg-violet-500'}`}></div>
                             <span className={`text-sm font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-700'}`}>Secure payments</span>
                         </div>
                     </div>
