@@ -5,7 +5,8 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 # Increase memory limit for Vite build to prevent SIGSEGV
-ENV NODE_OPTIONS="--max-old-space-size=2048"
+# 1024MB is a safer choice for a 2GB VPS than 2048MB
+ENV NODE_OPTIONS="--max-old-space-size=1024"
 RUN npm run build
 
 # Production stage
