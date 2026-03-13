@@ -59,7 +59,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { analytics } from '../utils/analytics';
-import { formatPrice } from '../utils/formatPrice';
+import { formatPrice, formatTickPrice } from '../utils/formatPrice';
 import SEO from './SEO';
 
 const EliteChart = () => {
@@ -68,7 +68,13 @@ const EliteChart = () => {
     const chartRef = useRef(null);
     const mainSeriesRef = useRef(null);
     const volumeSeriesRef = useRef(null);
-    const indicatorSeriesRefs = useRef({});
+    const indicatorSeriesRefs = useRef({ 
+        live_trendlines: [], 
+        position_tools: [], 
+        ai_pattern: null, 
+        ai_trendlines: [],
+        ai_position_tools: []
+    });
     const priceLineRefs = useRef([]);
     const blueprintLineRefs = useRef({ entry: null, target: null, stop: null });
 
@@ -92,6 +98,10 @@ const EliteChart = () => {
     const [highlightedLevels, setHighlightedLevels] = useState({ support: null, resistance: null });
     const highlightedPriceLinesRef = useRef([]);
     const hasBlinkedRef = useRef(false);
+
+    // Correlation state
+    const [correlationData, setCorrelationData] = useState(null);
+    const correlationSeriesRef = useRef(null);
 
     // Indicators state
     const [selectedIndicators, setSelectedIndicators] = useState({
@@ -193,6 +203,43 @@ const EliteChart = () => {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    // Render Correlation Overlay
+    useEffect(() => {
+        if (!chartRef.current || !correlationData) return;
+
+        // Clear existing correlation series
+        if (correlationSeriesRef.current) {
+            try { chartRef.current.removeSeries(correlationSeriesRef.current); } catch (e) { }
+        }
+
+        // Add new line series for correlation (Ghost Chart)
+        const series = chartRef.current.addLineSeries({
+            color: theme === 'dark' ? 'rgba(139, 92, 246, 0.8)' : 'rgba(99, 102, 241, 0.7)',
+            lineWidth: 3,
+            lineStyle: 0, // Solid
+            crosshairMarkerVisible: true,
+            priceLineVisible: false,
+            lastValueVisible: true,
+            title: `CORR: ${correlationData.ticker.replace('USDT', '')} (${correlationData.score})`,
+        });
+
+        series.setData(correlationData.overlay_data);
+        correlationSeriesRef.current = series;
+
+        return () => {
+            if (correlationSeriesRef.current && chartRef.current) {
+                try { chartRef.current.removeSeries(correlationSeriesRef.current); } catch (e) { }
+                correlationSeriesRef.current = null;
+            }
+        };
+    }, [correlationData, theme]);
+
+
+    const handleCorrelationOverlay = (data) => {
+        console.log("🧬 Correlation Overlay Data Received:", data);
+        setCorrelationData(data);
+    };
 
     // Level Highlighting Animation (Blinking)
     useEffect(() => {
@@ -307,6 +354,13 @@ const EliteChart = () => {
     const [showDetailedVerdict, setShowDetailedVerdict] = useState(false);
     const [isJudging, setIsJudging] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
+
+    // ── Tactical Entry Scan state ──────────────────────────────
+    const [isTacticalMode, setIsTacticalMode] = useState(false);
+    const [tacticalEntry, setTacticalEntry] = useState(null);
+    const [tacticalResult, setTacticalResult] = useState(null);
+    const [isTacticalScanning, setIsTacticalScanning] = useState(false);
+    const tacticalSeriesRefs = useRef([]);
 
     // Auth & Limits
     const { user, isAuthenticated, refreshUser } = useAuth();
@@ -1380,19 +1434,117 @@ const EliteChart = () => {
                 }));
                 patternSeries.setMarkers(markers);
             }
+
+            // AI Position Tool (Long/Short Overview)
+            if (activeAiPattern.expected_move) {
+                const move = activeAiPattern.expected_move;
+                const directionStr = (move.direction || activeAiPattern.direction || 'UP').toUpperCase();
+                const isBullish = directionStr === 'UP' || directionStr === 'BULLISH';
+                const target = move.target_price || (isBullish ? currentPrice * 1.05 : currentPrice * 0.95);
+                const stop = activeAiPattern.stop_loss || move.stop_loss || (isBullish ? currentPrice * 0.98 : currentPrice * 1.02);
+                
+                if (indicatorSeriesRefs.current.ai_position_tools) {
+                    indicatorSeriesRefs.current.ai_position_tools.forEach(s => {
+                        if (s && chartRef.current) try { chartRef.current.removeSeries(s); } catch (e) { }
+                    });
+                }
+                indicatorSeriesRefs.current.ai_position_tools = [];
+
+                // 1. Profit Series (Green)
+                const profitSeries = chartRef.current.addBaselineSeries({
+                    baseValue: { price: currentPrice, type: 'price' },
+                    topFillColor1: isBullish ? 'rgba(34, 197, 94, 0.25)' : 'rgba(0, 0, 0, 0)',
+                    topFillColor2: isBullish ? 'rgba(34, 197, 94, 0.05)' : 'rgba(0, 0, 0, 0)',
+                    topLineColor: isBullish ? '#22c55e' : 'rgba(0, 0, 0, 0)',
+                    bottomFillColor1: isBullish ? 'rgba(0, 0, 0, 0)' : 'rgba(34, 197, 94, 0.25)',
+                    bottomFillColor2: isBullish ? 'rgba(0, 0, 0, 0)' : 'rgba(34, 197, 94, 0.05)',
+                    bottomLineColor: isBullish ? 'rgba(0, 0, 0, 0)' : '#22c55e',
+                    lineWidth: 1,
+                    lineStyle: 0,
+                    lastValueVisible: false,
+                    priceLineVisible: false,
+                });
+
+                // 2. Loss Series (Red)
+                const lossSeries = chartRef.current.addBaselineSeries({
+                    baseValue: { price: currentPrice, type: 'price' },
+                    topFillColor1: isBullish ? 'rgba(0, 0, 0, 0)' : 'rgba(239, 68, 68, 0.25)',
+                    topFillColor2: isBullish ? 'rgba(0, 0, 0, 0)' : 'rgba(239, 68, 68, 0.05)',
+                    topLineColor: isBullish ? 'rgba(0, 0, 0, 0)' : '#ef4444',
+                    bottomFillColor1: isBullish ? 'rgba(239, 68, 68, 0.25)' : 'rgba(0, 0, 0, 0)',
+                    bottomFillColor2: isBullish ? 'rgba(239, 68, 68, 0.05)' : 'rgba(0, 0, 0, 0)',
+                    bottomLineColor: isBullish ? '#ef4444' : 'rgba(0, 0, 0, 0)',
+                    lineWidth: 1,
+                    lineStyle: 0,
+                    lastValueVisible: false,
+                    priceLineVisible: false,
+                });
+
+                const profitPoints = [];
+                const lossPoints = [];
+                for (let i = 0; i <= 30; i++) {
+                    const time = baseTime + (i * timeIncrement);
+                    profitPoints.push({ time, value: target });
+                    lossPoints.push({ time, value: stop });
+                }
+                profitSeries.setData(profitPoints);
+                lossSeries.setData(lossPoints);
+
+                // Add lines for target and stop
+                profitSeries.createPriceLine({
+                    price: target,
+                    color: '#22c55e',
+                    lineWidth: 1,
+                    lineStyle: 0,
+                    axisLabelVisible: true,
+                    title: `TARGET (${move.magnitude || move.pct_move}%)`
+                });
+                lossSeries.createPriceLine({
+                    price: stop,
+                    color: '#ef4444',
+                    lineWidth: 1,
+                    lineStyle: 0,
+                    axisLabelVisible: true,
+                    title: 'STOP'
+                });
+
+                indicatorSeriesRefs.current.ai_position_tools.push(profitSeries, lossSeries);
+            }
         }
 
         // Draw Live Detected Patterns if active
         if (liveDetectedPatterns && liveDetectedPatterns.length > 0 && chartData.length > 0) {
+            // Cleanup previous live trendlines and position tools
+            if (indicatorSeriesRefs.current.live_trendlines) {
+                indicatorSeriesRefs.current.live_trendlines.forEach(s => {
+                    if (s && chartRef.current) try { chartRef.current.removeSeries(s); } catch (e) { }
+                });
+            }
+            if (indicatorSeriesRefs.current.position_tools) {
+                indicatorSeriesRefs.current.position_tools.forEach(s => {
+                    if (s && chartRef.current) try { chartRef.current.removeSeries(s); } catch (e) { }
+                });
+            }
             indicatorSeriesRefs.current.live_trendlines = [];
+            indicatorSeriesRefs.current.position_tools = [];
+
             let allMarkers = [...(mainSeriesRef.current?.markers?.() || [])];
 
             liveDetectedPatterns.forEach(pattern => {
-                // Draw trendlines using actual chart timestamps
+                // Find absolute timestamps from the chart data to ensure no offset
+                const findTime = (idx, fallbackTime) => {
+                    if (fallbackTime) return fallbackTime;
+                    // If index is relative to the last 30 candles (what we sent to API)
+                    // we need to map it back to the end of chartData
+                    const absoluteIdx = chartData.length - (30 - idx);
+                    return chartData[absoluteIdx]?.time || chartData[chartData.length - 1]?.time;
+                };
+
+                // Draw trendlines
                 if (pattern.trendlines) {
                     pattern.trendlines.forEach(tl => {
-                        const t1 = tl.t1 || (chartData[tl.x1]?.time);
-                        const t2 = tl.t2 || (chartData[tl.x2]?.time);
+                        const t1 = tl.t1 || findTime(tl.x1);
+                        const t2 = tl.t2 || findTime(tl.x2);
                         if (!t1 || !t2) return;
 
                         const lineSeries = chartRef.current.addLineSeries({
@@ -1411,10 +1563,90 @@ const EliteChart = () => {
                     });
                 }
 
+                // TradingView-style Long/Short Overlays (Position Tool)
+                if (pattern.target && pattern.stop) {
+                    const isBullish = pattern.direction === 'bullish';
+                    const entryPrice = pattern.trendlines?.[0]?.y2 || (isBullish ? pattern.target * 0.95 : pattern.target * 1.05);
+                    const startTime = pattern.start_time || findTime(pattern.start_idx);
+                    const endTime = pattern.end_time || findTime(pattern.end_idx);
+
+                    // 1. Profit Series (Green)
+                    const profitSeries = chartRef.current.addBaselineSeries({
+                        baseValue: { price: entryPrice, type: 'price' },
+                        topFillColor1: isBullish ? 'rgba(34, 197, 94, 0.25)' : 'rgba(0, 0, 0, 0)',
+                        topFillColor2: isBullish ? 'rgba(34, 197, 94, 0.05)' : 'rgba(0, 0, 0, 0)',
+                        topLineColor: isBullish ? '#22c55e' : 'rgba(0, 0, 0, 0)',
+                        bottomFillColor1: isBullish ? 'rgba(0, 0, 0, 0)' : 'rgba(34, 197, 94, 0.25)',
+                        bottomFillColor2: isBullish ? 'rgba(0, 0, 0, 0)' : 'rgba(34, 197, 94, 0.05)',
+                        bottomLineColor: isBullish ? 'rgba(0, 0, 0, 0)' : '#22c55e',
+                        lineWidth: 1,
+                        lineStyle: 0,
+                        lastValueVisible: false,
+                        priceLineVisible: false,
+                    });
+
+                    // 2. Loss Series (Red)
+                    const lossSeries = chartRef.current.addBaselineSeries({
+                        baseValue: { price: entryPrice, type: 'price' },
+                        topFillColor1: isBullish ? 'rgba(0, 0, 0, 0)' : 'rgba(239, 68, 68, 0.25)',
+                        topFillColor2: isBullish ? 'rgba(0, 0, 0, 0)' : 'rgba(239, 68, 68, 0.05)',
+                        topLineColor: isBullish ? 'rgba(0, 0, 0, 0)' : '#ef4444',
+                        bottomFillColor1: isBullish ? 'rgba(239, 68, 68, 0.25)' : 'rgba(0, 0, 0, 0)',
+                        bottomFillColor2: isBullish ? 'rgba(239, 68, 68, 0.05)' : 'rgba(0, 0, 0, 0)',
+                        bottomLineColor: isBullish ? '#ef4444' : 'rgba(0, 0, 0, 0)',
+                        lineWidth: 1,
+                        lineStyle: 0,
+                        lastValueVisible: false,
+                        priceLineVisible: false,
+                    });
+
+                    // Create data points for the box duration
+                    const profitPoints = [];
+                    const lossPoints = [];
+                    
+                    const sTime = startTime;
+                    const eTime = endTime;
+                    const lastTime = chartData[chartData.length - 1].time;
+                    const timeWindow = chartData[1].time - chartData[0].time;
+                    
+                    chartData.filter(d => d.time >= sTime && d.time <= eTime).forEach(d => {
+                        profitPoints.push({ time: d.time, value: pattern.target });
+                        lossPoints.push({ time: d.time, value: pattern.stop });
+                    });
+                    
+                    for (let i = 1; i <= 10; i++) {
+                        const t = lastTime + (i * timeWindow);
+                        profitPoints.push({ time: t, value: pattern.target });
+                        lossPoints.push({ time: t, value: pattern.stop });
+                    }
+
+                    profitSeries.setData(profitPoints);
+                    lossSeries.setData(lossPoints);
+                    indicatorSeriesRefs.current.position_tools.push(profitSeries, lossSeries);
+
+                    // Add price lines for clarity
+                    profitSeries.createPriceLine({
+                        price: pattern.target,
+                        color: '#22c55e',
+                        lineWidth: 1,
+                        lineStyle: 0,
+                        axisLabelVisible: true,
+                        title: 'TARGET'
+                    });
+                    lossSeries.createPriceLine({
+                        price: pattern.stop,
+                        color: '#ef4444',
+                        lineWidth: 1,
+                        lineStyle: 0,
+                        axisLabelVisible: true,
+                        title: 'STOP'
+                    });
+                }
+
                 // Collect annotations
                 if (pattern.annotations && pattern.annotations.length > 0) {
                     const newMarkers = pattern.annotations.map(ann => {
-                        const time = ann.t || (chartData[ann.x]?.time);
+                        const time = ann.t || findTime(ann.x);
                         if (!time) return null;
                         return {
                             time,
@@ -1438,7 +1670,7 @@ const EliteChart = () => {
             }
         }
 
-    }, [calculatedIndicators, selectedIndicators, activeAiPattern, liveDetectedPatterns, candlestickMarkers, activeCandlePatterns]);
+    }, [calculatedIndicators, selectedIndicators, activeAiPattern, liveDetectedPatterns, candlestickMarkers, activeCandlePatterns, chartData]);
 
 
     const clearSimulationArtifacts = () => {
@@ -1478,6 +1710,322 @@ const EliteChart = () => {
         setShowSimulationDetails(false);
         setShowLabDeepDive(false);
     };
+
+    // ── Tactical Entry Scan: Chart click handler ──────────────────
+    useEffect(() => {
+        if (!isTacticalMode || !chartRef.current) return;
+
+        const handleClick = (param) => {
+            if (!param.point || !param.time) return;
+            const price = mainSeriesRef.current?.coordinateToPrice(param.point.y);
+            if (price && price > 0) {
+                setTacticalEntry(price);
+                runTacticalScan(price);
+            }
+        };
+
+        chartRef.current.subscribeClick(handleClick);
+        return () => {
+            if (chartRef.current) {
+                chartRef.current.unsubscribeClick(handleClick);
+            }
+        };
+    }, [isTacticalMode, chartData, calculatedIndicators]);
+
+    // Clear Tactical Entry Scan artifacts
+    const clearTacticalScan = () => {
+        tacticalSeriesRefs.current.forEach(s => {
+            if (s && chartRef.current) try { chartRef.current.removeSeries(s); } catch (e) { }
+        });
+        tacticalSeriesRefs.current = [];
+
+        // Remove tactical price lines
+        if (mainSeriesRef.current) {
+            ['__tacticalEntry', '__tacticalTarget', '__tacticalStop'].forEach(tag => {
+                try {
+                    const existing = mainSeriesRef.current[tag];
+                    if (existing) mainSeriesRef.current.removePriceLine(existing);
+                    mainSeriesRef.current[tag] = null;
+                } catch (e) { }
+            });
+        }
+
+        setTacticalEntry(null);
+        setTacticalResult(null);
+        setIsTacticalMode(false);
+        setIsTacticalScanning(false);
+    };
+
+    // Run Tactical Entry Scan — computes S/R proximity, R/R, expected move
+    const runTacticalScan = (entryPrice) => {
+        if (!chartData || chartData.length < 10 || !entryPrice) return;
+        setIsTacticalScanning(true);
+
+        try {
+            // Get S/R levels from calculated indicators
+            const supports = (calculatedIndicators.support || []).map(l => l.price).sort((a, b) => b - a);
+            const resistances = (calculatedIndicators.resistance || []).map(l => l.price).sort((a, b) => a - b);
+
+            // Nearest support below entry
+            const nearestSupport = supports.find(s => s < entryPrice) || entryPrice * 0.95;
+            // Nearest resistance above entry
+            const nearestResistance = resistances.find(r => r > entryPrice) || entryPrice * 1.05;
+
+            // Second-level targets
+            const secondSupport = supports.find(s => s < nearestSupport) || nearestSupport * 0.97;
+            const secondResistance = resistances.find(r => r > nearestResistance) || nearestResistance * 1.03;
+
+            // Long scenario
+            const longTarget = nearestResistance;
+            const longStop = nearestSupport;
+            const longReward = Math.abs(longTarget - entryPrice);
+            const longRisk = Math.abs(entryPrice - longStop);
+            const longRR = longRisk > 0 ? (longReward / longRisk).toFixed(2) : 'N/A';
+            const longPctMove = ((longTarget - entryPrice) / entryPrice * 100).toFixed(2);
+
+            // Short scenario
+            const shortTarget = nearestSupport;
+            const shortStop = nearestResistance;
+            const shortReward = Math.abs(entryPrice - shortTarget);
+            const shortRisk = Math.abs(shortStop - entryPrice);
+            const shortRR = shortRisk > 0 ? (shortReward / shortRisk).toFixed(2) : 'N/A';
+            const shortPctMove = ((entryPrice - shortTarget) / entryPrice * 100).toFixed(2);
+
+            // ATR for confidence
+            const atr = getCurrentValue(calculatedIndicators.atr) || (entryPrice * 0.015);
+            const rsi = getCurrentValue(calculatedIndicators.rsi);
+            const distToSupport = Math.abs(entryPrice - nearestSupport) / atr;
+            const distToResist = Math.abs(nearestResistance - entryPrice) / atr;
+
+            // Confluence score
+            let confluenceScore = 50;
+            if (distToSupport < 1.0) confluenceScore += 15; // Near support — good for longs
+            if (distToResist < 1.0) confluenceScore += 10; // Near resistance — good for shorts
+            if (rsi && rsi < 35) confluenceScore += 10; // Oversold — supports long
+            if (rsi && rsi > 65) confluenceScore += 10; // Overbought — supports short
+            if (parseFloat(longRR) >= 2) confluenceScore += 10;
+            confluenceScore = Math.min(95, Math.max(15, confluenceScore));
+
+            const result = {
+                entry: entryPrice,
+                long: {
+                    target: longTarget,
+                    stop: longStop,
+                    rr: longRR,
+                    pctMove: longPctMove,
+                    reward: longReward,
+                    risk: longRisk,
+                    secondTarget: secondResistance,
+                },
+                short: {
+                    target: shortTarget,
+                    stop: shortStop,
+                    rr: shortRR,
+                    pctMove: shortPctMove,
+                    reward: shortReward,
+                    risk: shortRisk,
+                    secondTarget: secondSupport,
+                },
+                levels: { nearestSupport, nearestResistance, secondSupport, secondResistance },
+                confluenceScore,
+                atr,
+                rsi: rsi?.toFixed?.(1) || 'N/A',
+                direction: rsi && rsi < 45 ? 'LONG' : rsi && rsi > 55 ? 'SHORT' : 'NEUTRAL',
+            };
+
+            setTacticalResult(result);
+
+            // ── Draw overlays on chart ──
+            // Clear previous tactical drawings
+            tacticalSeriesRefs.current.forEach(s => {
+                if (s && chartRef.current) try { chartRef.current.removeSeries(s); } catch (e) { }
+            });
+            tacticalSeriesRefs.current = [];
+            if (mainSeriesRef.current) {
+                ['__tacticalEntry', '__tacticalTarget', '__tacticalStop'].forEach(tag => {
+                    try {
+                        const existing = mainSeriesRef.current[tag];
+                        if (existing) mainSeriesRef.current.removePriceLine(existing);
+                        mainSeriesRef.current[tag] = null;
+                    } catch (e) { }
+                });
+            }
+
+            if (mainSeriesRef.current) {
+                const isShortBias = result.direction === 'SHORT';
+                const targetPrice = isShortBias ? result.short.target : result.long.target;
+                const stopPrice = isShortBias ? result.short.stop : result.long.stop;
+                const dirLabel = isShortBias ? 'SHORT' : 'LONG';
+
+                // Entry line
+                const entryLine = mainSeriesRef.current.createPriceLine({
+                    price: entryPrice,
+                    color: '#8b5cf6',
+                    lineWidth: 3,
+                    lineStyle: 0,
+                    axisLabelVisible: true,
+                    title: '⊕ ENTRY'
+                });
+                mainSeriesRef.current.__tacticalEntry = entryLine;
+
+                // Target line
+                const targetLine = mainSeriesRef.current.createPriceLine({
+                    price: targetPrice,
+                    color: isShortBias ? '#ef4444' : '#22c55e',
+                    lineWidth: 2,
+                    lineStyle: 2,
+                    axisLabelVisible: true,
+                    title: `🎯 TARGET (${dirLabel})`
+                });
+                mainSeriesRef.current.__tacticalTarget = targetLine;
+
+                // Stop line
+                const stopLine = mainSeriesRef.current.createPriceLine({
+                    price: stopPrice,
+                    color: isShortBias ? '#22c55e' : '#ef4444',
+                    lineWidth: 2,
+                    lineStyle: 2,
+                    axisLabelVisible: true,
+                    title: `✋ STOP (${dirLabel})`
+                });
+                mainSeriesRef.current.__tacticalStop = stopLine;
+            }
+
+            // Draw shaded zone between target and stop using area series
+            if (chartRef.current && chartData.length > 0) {
+                const lastTime = chartData[chartData.length - 1].time;
+                const timeInc = interval === '1d' ? 86400 : interval === '1h' ? 3600 : interval === '15m' ? 900 : 60;
+                const zonePts = 15;
+
+                const isShortBias = result.direction === 'SHORT';
+                const targetPrice = isShortBias ? result.short.target : result.long.target;
+                const stopPrice = isShortBias ? result.short.stop : result.long.stop;
+
+                // Target zone (shaded)
+                const targetZone = chartRef.current.addAreaSeries({
+                    topColor: isShortBias ? 'rgba(239, 68, 68, 0.15)' : 'rgba(34, 197, 94, 0.15)',
+                    bottomColor: isShortBias ? 'rgba(239, 68, 68, 0.03)' : 'rgba(34, 197, 94, 0.03)',
+                    lineColor: isShortBias ? 'rgba(239, 68, 68, 0.4)' : 'rgba(34, 197, 94, 0.4)',
+                    lineWidth: 1,
+                    lastValueVisible: false,
+                    priceLineVisible: false,
+                });
+                targetZone.setData(Array.from({ length: zonePts }, (_, i) => ({
+                    time: lastTime + ((i + 1) * timeInc),
+                    value: targetPrice
+                })));
+                tacticalSeriesRefs.current.push(targetZone);
+
+                // Risk zone (shaded)
+                const riskZone = chartRef.current.addAreaSeries({
+                    topColor: isShortBias ? 'rgba(34, 197, 94, 0.03)' : 'rgba(239, 68, 68, 0.03)',
+                    bottomColor: isShortBias ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                    lineColor: isShortBias ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)',
+                    lineWidth: 1,
+                    lastValueVisible: false,
+                    priceLineVisible: false,
+                });
+                riskZone.setData(Array.from({ length: zonePts }, (_, i) => ({
+                    time: lastTime + ((i + 1) * timeInc),
+                    value: stopPrice
+                })));
+                tacticalSeriesRefs.current.push(riskZone);
+
+                // Entry projection line (purple dashed)
+                const entryProjection = chartRef.current.addLineSeries({
+                    color: 'rgba(139, 92, 246, 0.6)',
+                    lineWidth: 2,
+                    lineStyle: 2,
+                    lastValueVisible: false,
+                    priceLineVisible: false,
+                });
+                entryProjection.setData(Array.from({ length: zonePts }, (_, i) => ({
+                    time: lastTime + ((i + 1) * timeInc),
+                    value: entryPrice
+                })));
+                tacticalSeriesRefs.current.push(entryProjection);
+            }
+        } catch (error) {
+            console.error('Tactical scan error:', error);
+        } finally {
+            setIsTacticalScanning(false);
+        }
+    };
+
+    // ── Enhanced AI Pattern Shaded Zone Rendering ──────────────────
+    useEffect(() => {
+        if (!activeAiPattern?.shaded_zone || !chartRef.current || chartData.length === 0) return;
+
+        const zone = activeAiPattern.shaded_zone;
+        const timeIncrement = interval === '1d' ? 86400 : interval === '1h' ? 3600 : interval === '15m' ? 900 : 60;
+        const baseTime = activeAiPattern.baseTime;
+        const direction = activeAiPattern.direction;
+
+        // Draw upper boundary as line
+        if (zone.upper_boundary && zone.upper_boundary.length > 0) {
+            const upperSeries = chartRef.current.addLineSeries({
+                color: direction === 'bullish' ? 'rgba(34, 197, 94, 0.7)' : 'rgba(239, 68, 68, 0.7)',
+                lineWidth: 1,
+                lineStyle: 2,
+                lastValueVisible: false,
+                priceLineVisible: false,
+            });
+            const upperData = zone.upper_boundary.map((p, idx) => ({
+                time: baseTime + (idx * timeIncrement),
+                value: p.y
+            }));
+            upperSeries.setData(upperData);
+            indicatorSeriesRefs.current.ai_shaded_upper = upperSeries;
+        }
+
+        // Draw lower boundary as line
+        if (zone.lower_boundary && zone.lower_boundary.length > 0) {
+            const lowerSeries = chartRef.current.addLineSeries({
+                color: direction === 'bullish' ? 'rgba(34, 197, 94, 0.7)' : 'rgba(239, 68, 68, 0.7)',
+                lineWidth: 1,
+                lineStyle: 2,
+                lastValueVisible: false,
+                priceLineVisible: false,
+            });
+            const lowerData = zone.lower_boundary.map((p, idx) => ({
+                time: baseTime + (idx * timeIncrement),
+                value: p.y
+            }));
+            lowerSeries.setData(lowerData);
+            indicatorSeriesRefs.current.ai_shaded_lower = lowerSeries;
+        }
+
+        // Draw filled area between boundaries
+        if (zone.upper_boundary?.length > 0 && zone.lower_boundary?.length > 0) {
+            const fillColor = direction === 'bullish'
+                ? 'rgba(34, 197, 94, 0.08)'
+                : 'rgba(239, 68, 68, 0.08)';
+
+            const shadedArea = chartRef.current.addAreaSeries({
+                topColor: fillColor,
+                bottomColor: 'transparent',
+                lineColor: 'transparent',
+                lineWidth: 0,
+                lastValueVisible: false,
+                priceLineVisible: false,
+            });
+            const areaData = zone.upper_boundary.map((p, idx) => ({
+                time: baseTime + (idx * timeIncrement),
+                value: p.y
+            }));
+            shadedArea.setData(areaData);
+            indicatorSeriesRefs.current.ai_shaded_fill = shadedArea;
+        }
+
+        return () => {
+            ['ai_shaded_upper', 'ai_shaded_lower', 'ai_shaded_fill'].forEach(key => {
+                if (indicatorSeriesRefs.current[key] && chartRef.current) {
+                    try { chartRef.current.removeSeries(indicatorSeriesRefs.current[key]); } catch (e) { }
+                    indicatorSeriesRefs.current[key] = null;
+                }
+            });
+        };
+    }, [activeAiPattern, chartData, interval]);
 
     const runMonteCarloSimulation = async () => {
         if (!checkSearchLimit()) return;
@@ -2096,228 +2644,252 @@ const EliteChart = () => {
     }, []);
 
     return (
-        <div className={`h-full w-full flex flex-col overflow-hidden transition-colors duration-500 ${theme === 'dark' ? 'bg-[#16161e] text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
-            {/* --- Premium Top Header --- */}
-            <header className={`z-[70] transition-all duration-500 relative border-b ${theme === 'dark' ? 'bg-[#1e2030]/80 border-slate-700/50' : 'bg-white/80 border-slate-200'} backdrop-blur-md`}>
-                <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between px-4 md:px-8 py-3 md:py-4 gap-4">
-                    {/* Left: Ticker & Timeframe */}
-                    <div className="flex items-center gap-4 md:gap-8 pl-14 md:pl-0">
-                        <div className="flex items-center gap-3">
-                            <div className={`hidden md:flex p-2 rounded-2xl shadow-inner ${theme === 'dark' ? 'bg-[#16161e]' : 'bg-slate-100'}`}>
-                                <TrendingUp className="text-violet-500" size={28} />
-                            </div>
-                            <div className="flex flex-col">
-                                <div className="flex items-center gap-2 relative" ref={tickerMenuRef}>
-                                    <button
-                                        onClick={() => setIsTickerMenuOpen(!isTickerMenuOpen)}
-                                        className={`flex items-center gap-2 group transition-all rounded-xl px-2 py-1 -ml-2 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}
-                                    >
-                                        <span className={`transition-all ${theme === 'dark' ? 'text-white group-hover:text-violet-400' : 'text-slate-900 group-hover:text-violet-600'}`}
-                                            style={{ fontWeight: 800, fontSize: isMobile ? '1.25rem' : '1.5rem', letterSpacing: '-0.02em', fontFamily: "'Inter', system-ui, sans-serif" }}>
-                                            {symbol.replace('USDT', '')}
-                                        </span>
-                                        <ChevronDown size={isMobile ? 18 : 22} className={`transition-transform duration-300 ${isTickerMenuOpen ? 'rotate-180' : ''} ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`} />
-                                    </button>
+        <div className={`h-full w-full flex flex-col overflow-hidden transition-colors duration-500 ${theme === 'dark' ? 'bg-[#0f111a] text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+            {/* --- Premium Tactical Header --- */}
+            <header className={`z-[70] transition-all duration-500 relative border-b ${theme === 'dark' ? 'bg-[#0f111a]/95 border-white/5 shadow-2xl' : 'bg-white/95 border-slate-200 shadow-xl'} backdrop-blur-xl`}>
+                <div className={`flex flex-col md:flex-row md:items-center justify-between px-4 md:px-8 ${isMobile ? 'py-2 gap-2.5' : 'py-4'}`}>
+                    
+                    {isMobile ? (
+                        /* PREMIUM MOBILE HEADER (Dynamic Hub Layout) */
+                        <div className="flex flex-col gap-4">
+                            {/* Row 1: The Market Hub */}
+                            <div className="flex items-center justify-between">
+                                {/* Elegant Sidebar Toggle */}
+                                <button
+                                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                                    className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${theme === 'dark' ? 'bg-white/5 text-violet-400 border border-white/5' : 'bg-slate-50 text-violet-600 border border-slate-200'}`}
+                                >
+                                    <div className="flex flex-col gap-1 items-end">
+                                        <div className="w-5 h-0.5 bg-current rounded-full" />
+                                        <div className="w-4 h-0.5 bg-current rounded-full" />
+                                        <div className="w-2 h-0.5 bg-current rounded-full opacity-50" />
+                                    </div>
+                                </button>
 
-                                    {/* Premium Custom Dropdown */}
-                                    {isTickerMenuOpen && (
-                                        <div className={`absolute top-full left-0 mt-2 w-72 rounded-2xl shadow-2xl border backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-300 z-[100] ${theme === 'dark' ? 'bg-[#1e2030]/95 border-slate-700/50' : 'bg-white/95 border-slate-200 shadow-slate-200/50'}`}>
-                                            <div className="p-3 border-b border-slate-700/30">
-                                                <div className="relative">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Search or enter ticker..."
-                                                        value={tickerSearch}
-                                                        onChange={(e) => setTickerSearch(e.target.value.toUpperCase())}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter' && tickerSearch) {
-                                                                handleTickerChange(tickerSearch);
-                                                            }
-                                                        }}
-                                                        className={`w-full px-4 py-2 rounded-xl text-sm font-bold border outline-none transition-all ${theme === 'dark' ? 'bg-[#16161e] border-slate-700 text-white focus:border-violet-500' : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-violet-400'}`}
-                                                        autoFocus
-                                                    />
-                                                    <div className="absolute right-3 top-2.5 opacity-40">
-                                                        <Search size={14} />
-                                                    </div>
-                                                </div>
+                                {/* Central Market Identity Hub */}
+                                <div className="flex-1 flex justify-center px-4">
+                                    <div className={`flex items-center px-4 py-2 rounded-[2rem] border backdrop-blur-3xl shadow-2xl transition-all ${theme === 'dark' ? 'bg-white/[0.03] border-white/10' : 'bg-white border-slate-200'}`}>
+                                        <div className="flex items-center gap-2.5">
+                                            {/* Minimal Branding */}
+                                            <div className="w-6 h-6 rounded-lg bg-violet-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
+                                                <TrendingUp size={14} className="text-white" />
                                             </div>
-                                            <div className="p-2 max-h-[350px] overflow-y-auto custom-scrollbar grid grid-cols-1 gap-1">
-                                                {filteredOptions.length > 0 ? (
-                                                    filteredOptions.map(token => (
-                                                        <button
-                                                            key={token.symbol}
-                                                            onClick={() => {
-                                                                handleTickerChange(token.symbol);
-                                                            }}
-                                                            className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all ${symbol === token.symbol
-                                                                ? (theme === 'dark' ? 'bg-violet-600/20 text-violet-400 border border-violet-500/30' : 'bg-violet-50 text-violet-600 border border-violet-100')
-                                                                : (theme === 'dark' ? 'text-slate-300 hover:bg-white/5' : 'text-slate-600 hover:bg-slate-50')
-                                                                }`}
-                                                        >
-                                                            <div className="flex items-center gap-3">
-                                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-[10px] ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                                                                    {token.symbol.substring(0, 1)}
-                                                                </div>
-                                                                <div className="flex flex-col items-start">
-                                                                    <span className="text-sm font-bold">{token.symbol.replace('USDT', '')}</span>
-                                                                    <span className={`text-[10px] opacity-60 font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>{token.name}</span>
-                                                                </div>
-                                                            </div>
-                                                            {symbol === token.symbol && <div className="w-1.5 h-1.5 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]" />}
-                                                        </button>
-                                                    ))
-                                                ) : (
-                                                    <button
-                                                        onClick={() => {
-                                                            handleTickerChange(tickerSearch);
-                                                        }}
-                                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${theme === 'dark' ? 'text-violet-400 bg-violet-600/10 hover:bg-violet-600/20' : 'text-violet-600 bg-violet-50 hover:bg-violet-100'}`}
-                                                    >
-                                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-violet-500/20">
-                                                            <Plus size={16} />
+                                            
+                                            {/* Ticker Search Trigger */}
+                                            <div className="relative" ref={tickerMenuRef}>
+                                                <button 
+                                                    onClick={() => setIsTickerMenuOpen(!isTickerMenuOpen)}
+                                                    className="flex items-center gap-1 group"
+                                                >
+                                                    <span className="text-xs font-black tracking-tighter uppercase">{symbol.replace('USDT', '')}</span>
+                                                    <ChevronDown size={10} className="opacity-30" />
+                                                </button>
+
+                                                {isTickerMenuOpen && (
+                                                    <div className={`fixed top-24 left-4 right-4 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border backdrop-blur-3xl z-[120] animate-in zoom-in-95 duration-200 ${theme === 'dark' ? 'bg-[#11121d] border-white/10' : 'bg-white border-slate-200'}`}>
+                                                        <div className="p-4 border-b border-white/5">
+                                                            <input
+                                                                type="text"
+                                                                placeholder="SEARCH ASSET..."
+                                                                value={tickerSearch}
+                                                                onChange={(e) => setTickerSearch(e.target.value.toUpperCase())}
+                                                                onKeyDown={(e) => { if (e.key === 'Enter' && tickerSearch) handleTickerChange(tickerSearch); }}
+                                                                className={`w-full px-5 py-3 rounded-2xl text-[10px] font-black border outline-none ${theme === 'dark' ? 'bg-black/40 border-white/10 text-white focus:border-violet-500' : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-violet-400'}`}
+                                                                autoFocus
+                                                            />
                                                         </div>
-                                                        <div className="flex flex-col items-start">
-                                                            <span className="text-sm font-bold">Use "{tickerSearch}"</span>
-                                                            <span className="text-[10px] opacity-60 font-medium">Try any Binance pair</span>
+                                                        <div className="max-h-[300px] overflow-y-auto p-2 no-scrollbar">
+                                                            {filteredOptions.map(token => (
+                                                                <button key={token.symbol} onClick={() => handleTickerChange(token.symbol)} className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl transition-all ${symbol === token.symbol ? 'bg-violet-600 text-white' : 'hover:bg-white/5'}`}>
+                                                                    <div className="text-left">
+                                                                        <div className="text-xs font-black tracking-tight">{token.symbol.replace('USDT', '')}</div>
+                                                                        <div className="text-[8px] font-bold opacity-50 uppercase">{token.name}</div>
+                                                                    </div>
+                                                                    {symbol === token.symbol && <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_white]" />}
+                                                                </button>
+                                                            ))}
                                                         </div>
-                                                    </button>
+                                                    </div>
                                                 )}
                                             </div>
-                                        </div>
-                                    )}
 
-                                    <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'bg-violet-500/20 text-violet-400' : 'bg-violet-100 text-violet-600'}`}>
-                                        {interval}
-                                    </span>
+                                            <div className="w-[1px] h-3 bg-white/10 mx-0.5" />
+
+                                            {/* Compact Price Data */}
+                                            <div className="flex flex-col items-start leading-tight">
+                                                <span className={`text-[11px] font-mono font-black ${priceChange >= 0 ? 'text-purple-400' : 'text-rose-500'}`}>
+                                                    {formatPrice(currentPrice)}
+                                                </span>
+                                                <span className={`text-[8px] font-black ${priceChange >= 0 ? 'text-purple-400/70' : 'text-rose-500/70'}`}>
+                                                    {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <span className={`text-lg font-mono font-bold ${priceChange >= 0 ? 'text-purple-500' : 'text-rose-500'}`}>
-                                        {formatPrice(currentPrice)}
-                                    </span>
-                                    <span className={`text-xs font-black ${priceChange >= 0 ? 'text-purple-500/80' : 'text-rose-500/80'}`}>
-                                        {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
-                                    </span>
+
+                                {/* Premium Live/Start Button */}
+                                <button
+                                    onClick={toggleStreaming}
+                                    className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all active:scale-90 shadow-lg ${isStreaming ? 'bg-rose-500 text-white shadow-rose-500/30' : 'bg-violet-600 text-white shadow-violet-500/30'}`}
+                                >
+                                    {isStreaming ? <div className="w-2 h-2 bg-white rounded-full animate-pulse" /> : <PlayCircle size={18} />}
+                                </button>
+                            </div>
+
+                            {/* Row 2: Tactical Action Bar */}
+                            <div className={`flex items-center justify-between p-1 rounded-2xl border ${theme === 'dark' ? 'bg-white/[0.02] border-white/5 shadow-inner' : 'bg-slate-50 border-slate-200'}`}>
+                                {/* Persistent Timeframe Pill */}
+                                <div className="relative">
+                                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-500/10 border border-violet-500/20">
+                                        <Clock size={12} className="text-violet-400" />
+                                        <select
+                                            value={interval}
+                                            onChange={(e) => setInterval(e.target.value)}
+                                            className="bg-transparent border-none text-[10px] font-black tracking-widest text-violet-400 outline-none appearance-none"
+                                        >
+                                            {['1m', '5m', '15m', '1h', '4h', '1d'].map(tf => <option key={tf} value={tf}>{tf.toUpperCase()}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Unified Tools Cluster */}
+                                <div className="flex items-center gap-0.5 px-1">
+                                    <button onClick={handleResetChart} className="p-2 text-slate-500 hover:text-amber-500 active:scale-95 transition-all"><RotateCcw size={16} /></button>
+                                    <div className="h-4 w-[1px] bg-white/5 mx-1" />
+                                    <button onClick={() => setFocusMode(!focusMode)} className={`p-2 rounded-lg transition-all ${focusMode ? 'text-violet-400 bg-violet-500/10' : 'text-slate-500'}`}><Maximize2 size={16} /></button>
+                                    <button onClick={() => setShowLiquidityHeatmap(!showLiquidityHeatmap)} className={`p-2 rounded-lg transition-all ${showLiquidityHeatmap ? 'text-cyan-400 bg-cyan-500/10' : 'text-slate-500'}`}><Droplets size={16} /></button>
+                                    <button onClick={() => isTacticalMode ? clearTacticalScan() : setIsTacticalMode(true)} className={`p-2 rounded-lg transition-all ${isTacticalMode ? 'text-violet-400 animate-pulse bg-violet-500/10' : 'text-slate-500'}`}><Crosshair size={16} /></button>
+                                    <button onClick={() => setShowAIChat(!showAIChat)} className={`p-2 rounded-lg transition-all ${showAIChat ? 'text-violet-400 bg-violet-500/10' : 'text-slate-500'}`}><MessageSquare size={16} /></button>
                                 </div>
                             </div>
                         </div>
+                    ) : (
+                        /* DESKTOP LAYOUT (Clean) */
+                        <>
+                        <div className="flex items-center justify-between md:justify-start gap-6">
+                            <div className="flex items-center gap-4">
+                                {/* Brand Icon */}
+                                <div className="hidden sm:flex w-10 h-10 rounded-xl bg-violet-600 items-center justify-center shadow-lg shadow-violet-500/20">
+                                    <TrendingUp className="text-white" size={24} />
+                                </div>
 
-                        {/* Desktop Timeframe Switcher */}
-                        <div className={`hidden sm:flex gap-1 rounded-xl p-1 ${theme === 'dark' ? 'bg-[#16161e]/50' : 'bg-slate-100'}`}>
-                            {['1m', '5m', '15m', '1h', '4h', '1d'].map(tf => (
+                                {/* Ticker & Price Display */}
+                                <div className="flex flex-row items-center gap-4">
+                                    <div className="relative" ref={tickerMenuRef}>
+                                        <button
+                                            onClick={() => setIsTickerMenuOpen(!isTickerMenuOpen)}
+                                            className={`flex items-center gap-2 px-2 py-1 -ml-2 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}
+                                        >
+                                            <span className={`text-xl md:text-2xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                                                {symbol.replace('USDT', '')}
+                                            </span>
+                                            <ChevronDown size={14} className={`transition-transform duration-300 ${isTickerMenuOpen ? 'rotate-180' : ''} opacity-30`} />
+                                        </button>
+
+                                        {/* Premium Ticker Dropdown */}
+                                        {isTickerMenuOpen && (
+                                            <div className={`absolute top-full left-0 mt-3 w-80 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border backdrop-blur-2xl animate-in zoom-in-95 duration-200 z-[100] ${theme === 'dark' ? 'bg-[#161825]/95 border-white/10' : 'bg-white/95 border-slate-200'}`}>
+                                                <div className="p-4 border-b border-white/5">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="SEARCH TICKER..."
+                                                        value={tickerSearch}
+                                                        onChange={(e) => setTickerSearch(e.target.value.toUpperCase())}
+                                                        onKeyDown={(e) => { if (e.key === 'Enter' && tickerSearch) handleTickerChange(tickerSearch); }}
+                                                        className={`w-full px-5 py-3 rounded-2xl text-xs font-black border outline-none ${theme === 'dark' ? 'bg-black/40 border-white/10 text-white focus:border-violet-500' : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-violet-400'}`}
+                                                        autoFocus
+                                                    />
+                                                </div>
+                                                <div className="p-2 max-h-[400px] overflow-y-auto no-scrollbar grid grid-cols-1 gap-1">
+                                                    {filteredOptions.map(token => (
+                                                        <button key={token.symbol} onClick={() => handleTickerChange(token.symbol)} className={`flex items-center justify-between px-5 py-3.5 rounded-[1.25rem] transition-all group ${symbol === token.symbol ? 'bg-violet-600 text-white' : 'hover:bg-white/5'}`}>
+                                                            <div className="text-left">
+                                                                <div className="text-sm font-black tracking-tight">{token.symbol.replace('USDT', '')}</div>
+                                                                <div className="text-[9px] font-bold uppercase opacity-50">{token.name}</div>
+                                                            </div>
+                                                            {symbol === token.symbol && <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_10px_white]" />}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Price Information */}
+                                    <div className="flex flex-col md:flex-row md:items-center gap-0 md:gap-3">
+                                        <span className={`text-xl font-mono font-black tracking-tighter ${priceChange >= 0 ? 'text-purple-400' : 'text-rose-500'}`}>
+                                            {formatPrice(currentPrice)}
+                                        </span>
+                                        <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-black ${priceChange >= 0 ? 'bg-purple-500/20 text-purple-400' : 'bg-rose-500/20 text-rose-500'}`}>
+                                            {priceChange >= 0 ? '▲' : '▼'} {Math.abs(priceChange).toFixed(2)}%
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Stream Controls */}
+                            <div className="flex items-center gap-2">
+                                <span className={`hidden md:block px-2 py-0.5 rounded text-[10px] font-black tracking-widest ${theme === 'dark' ? 'bg-white/5 text-slate-500' : 'bg-slate-100 text-slate-400'}`}>
+                                    {interval.toUpperCase()}
+                                </span>
                                 <button
-                                    key={tf}
-                                    onClick={() => setInterval(tf)}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${interval === tf
-                                        ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/20'
-                                        : 'text-slate-500 hover:text-violet-500'
-                                        }`}
+                                    onClick={toggleStreaming}
+                                    className={`h-10 px-4 rounded-xl font-black text-[10px] tracking-widest transition-all active:scale-95 flex items-center gap-2 ${isStreaming ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'bg-violet-600 text-white shadow-lg shadow-violet-500/20'}`}
                                 >
-                                    {tf}
+                                    {isStreaming ? (
+                                        <><div className="w-2 h-2 bg-white rounded-full animate-pulse" /> LIVE</>
+                                    ) : (
+                                        <><PlayCircle size={14} /> START</>
+                                    )}
                                 </button>
-                            ))}
+                            </div>
                         </div>
 
-                        {/* Mobile Timeframe Dropdown */}
-                        <div className="sm:hidden relative flex items-center">
-                            <Clock size={16} className="absolute left-3 text-slate-500 pointer-events-none" />
-                            <select
-                                value={interval}
-                                onChange={(e) => setInterval(e.target.value)}
-                                className={`pl-9 pr-4 py-2.5 rounded-xl border text-sm font-black appearance-none outline-none transition-all shadow-xl ${theme === 'dark'
-                                    ? 'bg-[#1e2030] border-slate-700/50 text-slate-300 focus:border-violet-500'
-                                    : 'bg-white border-slate-200 text-slate-600 focus:border-violet-600'
-                                    }`}
-                            >
+                        {/* DESKTOP BOTTOM ROW (integrated differently) */}
+                        <div className={`flex items-center justify-between md:justify-end gap-2 md:gap-4`}>
+                            {/* Timeframe Selector */}
+                            <div className={`flex gap-1 p-1 rounded-xl ${theme === 'dark' ? 'bg-white/5' : 'bg-slate-100'}`}>
                                 {['1m', '5m', '15m', '1h', '4h', '1d'].map(tf => (
-                                    <option key={tf} value={tf}>{tf.toUpperCase()}</option>
+                                    <button
+                                        key={tf}
+                                        onClick={() => setInterval(tf)}
+                                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all ${interval === tf ? 'bg-violet-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+                                    >
+                                        {tf}
+                                    </button>
                                 ))}
-                            </select>
-                        </div>
-                    </div>
+                            </div>
 
-                    {/* Right: Actions */}
-                    <div className="flex items-center flex-wrap justify-center md:justify-end gap-1.5 md:gap-2 mt-2 md:mt-0">
-                        {/* Reset Chart Layout */}
-                        <button
-                            onClick={handleResetChart}
-                            className={`flex p-2 md:p-2.5 rounded-xl border transition-all ${theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-amber-500' : 'bg-white border-slate-200 text-slate-600 hover:text-amber-600'
-                                }`}
-                            title="Reset Chart Layout"
-                        >
-                            <RotateCcw size={18} />
-                        </button>
-                        {/* Chart Type Toggle */}
-                        <div className={`flex gap-0.5 md:gap-1 rounded-xl p-1 ${theme === 'dark' ? 'bg-[#16161e]/50' : 'bg-slate-100'}`}>
-                            {[
-                                { type: 'candlestick', icon: BarChart3 },
-                                { type: 'line', icon: Activity },
-                                { type: 'area', icon: Layers }
-                            ].map(({ type, icon: Icon }) => (
-                                <button
-                                    key={type}
-                                    onClick={() => setChartType(type)}
-                                    className={`p-1.5 md:p-2 rounded-lg transition-all ${chartType === type
-                                        ? 'bg-violet-600 text-white shadow-md'
-                                        : 'text-slate-500 hover:text-violet-500'
-                                        }`}
-                                >
-                                    <Icon size={16} />
+                            {/* Tactical Actions Panel */}
+                            <div className="flex items-center gap-1.5">
+                                <button onClick={handleResetChart} className={`p-2.5 rounded-xl border transition-all ${theme === 'dark' ? 'bg-white/5 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500'}`} title="Reset">
+                                    <RotateCcw size={16} />
                                 </button>
-                            ))}
+                                <div className={`hidden sm:flex p-1 rounded-xl ${theme === 'dark' ? 'bg-white/5' : 'bg-slate-100'}`}>
+                                    {[{ t: 'candlestick', i: BarChart3 }, { t: 'line', i: Activity }, { t: 'area', i: Layers }].map(c => (
+                                        <button key={c.t} onClick={() => setChartType(c.t)} className={`p-1.5 rounded-lg transition-all ${chartType === c.t ? 'bg-violet-600 text-white shadow-md' : 'text-slate-500'}`}>
+                                            <c.i size={14} />
+                                        </button>
+                                    ))}
+                                </div>
+                                <button onClick={() => setFocusMode(!focusMode)} className={`p-2.5 rounded-xl border transition-all ${focusMode ? 'bg-violet-600 text-white border-violet-500' : theme === 'dark' ? 'bg-white/5 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600'}`} title="Focus">
+                                    {focusMode ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                                </button>
+                                <button onClick={() => setShowLiquidityHeatmap(!showLiquidityHeatmap)} className={`p-2.5 rounded-xl border transition-all ${showLiquidityHeatmap ? 'bg-cyan-500 text-white border-cyan-400' : theme === 'dark' ? 'bg-white/5 border-white/5 text-slate-400 hover:text-cyan-400' : 'bg-white border-slate-200 text-slate-600'}`} title="Liquidity">
+                                    <Droplets size={16} />
+                                </button>
+                                <button onClick={() => isTacticalMode ? clearTacticalScan() : setIsTacticalMode(true)} className={`p-2.5 rounded-xl border transition-all ${isTacticalMode ? 'bg-violet-600 text-white border-violet-500 animate-pulse' : theme === 'dark' ? 'bg-white/5 border-white/5 text-slate-400 hover:text-violet-400' : 'bg-white border-slate-200 text-slate-600'}`} title="Tactical Scan">
+                                    <Crosshair size={16} />
+                                </button>
+                                <button onClick={() => setShowAIChat(!showAIChat)} className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border transition-all ${showAIChat ? 'bg-violet-600 text-white border-violet-500' : theme === 'dark' ? 'bg-white/5 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600'}`}>
+                                    <MessageSquare size={16} />
+                                    {!isMobile && <span className="text-[11px] font-black uppercase">Ask AI</span>}
+                                </button>
+                            </div>
                         </div>
-
-                        <div className="h-6 w-[1px] bg-slate-700/30 mx-0.5 hidden md:block" />
-
-                        <div className="flex items-center gap-1.5 md:gap-2">
-                            <button
-                                onClick={() => setFocusMode(!focusMode)}
-                                className={`p-2 md:p-2.5 rounded-xl border transition-all ${focusMode
-                                    ? 'bg-violet-600 text-white border-violet-500 shadow-lg'
-                                    : theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:text-violet-600'
-                                    }`}
-                            >
-                                {focusMode ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-                            </button>
-
-                            {/* Liquidity Heatmap Toggle */}
-                            <button
-                                onClick={() => setShowLiquidityHeatmap(!showLiquidityHeatmap)}
-                                className={`p-2 md:p-2.5 rounded-xl border transition-all ${showLiquidityHeatmap
-                                    ? 'bg-cyan-500 text-white border-cyan-400 shadow-lg shadow-cyan-500/20'
-                                    : theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50' : 'bg-white border-slate-200 text-slate-600 hover:text-cyan-600'
-                                    }`}
-                                title="Liquidity Heatmap — Real Order Book"
-                            >
-                                <Droplets size={18} />
-                            </button>
-
-                            <button
-                                onClick={() => setShowAIChat(!showAIChat)}
-                                className={`px-3 md:px-4 py-2 md:py-2.5 rounded-xl border font-bold text-xs md:text-sm flex items-center gap-1.5 md:gap-2 transition-all ${showAIChat
-                                    ? 'bg-violet-600 text-white border-violet-500 shadow-lg'
-                                    : theme === 'dark' ? 'bg-[#1e2030] border-slate-700/50 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:text-violet-600'
-                                    }`}
-                            >
-                                <MessageSquare size={16} />
-                                <span className="hidden lg:inline text-[10px] md:text-sm">Ask AI</span>
-                            </button>
-
-                            <button
-                                onClick={toggleStreaming}
-                                className={`px-4 md:px-5 py-2 md:py-2.5 rounded-xl font-black text-xs md:text-sm flex items-center gap-1.5 md:gap-2 transition-all shadow-xl ${isStreaming
-                                    ? 'bg-rose-500 text-white hover:bg-rose-600'
-                                    : 'bg-purple-500 text-white hover:bg-purple-600'
-                                    }`}
-                            >
-                                {isStreaming ? (
-                                    <><div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-white rounded-full animate-pulse" /><span className="text-[10px] md:text-sm">LIVE</span></>
-                                ) : (
-                                    <><PlayCircle size={16} /><span className="text-[10px] md:text-sm">START</span></>
-                                )}
-                            </button>
-                        </div>
-                    </div>
+                        </>
+                    )}
                 </div>
             </header>
 
@@ -2920,6 +3492,158 @@ const EliteChart = () => {
                         </div>
                     )}
 
+                    {/* ── Tactical Entry Scan Results Panel ─────────────── */}
+                    <AnimatePresence>
+                        {tacticalResult && isTacticalMode && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                                transition={{ duration: 0.3, ease: 'easeOut' }}
+                                className="absolute bottom-4 right-4 z-[150] w-[320px] md:w-[360px] max-h-[60vh] overflow-y-auto no-scrollbar"
+                            >
+                                <div className={`rounded-[24px] border-2 overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.4)] backdrop-blur-xl ${theme === 'dark' ? 'bg-[#0e0e1a]/90 border-violet-500/30' : 'bg-white/90 border-violet-200'}`}>
+                                    {/* Header gradient bar */}
+                                    <div className="h-1 w-full bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500" />
+
+                                    <div className="p-5 space-y-4">
+                                        {/* Title */}
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="p-1.5 rounded-lg bg-violet-500/20">
+                                                    <Crosshair size={14} className="text-violet-400" />
+                                                </div>
+                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Tactical Entry Scan</span>
+                                            </div>
+                                            <button onClick={clearTacticalScan} className="p-1 rounded-lg hover:bg-white/10 transition-all">
+                                                <X size={14} className="text-slate-500" />
+                                            </button>
+                                        </div>
+
+                                        {/* Entry Price */}
+                                        <div className={`p-3 rounded-2xl border text-center ${theme === 'dark' ? 'bg-violet-500/5 border-violet-500/20' : 'bg-violet-50 border-violet-100'}`}>
+                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Entry Price</span>
+                                            <p className="text-xl font-mono font-black text-violet-400 mt-0.5">
+                                                {formatPrice(tacticalResult.entry)}
+                                            </p>
+                                        </div>
+
+                                        {/* Confluence Score */}
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Confluence</span>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-24 h-2 rounded-full bg-slate-700/30 overflow-hidden">
+                                                    <div
+                                                        className={`h-full rounded-full transition-all duration-700 ${tacticalResult.confluenceScore >= 70 ? 'bg-purple-500'
+                                                            : tacticalResult.confluenceScore >= 45 ? 'bg-amber-500'
+                                                                : 'bg-rose-500'
+                                                            }`}
+                                                        style={{ width: `${tacticalResult.confluenceScore}%` }}
+                                                    />
+                                                </div>
+                                                <span className={`text-sm font-black ${
+                                                    tacticalResult.confluenceScore >= 70 ? 'text-purple-400'
+                                                        : tacticalResult.confluenceScore >= 45 ? 'text-amber-400'
+                                                            : 'text-rose-400'
+                                                }`}>{tacticalResult.confluenceScore}%</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Direction Badge */}
+                                        <div className="flex items-center justify-center">
+                                            <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                                                tacticalResult.direction === 'LONG' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                                    : tacticalResult.direction === 'SHORT' ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                                                        : 'bg-slate-500/10 text-slate-400 border-slate-500/30'
+                                            }`}>
+                                                {tacticalResult.direction === 'LONG' ? '▲' : tacticalResult.direction === 'SHORT' ? '▼' : '◆'} {tacticalResult.direction} BIAS · RSI {tacticalResult.rsi}
+                                            </span>
+                                        </div>
+
+                                        {/* Long / Short Scenarios */}
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {/* Long */}
+                                            <div className={`p-3 rounded-xl border ${theme === 'dark' ? 'bg-emerald-900/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'}`}>
+                                                <div className="flex items-center gap-1.5 mb-2">
+                                                    <TrendingUp size={12} className="text-emerald-400" />
+                                                    <span className="text-[8px] font-black uppercase tracking-widest text-emerald-400">Long</span>
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <div className="flex justify-between">
+                                                        <span className="text-[8px] text-slate-500">Target</span>
+                                                        <span className="text-[10px] font-mono font-bold text-emerald-400">{formatPrice(tacticalResult.long.target)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-[8px] text-slate-500">Stop</span>
+                                                        <span className="text-[10px] font-mono font-bold text-rose-400">{formatPrice(tacticalResult.long.stop)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-[8px] text-slate-500">R:R</span>
+                                                        <span className={`text-[10px] font-black ${parseFloat(tacticalResult.long.rr) >= 2 ? 'text-emerald-400' : 'text-amber-400'}`}>{tacticalResult.long.rr}:1</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-[8px] text-slate-500">Move</span>
+                                                        <span className="text-[10px] font-black text-emerald-400">+{tacticalResult.long.pctMove}%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Short */}
+                                            <div className={`p-3 rounded-xl border ${theme === 'dark' ? 'bg-rose-900/10 border-rose-500/20' : 'bg-rose-50 border-rose-100'}`}>
+                                                <div className="flex items-center gap-1.5 mb-2">
+                                                    <TrendingDown size={12} className="text-rose-400" />
+                                                    <span className="text-[8px] font-black uppercase tracking-widest text-rose-400">Short</span>
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <div className="flex justify-between">
+                                                        <span className="text-[8px] text-slate-500">Target</span>
+                                                        <span className="text-[10px] font-mono font-bold text-emerald-400">{formatPrice(tacticalResult.short.target)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-[8px] text-slate-500">Stop</span>
+                                                        <span className="text-[10px] font-mono font-bold text-rose-400">{formatPrice(tacticalResult.short.stop)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-[8px] text-slate-500">R:R</span>
+                                                        <span className={`text-[10px] font-black ${parseFloat(tacticalResult.short.rr) >= 2 ? 'text-emerald-400' : 'text-amber-400'}`}>{tacticalResult.short.rr}:1</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-[8px] text-slate-500">Move</span>
+                                                        <span className="text-[10px] font-black text-rose-400">-{tacticalResult.short.pctMove}%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* S/R Zone Proximity */}
+                                        <div className={`p-3 rounded-xl border ${theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-100'}`}>
+                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 mb-2 block">S/R Zone Proximity</span>
+                                            <div className="space-y-1">
+                                                <div className="flex justify-between">
+                                                    <span className="text-[9px] text-emerald-400">◼ Support</span>
+                                                    <span className="text-[9px] font-mono font-bold text-slate-300">{formatPrice(tacticalResult.levels.nearestSupport)}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-[9px] text-rose-400">◼ Resistance</span>
+                                                    <span className="text-[9px] font-mono font-bold text-slate-300">{formatPrice(tacticalResult.levels.nearestResistance)}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-[9px] text-slate-500">ATR</span>
+                                                    <span className="text-[9px] font-mono font-bold text-slate-400">{formatPrice(tacticalResult.atr)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Hint */}
+                                        <p className="text-[8px] text-center text-slate-600 italic">
+                                            Click anywhere on the chart to re-scan a new entry point
+                                        </p>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
                     {/* Scanning Terminal Animation (shows during analysis) */}
                     {isJudging && scanProgress.length > 0 && (
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[200] max-w-sm w-full p-1">
@@ -3328,6 +4052,10 @@ const EliteChart = () => {
                                 onUnauthorized={() => setShowLoginModal(true)}
                                 currentPrice={currentPrice}
                                 interval={interval}
+                                symbol={symbol}
+                                onSymbolChange={setSymbol}
+                                onHighlightLevels={(levels) => setHighlightedLevels(levels)}
+                                onCorrelationOverlay={handleCorrelationOverlay}
                                 getTechnicalContext={() => {
                                     const lastCandle = chartData[chartData.length - 1];
                                     if (!lastCandle) return null;

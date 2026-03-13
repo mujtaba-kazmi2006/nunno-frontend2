@@ -173,4 +173,82 @@ export async function streamMessage({ message, conversationId, userAge, webSearc
     }
 }
 
+// ── Elite Charts AI (Dedicated Stream — NOT the dashboard chat) ──
+export async function streamEliteMessage({ message, conversationId, ticker, interval, forceRefresh, recentHistory, onChunk, signal }) {
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/elite/stream`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            signal,
+            body: JSON.stringify({
+                message,
+                conversation_id: conversationId,
+                ticker: ticker || 'BTCUSDT',
+                interval: interval || '15m',
+                force_refresh: forceRefresh || false,
+                recent_history: recentHistory || []
+            })
+        });
+
+        if (response.status === 401) {
+            throw new Error('Unauthorized: Please sign in to use Elite Charts AI');
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            buffer += chunk;
+
+            const lines = buffer.split('\n\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    const jsonStr = line.slice(6);
+                    try {
+                        const data = JSON.parse(jsonStr);
+                        onChunk(data);
+                    } catch (e) {
+                        console.error('Error parsing elite stream chunk', e);
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            console.log('Elite stream aborted');
+            return;
+        }
+        console.error('Elite streaming error:', error);
+        throw error;
+    }
+}
+
+export const getEliteStaleness = async (conversationId) => {
+    const token = localStorage.getItem('token');
+    try {
+        const response = await api.get(`/api/v1/elite/staleness/${conversationId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return response.data;
+    } catch (error) {
+        return { status: 'none', age_seconds: 0 };
+    }
+}
+
 export default api

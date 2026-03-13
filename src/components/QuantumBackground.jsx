@@ -18,12 +18,12 @@ const QuantumBackground = () => {
         resize();
 
         // ─── Color palette ───────────────────────────────────────────────
-        const BG = '#0f111a';
-        const VIOLET = { r: 110, g: 60, b: 220 };
-        const INDIGO = { r: 72, g: 52, b: 185 };
-        const PURPLE = { r: 155, g: 80, b: 255 };
-        const ELECTRIC = { r: 190, g: 100, b: 255 };
-        const NEBULA = { r: 100, g: 120, b: 255 };
+        const BG = '#060609';
+        const PURPLE = { r: 139, g: 92, b: 246 };
+        const INDIGO = { r: 99, g: 102, b: 241 };
+        const VIOLET = { r: 168, g: 85, b: 247 };
+        const DEEP = { r: 15, g: 23, b: 42 };
+        const NEBULA = { r: 139, g: 92, b: 246 };
 
         const rgba = (c, a) => `rgba(${c.r},${c.g},${c.b},${a})`;
 
@@ -107,9 +107,9 @@ const QuantumBackground = () => {
             ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
 
             const rim = ctx.createRadialGradient(x + r * 0.4, y + r * 0.4, r * 0.5, x, y, r);
-            rim.addColorStop(0, rgba(ELECTRIC, 0));
-            rim.addColorStop(0.75, rgba(ELECTRIC, 0.12));
-            rim.addColorStop(1, rgba(ELECTRIC, 0.35));
+            rim.addColorStop(0, rgba(PURPLE, 0));
+            rim.addColorStop(0.75, rgba(PURPLE, 0.12));
+            rim.addColorStop(1, rgba(PURPLE, 0.35));
             ctx.fillStyle = rim;
             ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
 
@@ -194,22 +194,18 @@ const QuantumBackground = () => {
         // ─── Scene composition ────────────────────────────────────────────
         const buildScene = (W, H) => {
             const spheres = [
-                { x: W * -0.02, y: H * 0.05, r: W * 0.22, col: INDIGO, a: 0.55, blur: 22 },
-                { x: W * 0.82, y: H * 0.72, r: W * 0.18, col: VIOLET, a: 0.45, blur: 28 },
-                { x: W * 0.55, y: H * -0.05, r: W * 0.13, col: PURPLE, a: 0.35, blur: 18 },
-                { x: W * 0.25, y: H * 0.88, r: W * 0.10, col: ELECTRIC, a: 0.28, blur: 20 },
-                { x: W * 0.92, y: H * 0.18, r: W * 0.08, col: INDIGO, a: 0.30, blur: 14 },
+                { x: W * -0.02, y: H * 0.05, r: W * 0.22, col: INDIGO, a: 0.15, blur: 40 },
+                { x: W * 0.82, y: H * 0.72, r: W * 0.18, col: VIOLET, a: 0.12, blur: 50 },
+                { x: W * 0.55, y: H * -0.05, r: W * 0.13, col: PURPLE, a: 0.10, blur: 30 }
             ];
 
-            const shapes = ['diamond', 'hexagon', 'dot'];
-            const cols = [VIOLET, INDIGO, PURPLE, ELECTRIC, NEBULA];
+            const shapes = ['dot'];
+            const cols = [PURPLE, INDIGO, VIOLET];
             const nodes = [];
 
             const positions = [
-                [0.72, 0.18], [0.18, 0.30], [0.62, 0.42], [0.38, 0.62],
-                [0.84, 0.55], [0.10, 0.72], [0.50, 0.22], [0.78, 0.80],
-                [0.28, 0.45], [0.90, 0.38], [0.44, 0.80], [0.15, 0.15],
-                [0.65, 0.68], [0.35, 0.88], [0.56, 0.10],
+                [0.12, 0.15], [0.88, 0.25], [0.25, 0.75], [0.75, 0.85],
+                [0.45, 0.45], [0.15, 0.80], [0.95, 0.10], [0.55, 0.20]
             ];
 
             positions.forEach(([fx, fy], i) => {

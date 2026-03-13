@@ -1,19 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Sparkles, TrendingUp, TrendingDown, Layers, Square, User, Bot, Plus, PieChart, Info, Zap, ChevronDown, CheckCircle2, X, Search, Activity, Brain, Target, ShieldCheck, Cpu, Microscope } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { streamMessage } from '../services/api';
+import { streamEliteMessage, streamMessage } from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 
 import ThinkingLoader from './ThinkingLoader';
 import { analytics } from '../utils/analytics';
 
-const PatternChatPanel = ({ onPatternGenerated, onLivePatternDetected, currentPrice = 50000, interval = '1d', getTechnicalContext, onUnauthorized }) => {
+const PatternChatPanel = ({ onPatternGenerated, onLivePatternDetected, currentPrice = 50000, interval = '1d', symbol = 'BTCUSDT', getTechnicalContext, onUnauthorized, onHighlightLevels, onWhatIfScenario, onSymbolChange, onCorrelationOverlay }) => {
     const { isAuthenticated } = useAuth();
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: 'SYSTEM_READY: I am synced with your live chart data. Ask me to "Deep Scan" or identify specific price patterns.',
+            content: '🧠 **Intelligence Core Online.** I\'m embedded in your chart — I see price, indicators, S/R levels, and patterns in real-time. Ask me anything: \n\n• _"Where is the strongest support?"_ \n• _"What if price drops 3%?"_ \n• _"Show me a bull flag"_ \n• Or hit **Deep Scan** for a full briefing.',
             isSystem: true
         }
     ]);
@@ -152,10 +152,12 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
             setMessages(prev => [...prev, assistantPlaceholder]);
             let fullContent = '';
 
-            await streamMessage({
+            await streamEliteMessage({
                 message: analysisPrompt,
-                conversationId: `chart-analysis-${context.symbol}-${Date.now()}`,
-                userAge: 18,
+                conversationId: chatConversationId,
+                ticker: symbol,
+                interval: interval,
+                forceRefresh: true,
                 onChunk: (chunk) => {
                     if (chunk.type === 'text') {
                         setLoadingStatus('');
@@ -170,6 +172,14 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                         });
                     } else if (chunk.type === 'status') {
                         setLoadingStatus(chunk.content);
+                    } else if (chunk.type === 'tool_result') {
+                        if (chunk.tool === 'visualize_pattern' && onPatternGenerated) {
+                            onPatternGenerated(chunk.data);
+                        } else if (chunk.tool === 'highlight_levels' && onHighlightLevels) {
+                            onHighlightLevels(chunk.data);
+                        } else if (chunk.tool === 'what_if_scenario' && onWhatIfScenario) {
+                            onWhatIfScenario(chunk.data);
+                        }
                     } else if (chunk.type === 'error') {
                         fullContent += `\n\n⚠️ **Neural Scan Error:** ${chunk.content}`;
                         setMessages(prev => {
@@ -223,12 +233,20 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
 
             let patternFound = null;
             try {
-                // If user's response is an affirmation, append the last AI message so the recognizer catches the suggested pattern
+                // Determine if this is an affirmation of a previously suggested pattern
+                // We exclude 'show' and 'please' because they are often part of direct commands
+                const isAffirmation = /^(yes|sure|ok|okay|do it|yeah|yep|go ahead|y|affirmative)$|^(yes|sure|ok|okay|yeah),?\s.+/i.test(userMessage);
+                
                 let patternQuery = userMessage;
-                const isAffirmation = /yes|sure|ok|okay|show|simulate|do it|yeah|yep|please|go ahead/i.test(userMessage);
+                
+                // If it's an affirmation and we have context, combine them
                 if (isAffirmation && messages.length > 0) {
                     const lastMsg = messages[messages.length - 1];
                     if (lastMsg.role === 'assistant') {
+                        // Priority: If the user explicitly mentions a pattern in their message, 
+                        // even with an affirmation like 'Yes, show me the bear flag', 
+                        // the recognizer should handle it correctly.
+                        // We combine for context but we'll ensure the recognizer is robust.
                         patternQuery = `${lastMsg.content} ${userMessage}`;
                     }
                 }
@@ -273,11 +291,12 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
 
             let fullContent = assistantPlaceholder.content;
 
-            await streamMessage({
+            await streamEliteMessage({
                 message: userMessage,
                 conversationId: chatConversationId,
-                userAge: 18,
-                webSearchEnabled: false,
+                ticker: symbol,
+                interval: interval,
+                recentHistory: messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
                 onChunk: (chunk) => {
                     if (chunk.type === 'text') {
                         setLoadingStatus('');
@@ -292,6 +311,54 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                         });
                     } else if (chunk.type === 'status') {
                         setLoadingStatus(chunk.content);
+                    } else if (chunk.type === 'tool_result') {
+                        // Handle Elite Charts tool results
+                        if (chunk.tool === 'visualize_pattern') {
+                            if (onPatternGenerated) {
+                                onPatternGenerated(chunk.data);
+                            }
+                            // Prepend a visual sync marker
+                            const patternName = (chunk.data?.pattern_name || 'pattern').replace(/_/g, ' ').toUpperCase();
+                            const syncMsg = `[PATTERN_SYNC] **${patternName}** visualized on chart.\n\n`;
+                            if (!fullContent.includes('[PATTERN_SYNC]')) {
+                                fullContent = syncMsg + fullContent;
+                                setMessages(prev => {
+                                    const newMsgs = [...prev];
+                                    if (newMsgs.length > 0) {
+                                        newMsgs[newMsgs.length - 1] = {
+                                            ...newMsgs[newMsgs.length - 1],
+                                            content: fullContent,
+                                            pattern: chunk.data
+                                        };
+                                    }
+                                    return newMsgs;
+                                });
+                            }
+                        } else if (chunk.tool === 'highlight_levels') {
+                            if (onHighlightLevels) {
+                                onHighlightLevels(chunk.data);
+                            }
+                        } else if (chunk.tool === 'market_scan') {
+                            // Store scan results in the message for rendering
+                            setMessages(prev => {
+                                const newMsgs = [...prev];
+                                if (newMsgs.length > 0) {
+                                    newMsgs[newMsgs.length - 1] = {
+                                        ...newMsgs[newMsgs.length - 1],
+                                        scanResults: chunk.data
+                                    };
+                                }
+                                return newMsgs;
+                            });
+                        } else if (chunk.tool === 'correlation_overlay') {
+                            if (onCorrelationOverlay) {
+                                onCorrelationOverlay(chunk.data);
+                            }
+                        } else if (chunk.tool === 'what_if_scenario') {
+                            if (onWhatIfScenario) {
+                                onWhatIfScenario(chunk.data);
+                            }
+                        }
                     } else if (chunk.type === 'error') {
                         fullContent += `\n\n⚠️ **Neural Link Error:** ${chunk.content}`;
                         setMessages(prev => {
@@ -555,6 +622,50 @@ CRITICAL: Explicitly ask the user if they want to physically see what this looks
                                                 );
                                                 li++;
                                             }
+
+                                            // ── Discovery Cards for Market Scan ──
+                                            if (message.scanResults && message.scanResults.length > 0) {
+                                                rendered.push(
+                                                    <div key={`scan-${index}`} className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                        {message.scanResults.map((res, ri) => (
+                                                            <div 
+                                                                key={ri}
+                                                                className={`p-3 rounded-2xl border transition-all hover:scale-[1.02] cursor-default ${
+                                                                    theme === 'dark' 
+                                                                    ? 'bg-white/[0.03] border-white/10 hover:border-violet-500/30' 
+                                                                    : 'bg-slate-50 border-slate-200 hover:border-indigo-300 shadow-sm'
+                                                                }`}
+                                                            >
+                                                                <div className="flex justify-between items-start mb-2">
+                                                                    <div>
+                                                                        <h4 className={`text-[14px] font-black ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                                                                            {res.ticker.replace('USDT', '')}
+                                                                            <span className="text-[10px] font-normal opacity-50 ml-1">/ USDT</span>
+                                                                        </h4>
+                                                                        <p className="text-[11px] font-mono text-violet-400">${res.price?.toLocaleString()}</p>
+                                                                    </div>
+                                                                    <div className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                                                        res.rsi < 35 ? 'bg-green-500/10 text-green-400' : 'bg-violet-500/10 text-violet-400'
+                                                                    }`}>
+                                                                        {res.rsi ? `RSI: ${res.rsi}` : 'PATTERN'}
+                                                                    </div>
+                                                                </div>
+                                                                <p className={`text-[11px] mb-3 leading-relaxed ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                                                                    {res.reason}
+                                                                </p>
+                                                                <button
+                                                                    onClick={() => onSymbolChange && onSymbolChange(res.ticker)}
+                                                                    className="w-full py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-[11px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                                                                >
+                                                                    <Search size={12} />
+                                                                    Investigate
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                );
+                                            }
+
                                             return rendered;
                                         })()}
                                         {message.content === '' && isLoading && <div className="flex gap-1 items-center opacity-40"><div className="w-1.5 h-1.5 rounded-full bg-white animate-bounce" style={{ animationDelay: '0ms' }} /><div className="w-1.5 h-1.5 rounded-full bg-white animate-bounce" style={{ animationDelay: '150ms' }} /><div className="w-1.5 h-1.5 rounded-full bg-white animate-bounce" style={{ animationDelay: '300ms' }} /></div>}
