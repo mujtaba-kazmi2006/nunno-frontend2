@@ -1,9 +1,11 @@
 # Build stage
-FROM node:18-alpine as build
+FROM node:18-slim as build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+# Increase memory limit for Vite build to prevent SIGSEGV
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN npm run build
 
 # Production stage
