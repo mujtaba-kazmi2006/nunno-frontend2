@@ -11,20 +11,21 @@ import ErrorBoundaryFallback from "./components/ErrorBoundaryFallback";
 
 // Initialize Sentry for production monitoring
 // Replace DSN with actual one from Sentry project settings
-Sentry.init({
-    dsn: "https://placeholder-dsn@sentry.io/nunno", // Replace with real DSN
-    integrations: [
-        Sentry.browserTracingIntegration(),
-        Sentry.replayIntegration(),
-    ],
-    // Performance Monitoring
-    tracesSampleRate: 1.0,
-    // Session Replay
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0,
-    environment: import.meta.env.MODE,
-    enabled: import.meta.env.PROD, // Only enable Sentry in production
-});
+const SENTRY_DSN = "https://placeholder-dsn@sentry.io/nunno";
+if (SENTRY_DSN && !SENTRY_DSN.includes('placeholder')) {
+    Sentry.init({
+        dsn: SENTRY_DSN,
+        integrations: [
+            Sentry.browserTracingIntegration(),
+            Sentry.replayIntegration(),
+        ],
+        tracesSampleRate: 1.0,
+        replaysSessionSampleRate: 0.1,
+        replaysOnErrorSampleRate: 1.0,
+        environment: import.meta.env.MODE,
+        enabled: import.meta.env.PROD,
+    });
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>

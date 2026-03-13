@@ -2,44 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { createChart } from 'lightweight-charts';
 import {
-    PlayCircle,
-    PauseCircle,
-    RotateCcw,
-    Settings,
-    TrendingUp,
-    TrendingDown,
-    Activity,
-    BarChart3,
-    Layers,
-    ChevronLeft,
-    ChevronRight,
-    User,
-    Eye,
-    EyeOff,
-    Camera,
-    ChevronDown,
-    MessageSquare,
-    X,
-    Sparkles,
-    Maximize2,
-    Minimize2,
-    FastForward,
-    Minus,
-    Plus,
-    Zap,
-    Brain,
-    Search,
-    Crosshair,
-    Target,
-    AlertTriangle,
-    CheckCircle2,
-    Clock,
-    Ghost,
-    Droplets,
-    Loader2,
-    Microscope,
-    LogIn,
-    Link2
+    PlayCircle, RotateCcw, TrendingUp, TrendingDown,
+    Activity, BarChart3, Layers, ChevronLeft, ChevronRight, User, Eye, EyeOff,
+    ChevronDown, MessageSquare, X, Sparkles, Maximize2, Minimize2,
+    Minus, Plus, Zap, Brain, Search, Crosshair, 
+    Clock, Droplets, Loader2, CheckCircle2, Link2, Target, AlertTriangle, Microscope, Camera, Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -82,7 +49,9 @@ const EliteChart = () => {
     const [searchParams] = useSearchParams();
     const [chartData, setChartData] = useState([]);
     const [symbol, setSymbol] = useState(searchParams.get('ticker') || 'BTCUSDT');
-    const [interval, setInterval] = useState(searchParams.get('interval') || '1m');
+    const [interval, setChartInterval] = useState(searchParams.get('interval') || '1m');
+
+    const BASE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     const [isStreaming, setIsStreaming] = useState(true);
     const [currentPrice, setCurrentPrice] = useState(0);
     const [priceChange, setPriceChange] = useState(0);
@@ -380,7 +349,7 @@ const EliteChart = () => {
 
     const logSearchToBackend = async () => {
         try {
-            await axios.post('/api/v1/log-search');
+            await axios.post(`${BASE_API_URL}/api/v1/log-search`);
             refreshUser(); // Sync the UI
         } catch (e) {
             console.error("Failed to log search:", e);
@@ -764,7 +733,7 @@ const EliteChart = () => {
         indicators.entry = entry;
 
         // ── Phase 3: Call the God-Mode backend validator ──────
-        const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+        const API_URL = BASE_API_URL;
 
         try {
             const token = localStorage.getItem('token');
@@ -1004,7 +973,7 @@ const EliteChart = () => {
 
         try {
             const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            let apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            let apiBaseUrl = BASE_API_URL;
             if (apiBaseUrl === 'your_key_here' || !apiBaseUrl.startsWith('http')) {
                 apiBaseUrl = 'http://localhost:8000';
             }
@@ -1135,7 +1104,7 @@ const EliteChart = () => {
     // Fetch Candlestick Patterns from Backend
     const fetchCandlePatterns = async () => {
         if (!symbol) return;
-        const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const apiBaseUrl = BASE_API_URL;
         try {
             const response = await fetch(`${apiBaseUrl}/api/v1/technical/${symbol}?interval=${interval}`);
             if (!response.ok) return;
@@ -2030,7 +1999,7 @@ const EliteChart = () => {
     const runMonteCarloSimulation = async () => {
         if (!checkSearchLimit()) return;
         if (!chartData || chartData.length < 10) return;
-        const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const apiBaseUrl = BASE_API_URL;
         setIsSimulatingBackend(true);
         setSimulationError(null);
         setSimulationStatus('Initializing Probability Engine...');
@@ -2263,7 +2232,7 @@ const EliteChart = () => {
     const runRegimeSimulation = async (injectType) => {
         if (!checkSearchLimit()) return;
         if (!chartData || chartData.length < 10) return;
-        const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const apiBaseUrl = BASE_API_URL;
         setIsSimulatingBackend(true);
         setSimulationError(null);
         setSimulationStatus(`Injecting ${injectType.replace('_', ' ')}...`);
@@ -2745,7 +2714,7 @@ const EliteChart = () => {
                                         <Clock size={12} className="text-violet-400" />
                                         <select
                                             value={interval}
-                                            onChange={(e) => setInterval(e.target.value)}
+                                            onChange={(e) => setChartInterval(e.target.value)}
                                             className="bg-transparent border-none text-[10px] font-black tracking-widest text-violet-400 outline-none appearance-none"
                                         >
                                             {['1m', '5m', '15m', '1h', '4h', '1d'].map(tf => <option key={tf} value={tf}>{tf.toUpperCase()}</option>)}
@@ -2853,7 +2822,7 @@ const EliteChart = () => {
                                 {['1m', '5m', '15m', '1h', '4h', '1d'].map(tf => (
                                     <button
                                         key={tf}
-                                        onClick={() => setInterval(tf)}
+                                        onClick={() => setChartInterval(tf)}
                                         className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all ${interval === tf ? 'bg-violet-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
                                     >
                                         {tf}
@@ -3153,7 +3122,7 @@ const EliteChart = () => {
                                                 const newVal = !selectedIndicators.onchainBias;
                                                 setSelectedIndicators(prev => ({ ...prev, onchainBias: newVal }));
                                                 if (newVal && !onchainData) {
-                                                    const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+                                                    const API_URL = BASE_API_URL;
                                                     const asset = symbol?.includes('BTC') ? 'BTC' : symbol?.includes('ETH') ? 'ETH' : 'BTC';
                                                     fetch(`${API_URL}/api/v1/onchain/${asset}/score`)
                                                         .then(r => r.json())
