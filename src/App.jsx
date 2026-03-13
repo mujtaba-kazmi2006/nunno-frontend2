@@ -15,7 +15,7 @@ import { cn } from './utils/cn'
 import TutorialOverlay from './components/TutorialOverlay'
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
-const GOOGLE_CLIENT_ID = "311857309948-3ihs0cgoqbq93s91g24ul390vfugnf39.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "579951423050-9toagaqt89h4igq7nvdjmb9ms8k5fg89.apps.googleusercontent.com";
 
 // Premium Production Error Boundary
 class ErrorBoundary extends React.Component {
