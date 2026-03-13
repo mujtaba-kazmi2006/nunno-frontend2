@@ -6,7 +6,7 @@ import {
     Activity, BarChart3, Layers, ChevronLeft, ChevronRight, User, Eye, EyeOff,
     ChevronDown, MessageSquare, X, Sparkles, Maximize2, Minimize2,
     Minus, Plus, Zap, Brain, Search, Crosshair, 
-    Clock, Droplets, Loader2, CheckCircle2, Link2, Target, AlertTriangle, Microscope, Camera, Settings
+    Clock, Droplets, Loader2, CheckCircle2, Link2, Target, AlertTriangle, Microscope, Camera, Settings, Ghost
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
