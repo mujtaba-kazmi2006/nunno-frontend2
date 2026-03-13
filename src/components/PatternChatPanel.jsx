@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 import ThinkingLoader from './ThinkingLoader';
 import { analytics } from '../utils/analytics';
+import { generateUUID } from '../utils/uuid';
 
 const PatternChatPanel = ({ onPatternGenerated, onLivePatternDetected, currentPrice = 50000, interval = '1d', symbol = 'BTCUSDT', getTechnicalContext, onUnauthorized, onHighlightLevels, onWhatIfScenario, onSymbolChange, onCorrelationOverlay }) => {
     const { isAuthenticated } = useAuth();
@@ -21,7 +22,7 @@ const PatternChatPanel = ({ onPatternGenerated, onLivePatternDetected, currentPr
     const [isLoading, setIsLoading] = useState(false);
     const [loadingStatus, setLoadingStatus] = useState('');
     const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
-    const [chatConversationId] = useState(() => crypto.randomUUID());
+    const [chatConversationId] = useState(() => generateUUID());
     const inputRef = useRef(null);
     const actionMenuRef = useRef(null);
     const abortController = useRef(null);

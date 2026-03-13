@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
+import { generateUUID } from '../utils/uuid';
 
 const AuthContext = createContext();
 
@@ -16,7 +17,7 @@ export function AuthProvider({ children }) {
             // Retrieve or generate a persistent device fingerprint
             let fingerprint = localStorage.getItem('nunno_device_fingerprint');
             if (!fingerprint) {
-                fingerprint = window.crypto.randomUUID() || Math.random().toString(36).substring(2);
+                fingerprint = generateUUID();
                 localStorage.setItem('nunno_device_fingerprint', fingerprint);
             }
 
