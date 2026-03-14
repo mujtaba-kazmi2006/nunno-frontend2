@@ -37,12 +37,10 @@ export default function LoginSignup({ onClose }) {
             setLoading(false);
             if (result.success) {
                 analytics.trackLogin('google');
-                if (isLogin) {
-                    onClose();
-                    navigate('/dashboard');
-                } else {
-                    setShowOnboarding(true);
-                }
+                // Always go to dashboard - TutorialController will show
+                // language/tutorial for new users automatically
+                onClose();
+                navigate('/dashboard');
             } else {
                 setError(result.error);
             }

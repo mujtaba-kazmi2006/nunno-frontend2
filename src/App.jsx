@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import ChatInterface from './components/ChatInterface'
 import MarketTemperature from './components/MarketTemperature'
 import CollapsibleSidebar from './components/CollapsibleSidebar'
-import { Menu, Sun, Moon, ChevronLeft, ChevronRight, Newspaper, Zap, ShieldCheck } from 'lucide-react'
+import { Menu, Sun, Moon, ChevronLeft, ChevronRight, Newspaper, Zap } from 'lucide-react'
 import LandingPage from './components/LandingPage'
 import EliteChart from './components/EliteChart'  // Elite charting experience
 import { ChatProvider, useChat } from './contexts/ChatContext'
@@ -49,7 +49,7 @@ const DiscoveryFeed = lazy(() => import('./components/DiscoveryFeed'))
 const HelpSupport = lazy(() => import('./components/HelpSupport'))
 const NunnoAcademy = lazy(() => import('./components/NunnoAcademy'))
 const InvestorMetrics = lazy(() => import('./components/InvestorMetrics'))
-const RiskWatchlistSidebar = lazy(() => import('./components/RiskWatchlistSidebar'))
+
 const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'))
 const TermsOfService = lazy(() => import('./components/TermsOfService'))
 const NotFound = lazy(() => import('./components/NotFound'))
@@ -79,7 +79,7 @@ function Dashboard({ userAge }) {
     const { setPendingMessage, messages } = useChat();
     const [isMarketOpen, setIsMarketOpen] = useState(false);
     const [isNewsOpen, setIsNewsOpen] = useState(false);
-    const [isRiskOpen, setIsRiskOpen] = useState(false);
+
 
     // Neural Integration: Handle URL parameters for tabs
     useEffect(() => {
@@ -87,7 +87,7 @@ function Dashboard({ userAge }) {
         const tab = params.get('tab');
         if (tab === 'market') setIsMarketOpen(true);
         if (tab === 'news') setIsNewsOpen(true);
-        if (tab === 'risk') setIsRiskOpen(true);
+
         if (tab === 'fomo') setIsMarketOpen(true); // Fomo is in market sidebar
         if (tab === 'roast') setIsMarketOpen(true); // Roast is also in market sidebar
     }, [location.search]);
@@ -176,55 +176,7 @@ function Dashboard({ userAge }) {
                     </aside>
                 )}
 
-                {!isInitial && (
-                    <aside className={cn(
-                        "fixed top-0 right-0 h-full transition-transform duration-500 ease-in-out z-[42] flex flex-col will-change-transform",
-                        theme === 'dark'
-                            ? "bg-[#08080c]"
-                            : "bg-white",
-                        isRiskOpen ? "translate-x-0" : "translate-x-full",
-                        // Risk is middle: offset by market width when market is also open
-                        isMarketOpen ? "mr-80" : "mr-0",
-                        "w-80"
-                    )}>
-                        {/* Tab handle */}
-                        <button
-                            onClick={() => setIsRiskOpen(!isRiskOpen)}
-                            className={cn(
-                                "absolute left-[-40px] top-[50%] -translate-y-1/2 w-10 h-20 rounded-l-3xl flex items-center justify-center transition-all pointer-events-auto",
-                                theme === 'dark'
-                                    ? "bg-[#08080c] text-purple-400 hover:text-white"
-                                    : "bg-white text-purple-600 hover:text-purple-800",
-                                !isRiskOpen && "opacity-80 hover:opacity-100"
-                            )}
-                            title={isRiskOpen ? "Close Risk Monitor" : "Open Risk Monitor"}
-                        >
-                            <ShieldCheck size={20} strokeWidth={2.5} />
-                        </button>
 
-                        {/* In-panel close button */}
-                        {isRiskOpen && (
-                            <button
-                                onClick={() => setIsRiskOpen(false)}
-                                className={cn(
-                                    "absolute top-4 right-4 z-50 p-2 rounded-xl transition-all",
-                                    theme === 'dark'
-                                        ? "bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400"
-                                        : "bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-500"
-                                )}
-                                title="Close Risk Monitor"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-                            </button>
-                        )}
-
-                        <div className="flex-1 flex flex-col p-6 overflow-y-auto no-scrollbar pt-12">
-                            <Suspense fallback={<LoadingFallback />}>
-                                <RiskWatchlistSidebar />
-                            </Suspense>
-                        </div>
-                    </aside>
-                )}
 
                 {!isInitial && (
                     <aside className={cn(
@@ -372,8 +324,9 @@ function TutorialController() {
 
     useEffect(() => {
         if (user) {
-            const hasSeenTutorial = localStorage.getItem(`tutorial_seen_${user.id}`);
-            const hasSetLanguage = localStorage.getItem(`language_set_${user.id}`);
+            const userKey = user.email || user.id;
+            const hasSeenTutorial = localStorage.getItem(`tutorial_seen_${userKey}`);
+            const hasSetLanguage = localStorage.getItem(`language_set_${userKey}`);
             const isForced = location.search.includes('tutorial=force');
 
             // 1. Language Step first if new signup
@@ -393,9 +346,10 @@ function TutorialController() {
     const handleCloseLanguage = () => {
         setShowLanguage(false);
         if (user) {
-            localStorage.setItem(`language_set_${user.id}`, 'true');
+            const userKey = user.email || user.id;
+            localStorage.setItem(`language_set_${userKey}`, 'true');
             // Trigger tutorial immediately after language choice
-            const hasSeenTutorial = localStorage.getItem(`tutorial_seen_${user.id}`);
+            const hasSeenTutorial = localStorage.getItem(`tutorial_seen_${userKey}`);
             if (!hasSeenTutorial) {
                 setShowTutorial(true);
             }
@@ -404,7 +358,10 @@ function TutorialController() {
 
     const handleCloseTutorial = () => {
         setShowTutorial(false);
-        if (user) localStorage.setItem(`tutorial_seen_${user.id}`, 'true');
+        if (user) {
+            const userKey = user.email || user.id;
+            localStorage.setItem(`tutorial_seen_${userKey}`, 'true');
+        }
     };
 
     if (!user) return null;

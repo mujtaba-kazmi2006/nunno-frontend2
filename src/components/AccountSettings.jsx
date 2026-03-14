@@ -214,7 +214,9 @@ export default function AccountSettings() {
                                     <button
                                         onClick={() => {
                                             if (user) {
-                                                localStorage.removeItem(`tutorial_seen_${user.id}`);
+                                                const userKey = user.email || user.id;
+                                                localStorage.removeItem(`tutorial_seen_${userKey}`);
+                                                localStorage.removeItem(`language_set_${userKey}`);
                                                 window.location.href = '/dashboard?tutorial=force';
                                             }
                                         }}
