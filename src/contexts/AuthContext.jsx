@@ -147,6 +147,16 @@ export function AuthProvider({ children }) {
             setUser(response.data.user);
             localStorage.setItem('token', response.data.token);
             axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+            
+            // For returning Google users, mark tutorial/language as already seen
+            // so TutorialController doesn't show them again
+            const userData = response.data.user;
+            const userKey = userData.email || userData.id;
+            if (!response.data.is_new_user) {
+                localStorage.setItem(`tutorial_seen_${userKey}`, 'true');
+                localStorage.setItem(`language_set_${userKey}`, 'true');
+            }
+            
             return { success: true };
         } catch (error) {
             return {
