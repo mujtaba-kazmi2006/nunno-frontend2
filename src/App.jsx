@@ -108,17 +108,16 @@ function Dashboard({ userAge }) {
             <div className="main-container relative h-full flex flex-row overflow-hidden">
                 <main className={cn(
                     "flex-1 h-full relative transition-all duration-500 ease-in-out overflow-hidden will-change-[margin] dashboard-container",
-                    (isMarketOpen || isNewsOpen || isRiskOpen) && !isInitial
+                    (isMarketOpen || isNewsOpen) && !isInitial
                         ? (
-                            (isMarketOpen && isNewsOpen && isRiskOpen) ? "xl:mr-[960px]" :
-                                ((isMarketOpen && isNewsOpen) || (isMarketOpen && isRiskOpen) || (isNewsOpen && isRiskOpen)) ? "xl:mr-[640px]" : "xl:mr-80"
+                            (isMarketOpen && isNewsOpen) ? "xl:mr-[640px]" : "xl:mr-80"
                         )
                         : "mr-0"
                 )}>
-                    {((isMarketOpen || isNewsOpen || isRiskOpen) && !isInitial) && (
+                    {((isMarketOpen || isNewsOpen) && !isInitial) && (
                         <div
                             className="xl:hidden absolute inset-0 bg-black/40 z-30 transition-opacity duration-300"
-                            onClick={() => { setIsMarketOpen(false); setIsNewsOpen(false); setIsRiskOpen(false); }}
+                            onClick={() => { setIsMarketOpen(false); setIsNewsOpen(false); }}
                         />
                     )}
 
@@ -133,8 +132,7 @@ function Dashboard({ userAge }) {
                             : "bg-white",
                         isNewsOpen ? "translate-x-0" : "translate-x-full",
                         // News is always the leftmost open panel: offset by risk + market widths
-                        isMarketOpen && isRiskOpen ? "mr-[640px]" :
-                            (isMarketOpen || isRiskOpen) ? "mr-80" : "mr-0",
+                        isMarketOpen ? "mr-80" : "mr-0",
                         "w-80"
                     )}>
                         {/* Tab handle — always visible because it's on the left edge of this panel */}
