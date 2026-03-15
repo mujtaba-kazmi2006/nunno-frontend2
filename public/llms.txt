@@ -1,6 +1,11 @@
-# Nunno Finance: AI-Powered Crypto Intelligence Platforms
+---
+title: Nunno Finance
+description: AI-Powered Crypto Intelligence & Educational Platform
+url: https://nunno.cloud
+version: 1.0.0
+---
 
-Nunno Finance is an advanced AI-driven crypto analysis and financial education platform tailored for beginners, particularly in South Asia (Pakistan). It combines real-time data with empathetic, multi-lingual AI to help users navigate the complex crypto market safely.
+# Nunno Finance: AI-Powered Crypto Intelligence Platform
 
 ## Core Features (Educational Context)
 

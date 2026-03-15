@@ -4,15 +4,27 @@ Allow: /
 # Sitemaps
 Sitemap: https://nunno.cloud/sitemap.xml
 
-# AI Crawlers
+# AI & Search Bot Prioritization
 User-agent: GPTBot
 Allow: /
 
 User-agent: ChatGPT-User
 Allow: /
 
+User-agent: OAI-SearchCustom
+Allow: /
+
 User-agent: Google-Extended
 Allow: /
 
+User-agent: Anthropic-AI
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
 User-agent: CCBot
+Allow: /
+
+User-agent: PerplexityBot
 Allow: /

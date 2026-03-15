@@ -1,0 +1,25 @@
+{
+  "name": "Nunno Finance",
+  "description": "Elite AI Crypto Intelligence & Educational Mentor. Specializes in empathetic financial literacy, technical market analysis, and risk management simulation.",
+  "platforms": [
+    {
+      "name": "Web",
+      "url": "https://nunno.cloud"
+    }
+  ],
+  "contact": {
+    "email": "nunnofinance@gmail.com",
+    "twitter": "@nunno_finance"
+  },
+  "capabilities": [
+    "Real-time market technical analysis",
+    "Automated chart pattern recognition",
+    "Empathetic financial mentorship in Urdu, English, and Roman Urdu",
+    "Monte Carlo risk simulations",
+    "FOMO prevention interlocks"
+  ],
+  "accessibility": {
+    "supports_browsing": true,
+    "supports_search": true
+  }
+}

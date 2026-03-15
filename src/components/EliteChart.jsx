@@ -2,11 +2,44 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { createChart } from 'lightweight-charts';
 import {
-    PlayCircle, RotateCcw, TrendingUp, TrendingDown,
-    Activity, BarChart3, Layers, ChevronLeft, ChevronRight, User, Eye, EyeOff,
-    ChevronDown, MessageSquare, X, Sparkles, Maximize2, Minimize2,
-    Minus, Plus, Zap, Brain, Search, Crosshair, 
-    Clock, Droplets, Loader2, CheckCircle2, Link2, Target, AlertTriangle, Microscope, Camera, Settings, Ghost
+    PlayCircle,
+    PauseCircle,
+    RotateCcw,
+    Settings,
+    TrendingUp,
+    TrendingDown,
+    Activity,
+    BarChart3,
+    Layers,
+    ChevronLeft,
+    ChevronRight,
+    User,
+    Eye,
+    EyeOff,
+    Camera,
+    ChevronDown,
+    MessageSquare,
+    X,
+    Sparkles,
+    Maximize2,
+    Minimize2,
+    FastForward,
+    Minus,
+    Plus,
+    Zap,
+    Brain,
+    Search,
+    Crosshair,
+    Target,
+    AlertTriangle,
+    CheckCircle2,
+    Clock,
+    Ghost,
+    Droplets,
+    Loader2,
+    Microscope,
+    LogIn,
+    Link2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -35,10 +68,10 @@ const EliteChart = () => {
     const chartRef = useRef(null);
     const mainSeriesRef = useRef(null);
     const volumeSeriesRef = useRef(null);
-    const indicatorSeriesRefs = useRef({ 
-        live_trendlines: [], 
-        position_tools: [], 
-        ai_pattern: null, 
+    const indicatorSeriesRefs = useRef({
+        live_trendlines: [],
+        position_tools: [],
+        ai_pattern: null,
         ai_trendlines: [],
         ai_position_tools: []
     });
@@ -49,9 +82,7 @@ const EliteChart = () => {
     const [searchParams] = useSearchParams();
     const [chartData, setChartData] = useState([]);
     const [symbol, setSymbol] = useState(searchParams.get('ticker') || 'BTCUSDT');
-    const [interval, setChartInterval] = useState(searchParams.get('interval') || '1m');
-
-    const BASE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const [interval, setInterval] = useState(searchParams.get('interval') || '1m');
     const [isStreaming, setIsStreaming] = useState(true);
     const [currentPrice, setCurrentPrice] = useState(0);
     const [priceChange, setPriceChange] = useState(0);
@@ -349,7 +380,7 @@ const EliteChart = () => {
 
     const logSearchToBackend = async () => {
         try {
-            await axios.post(`${BASE_API_URL}/api/v1/log-search`);
+            await axios.post('/api/v1/log-search');
             refreshUser(); // Sync the UI
         } catch (e) {
             console.error("Failed to log search:", e);
@@ -733,7 +764,7 @@ const EliteChart = () => {
         indicators.entry = entry;
 
         // ── Phase 3: Call the God-Mode backend validator ──────
-        const API_URL = BASE_API_URL;
+        const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
         try {
             const token = localStorage.getItem('token');
@@ -973,7 +1004,7 @@ const EliteChart = () => {
 
         try {
             const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            let apiBaseUrl = BASE_API_URL;
+            let apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
             if (apiBaseUrl === 'your_key_here' || !apiBaseUrl.startsWith('http')) {
                 apiBaseUrl = 'http://localhost:8000';
             }
@@ -1104,7 +1135,7 @@ const EliteChart = () => {
     // Fetch Candlestick Patterns from Backend
     const fetchCandlePatterns = async () => {
         if (!symbol) return;
-        const apiBaseUrl = BASE_API_URL;
+        const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         try {
             const response = await fetch(`${apiBaseUrl}/api/v1/technical/${symbol}?interval=${interval}`);
             if (!response.ok) return;
@@ -1411,7 +1442,7 @@ const EliteChart = () => {
                 const isBullish = directionStr === 'UP' || directionStr === 'BULLISH';
                 const target = move.target_price || (isBullish ? currentPrice * 1.05 : currentPrice * 0.95);
                 const stop = activeAiPattern.stop_loss || move.stop_loss || (isBullish ? currentPrice * 0.98 : currentPrice * 1.02);
-                
+
                 if (indicatorSeriesRefs.current.ai_position_tools) {
                     indicatorSeriesRefs.current.ai_position_tools.forEach(s => {
                         if (s && chartRef.current) try { chartRef.current.removeSeries(s); } catch (e) { }
@@ -1572,17 +1603,17 @@ const EliteChart = () => {
                     // Create data points for the box duration
                     const profitPoints = [];
                     const lossPoints = [];
-                    
+
                     const sTime = startTime;
                     const eTime = endTime;
                     const lastTime = chartData[chartData.length - 1].time;
                     const timeWindow = chartData[1].time - chartData[0].time;
-                    
+
                     chartData.filter(d => d.time >= sTime && d.time <= eTime).forEach(d => {
                         profitPoints.push({ time: d.time, value: pattern.target });
                         lossPoints.push({ time: d.time, value: pattern.stop });
                     });
-                    
+
                     for (let i = 1; i <= 10; i++) {
                         const t = lastTime + (i * timeWindow);
                         profitPoints.push({ time: t, value: pattern.target });
@@ -1999,7 +2030,7 @@ const EliteChart = () => {
     const runMonteCarloSimulation = async () => {
         if (!checkSearchLimit()) return;
         if (!chartData || chartData.length < 10) return;
-        const apiBaseUrl = BASE_API_URL;
+        const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         setIsSimulatingBackend(true);
         setSimulationError(null);
         setSimulationStatus('Initializing Probability Engine...');
@@ -2232,7 +2263,7 @@ const EliteChart = () => {
     const runRegimeSimulation = async (injectType) => {
         if (!checkSearchLimit()) return;
         if (!chartData || chartData.length < 10) return;
-        const apiBaseUrl = BASE_API_URL;
+        const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         setIsSimulatingBackend(true);
         setSimulationError(null);
         setSimulationStatus(`Injecting ${injectType.replace('_', ' ')}...`);
@@ -2617,7 +2648,7 @@ const EliteChart = () => {
             {/* --- Premium Tactical Header --- */}
             <header className={`z-[70] transition-all duration-500 relative border-b ${theme === 'dark' ? 'bg-[#0f111a]/95 border-white/5 shadow-2xl' : 'bg-white/95 border-slate-200 shadow-xl'} backdrop-blur-xl`}>
                 <div className={`flex flex-col md:flex-row md:items-center justify-between px-4 md:px-8 ${isMobile ? 'py-2 gap-2.5' : 'py-4'}`}>
-                    
+
                     {isMobile ? (
                         /* PREMIUM MOBILE HEADER (Dynamic Hub Layout) */
                         <div className="flex flex-col gap-4">
@@ -2643,10 +2674,10 @@ const EliteChart = () => {
                                             <div className="w-6 h-6 rounded-lg bg-violet-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
                                                 <TrendingUp size={14} className="text-white" />
                                             </div>
-                                            
+
                                             {/* Ticker Search Trigger */}
                                             <div className="relative" ref={tickerMenuRef}>
-                                                <button 
+                                                <button
                                                     onClick={() => setIsTickerMenuOpen(!isTickerMenuOpen)}
                                                     className="flex items-center gap-1 group"
                                                 >
@@ -2714,7 +2745,7 @@ const EliteChart = () => {
                                         <Clock size={12} className="text-violet-400" />
                                         <select
                                             value={interval}
-                                            onChange={(e) => setChartInterval(e.target.value)}
+                                            onChange={(e) => setInterval(e.target.value)}
                                             className="bg-transparent border-none text-[10px] font-black tracking-widest text-violet-400 outline-none appearance-none"
                                         >
                                             {['1m', '5m', '15m', '1h', '4h', '1d'].map(tf => <option key={tf} value={tf}>{tf.toUpperCase()}</option>)}
@@ -2736,127 +2767,127 @@ const EliteChart = () => {
                     ) : (
                         /* DESKTOP LAYOUT (Clean) */
                         <>
-                        <div className="flex items-center justify-between md:justify-start gap-6">
-                            <div className="flex items-center gap-4">
-                                {/* Brand Icon */}
-                                <div className="hidden sm:flex w-10 h-10 rounded-xl bg-violet-600 items-center justify-center shadow-lg shadow-violet-500/20">
-                                    <TrendingUp className="text-white" size={24} />
-                                </div>
-
-                                {/* Ticker & Price Display */}
-                                <div className="flex flex-row items-center gap-4">
-                                    <div className="relative" ref={tickerMenuRef}>
-                                        <button
-                                            onClick={() => setIsTickerMenuOpen(!isTickerMenuOpen)}
-                                            className={`flex items-center gap-2 px-2 py-1 -ml-2 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}
-                                        >
-                                            <span className={`text-xl md:text-2xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`} style={{ fontFamily: "'Inter', sans-serif" }}>
-                                                {symbol.replace('USDT', '')}
-                                            </span>
-                                            <ChevronDown size={14} className={`transition-transform duration-300 ${isTickerMenuOpen ? 'rotate-180' : ''} opacity-30`} />
-                                        </button>
-
-                                        {/* Premium Ticker Dropdown */}
-                                        {isTickerMenuOpen && (
-                                            <div className={`absolute top-full left-0 mt-3 w-80 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border backdrop-blur-2xl animate-in zoom-in-95 duration-200 z-[100] ${theme === 'dark' ? 'bg-[#161825]/95 border-white/10' : 'bg-white/95 border-slate-200'}`}>
-                                                <div className="p-4 border-b border-white/5">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="SEARCH TICKER..."
-                                                        value={tickerSearch}
-                                                        onChange={(e) => setTickerSearch(e.target.value.toUpperCase())}
-                                                        onKeyDown={(e) => { if (e.key === 'Enter' && tickerSearch) handleTickerChange(tickerSearch); }}
-                                                        className={`w-full px-5 py-3 rounded-2xl text-xs font-black border outline-none ${theme === 'dark' ? 'bg-black/40 border-white/10 text-white focus:border-violet-500' : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-violet-400'}`}
-                                                        autoFocus
-                                                    />
-                                                </div>
-                                                <div className="p-2 max-h-[400px] overflow-y-auto no-scrollbar grid grid-cols-1 gap-1">
-                                                    {filteredOptions.map(token => (
-                                                        <button key={token.symbol} onClick={() => handleTickerChange(token.symbol)} className={`flex items-center justify-between px-5 py-3.5 rounded-[1.25rem] transition-all group ${symbol === token.symbol ? 'bg-violet-600 text-white' : 'hover:bg-white/5'}`}>
-                                                            <div className="text-left">
-                                                                <div className="text-sm font-black tracking-tight">{token.symbol.replace('USDT', '')}</div>
-                                                                <div className="text-[9px] font-bold uppercase opacity-50">{token.name}</div>
-                                                            </div>
-                                                            {symbol === token.symbol && <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_10px_white]" />}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
+                            <div className="flex items-center justify-between md:justify-start gap-6">
+                                <div className="flex items-center gap-4">
+                                    {/* Brand Icon */}
+                                    <div className="hidden sm:flex w-10 h-10 rounded-xl bg-violet-600 items-center justify-center shadow-lg shadow-violet-500/20">
+                                        <TrendingUp className="text-white" size={24} />
                                     </div>
 
-                                    {/* Price Information */}
-                                    <div className="flex flex-col md:flex-row md:items-center gap-0 md:gap-3">
-                                        <span className={`text-xl font-mono font-black tracking-tighter ${priceChange >= 0 ? 'text-purple-400' : 'text-rose-500'}`}>
-                                            {formatPrice(currentPrice)}
-                                        </span>
-                                        <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-black ${priceChange >= 0 ? 'bg-purple-500/20 text-purple-400' : 'bg-rose-500/20 text-rose-500'}`}>
-                                            {priceChange >= 0 ? '▲' : '▼'} {Math.abs(priceChange).toFixed(2)}%
+                                    {/* Ticker & Price Display */}
+                                    <div className="flex flex-row items-center gap-4">
+                                        <div className="relative" ref={tickerMenuRef}>
+                                            <button
+                                                onClick={() => setIsTickerMenuOpen(!isTickerMenuOpen)}
+                                                className={`flex items-center gap-2 px-2 py-1 -ml-2 rounded-xl transition-all ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-slate-100'}`}
+                                            >
+                                                <span className={`text-xl md:text-2xl font-black tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                                                    {symbol.replace('USDT', '')}
+                                                </span>
+                                                <ChevronDown size={14} className={`transition-transform duration-300 ${isTickerMenuOpen ? 'rotate-180' : ''} opacity-30`} />
+                                            </button>
+
+                                            {/* Premium Ticker Dropdown */}
+                                            {isTickerMenuOpen && (
+                                                <div className={`absolute top-full left-0 mt-3 w-80 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border backdrop-blur-2xl animate-in zoom-in-95 duration-200 z-[100] ${theme === 'dark' ? 'bg-[#161825]/95 border-white/10' : 'bg-white/95 border-slate-200'}`}>
+                                                    <div className="p-4 border-b border-white/5">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="SEARCH TICKER..."
+                                                            value={tickerSearch}
+                                                            onChange={(e) => setTickerSearch(e.target.value.toUpperCase())}
+                                                            onKeyDown={(e) => { if (e.key === 'Enter' && tickerSearch) handleTickerChange(tickerSearch); }}
+                                                            className={`w-full px-5 py-3 rounded-2xl text-xs font-black border outline-none ${theme === 'dark' ? 'bg-black/40 border-white/10 text-white focus:border-violet-500' : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-violet-400'}`}
+                                                            autoFocus
+                                                        />
+                                                    </div>
+                                                    <div className="p-2 max-h-[400px] overflow-y-auto no-scrollbar grid grid-cols-1 gap-1">
+                                                        {filteredOptions.map(token => (
+                                                            <button key={token.symbol} onClick={() => handleTickerChange(token.symbol)} className={`flex items-center justify-between px-5 py-3.5 rounded-[1.25rem] transition-all group ${symbol === token.symbol ? 'bg-violet-600 text-white' : 'hover:bg-white/5'}`}>
+                                                                <div className="text-left">
+                                                                    <div className="text-sm font-black tracking-tight">{token.symbol.replace('USDT', '')}</div>
+                                                                    <div className="text-[9px] font-bold uppercase opacity-50">{token.name}</div>
+                                                                </div>
+                                                                {symbol === token.symbol && <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_10px_white]" />}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Price Information */}
+                                        <div className="flex flex-col md:flex-row md:items-center gap-0 md:gap-3">
+                                            <span className={`text-xl font-mono font-black tracking-tighter ${priceChange >= 0 ? 'text-purple-400' : 'text-rose-500'}`}>
+                                                {formatPrice(currentPrice)}
+                                            </span>
+                                            <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-black ${priceChange >= 0 ? 'bg-purple-500/20 text-purple-400' : 'bg-rose-500/20 text-rose-500'}`}>
+                                                {priceChange >= 0 ? '▲' : '▼'} {Math.abs(priceChange).toFixed(2)}%
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Stream Controls */}
-                            <div className="flex items-center gap-2">
-                                <span className={`hidden md:block px-2 py-0.5 rounded text-[10px] font-black tracking-widest ${theme === 'dark' ? 'bg-white/5 text-slate-500' : 'bg-slate-100 text-slate-400'}`}>
-                                    {interval.toUpperCase()}
-                                </span>
-                                <button
-                                    onClick={toggleStreaming}
-                                    className={`h-10 px-4 rounded-xl font-black text-[10px] tracking-widest transition-all active:scale-95 flex items-center gap-2 ${isStreaming ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'bg-violet-600 text-white shadow-lg shadow-violet-500/20'}`}
-                                >
-                                    {isStreaming ? (
-                                        <><div className="w-2 h-2 bg-white rounded-full animate-pulse" /> LIVE</>
-                                    ) : (
-                                        <><PlayCircle size={14} /> START</>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* DESKTOP BOTTOM ROW (integrated differently) */}
-                        <div className={`flex items-center justify-between md:justify-end gap-2 md:gap-4`}>
-                            {/* Timeframe Selector */}
-                            <div className={`flex gap-1 p-1 rounded-xl ${theme === 'dark' ? 'bg-white/5' : 'bg-slate-100'}`}>
-                                {['1m', '5m', '15m', '1h', '4h', '1d'].map(tf => (
+                                {/* Stream Controls */}
+                                <div className="flex items-center gap-2">
+                                    <span className={`hidden md:block px-2 py-0.5 rounded text-[10px] font-black tracking-widest ${theme === 'dark' ? 'bg-white/5 text-slate-500' : 'bg-slate-100 text-slate-400'}`}>
+                                        {interval.toUpperCase()}
+                                    </span>
                                     <button
-                                        key={tf}
-                                        onClick={() => setChartInterval(tf)}
-                                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all ${interval === tf ? 'bg-violet-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+                                        onClick={toggleStreaming}
+                                        className={`h-10 px-4 rounded-xl font-black text-[10px] tracking-widest transition-all active:scale-95 flex items-center gap-2 ${isStreaming ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'bg-violet-600 text-white shadow-lg shadow-violet-500/20'}`}
                                     >
-                                        {tf}
+                                        {isStreaming ? (
+                                            <><div className="w-2 h-2 bg-white rounded-full animate-pulse" /> LIVE</>
+                                        ) : (
+                                            <><PlayCircle size={14} /> START</>
+                                        )}
                                     </button>
-                                ))}
+                                </div>
                             </div>
 
-                            {/* Tactical Actions Panel */}
-                            <div className="flex items-center gap-1.5">
-                                <button onClick={handleResetChart} className={`p-2.5 rounded-xl border transition-all ${theme === 'dark' ? 'bg-white/5 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500'}`} title="Reset">
-                                    <RotateCcw size={16} />
-                                </button>
-                                <div className={`hidden sm:flex p-1 rounded-xl ${theme === 'dark' ? 'bg-white/5' : 'bg-slate-100'}`}>
-                                    {[{ t: 'candlestick', i: BarChart3 }, { t: 'line', i: Activity }, { t: 'area', i: Layers }].map(c => (
-                                        <button key={c.t} onClick={() => setChartType(c.t)} className={`p-1.5 rounded-lg transition-all ${chartType === c.t ? 'bg-violet-600 text-white shadow-md' : 'text-slate-500'}`}>
-                                            <c.i size={14} />
+                            {/* DESKTOP BOTTOM ROW (integrated differently) */}
+                            <div className={`flex items-center justify-between md:justify-end gap-2 md:gap-4`}>
+                                {/* Timeframe Selector */}
+                                <div className={`flex gap-1 p-1 rounded-xl ${theme === 'dark' ? 'bg-white/5' : 'bg-slate-100'}`}>
+                                    {['1m', '5m', '15m', '1h', '4h', '1d'].map(tf => (
+                                        <button
+                                            key={tf}
+                                            onClick={() => setInterval(tf)}
+                                            className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all ${interval === tf ? 'bg-violet-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+                                        >
+                                            {tf}
                                         </button>
                                     ))}
                                 </div>
-                                <button onClick={() => setFocusMode(!focusMode)} className={`p-2.5 rounded-xl border transition-all ${focusMode ? 'bg-violet-600 text-white border-violet-500' : theme === 'dark' ? 'bg-white/5 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600'}`} title="Focus">
-                                    {focusMode ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-                                </button>
-                                <button onClick={() => setShowLiquidityHeatmap(!showLiquidityHeatmap)} className={`p-2.5 rounded-xl border transition-all ${showLiquidityHeatmap ? 'bg-cyan-500 text-white border-cyan-400' : theme === 'dark' ? 'bg-white/5 border-white/5 text-slate-400 hover:text-cyan-400' : 'bg-white border-slate-200 text-slate-600'}`} title="Liquidity">
-                                    <Droplets size={16} />
-                                </button>
-                                <button onClick={() => isTacticalMode ? clearTacticalScan() : setIsTacticalMode(true)} className={`p-2.5 rounded-xl border transition-all ${isTacticalMode ? 'bg-violet-600 text-white border-violet-500 animate-pulse' : theme === 'dark' ? 'bg-white/5 border-white/5 text-slate-400 hover:text-violet-400' : 'bg-white border-slate-200 text-slate-600'}`} title="Tactical Scan">
-                                    <Crosshair size={16} />
-                                </button>
-                                <button onClick={() => setShowAIChat(!showAIChat)} className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border transition-all ${showAIChat ? 'bg-violet-600 text-white border-violet-500' : theme === 'dark' ? 'bg-white/5 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600'}`}>
-                                    <MessageSquare size={16} />
-                                    {!isMobile && <span className="text-[11px] font-black uppercase">Ask AI</span>}
-                                </button>
+
+                                {/* Tactical Actions Panel */}
+                                <div className="flex items-center gap-1.5">
+                                    <button onClick={handleResetChart} className={`p-2.5 rounded-xl border transition-all ${theme === 'dark' ? 'bg-white/5 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500'}`} title="Reset">
+                                        <RotateCcw size={16} />
+                                    </button>
+                                    <div className={`hidden sm:flex p-1 rounded-xl ${theme === 'dark' ? 'bg-white/5' : 'bg-slate-100'}`}>
+                                        {[{ t: 'candlestick', i: BarChart3 }, { t: 'line', i: Activity }, { t: 'area', i: Layers }].map(c => (
+                                            <button key={c.t} onClick={() => setChartType(c.t)} className={`p-1.5 rounded-lg transition-all ${chartType === c.t ? 'bg-violet-600 text-white shadow-md' : 'text-slate-500'}`}>
+                                                <c.i size={14} />
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <button onClick={() => setFocusMode(!focusMode)} className={`p-2.5 rounded-xl border transition-all ${focusMode ? 'bg-violet-600 text-white border-violet-500' : theme === 'dark' ? 'bg-white/5 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600'}`} title="Focus">
+                                        {focusMode ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                                    </button>
+                                    <button onClick={() => setShowLiquidityHeatmap(!showLiquidityHeatmap)} className={`p-2.5 rounded-xl border transition-all ${showLiquidityHeatmap ? 'bg-cyan-500 text-white border-cyan-400' : theme === 'dark' ? 'bg-white/5 border-white/5 text-slate-400 hover:text-cyan-400' : 'bg-white border-slate-200 text-slate-600'}`} title="Liquidity">
+                                        <Droplets size={16} />
+                                    </button>
+                                    <button onClick={() => isTacticalMode ? clearTacticalScan() : setIsTacticalMode(true)} className={`p-2.5 rounded-xl border transition-all ${isTacticalMode ? 'bg-violet-600 text-white border-violet-500 animate-pulse' : theme === 'dark' ? 'bg-white/5 border-white/5 text-slate-400 hover:text-violet-400' : 'bg-white border-slate-200 text-slate-600'}`} title="Tactical Scan">
+                                        <Crosshair size={16} />
+                                    </button>
+                                    <button onClick={() => setShowAIChat(!showAIChat)} className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border transition-all ${showAIChat ? 'bg-violet-600 text-white border-violet-500' : theme === 'dark' ? 'bg-white/5 border-white/5 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600'}`}>
+                                        <MessageSquare size={16} />
+                                        {!isMobile && <span className="text-[11px] font-black uppercase">Ask AI</span>}
+                                    </button>
+                                </div>
                             </div>
-                        </div>
                         </>
                     )}
                 </div>
@@ -3122,7 +3153,7 @@ const EliteChart = () => {
                                                 const newVal = !selectedIndicators.onchainBias;
                                                 setSelectedIndicators(prev => ({ ...prev, onchainBias: newVal }));
                                                 if (newVal && !onchainData) {
-                                                    const API_URL = BASE_API_URL;
+                                                    const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
                                                     const asset = symbol?.includes('BTC') ? 'BTC' : symbol?.includes('ETH') ? 'ETH' : 'BTC';
                                                     fetch(`${API_URL}/api/v1/onchain/${asset}/score`)
                                                         .then(r => r.json())
@@ -3510,21 +3541,19 @@ const EliteChart = () => {
                                                         style={{ width: `${tacticalResult.confluenceScore}%` }}
                                                     />
                                                 </div>
-                                                <span className={`text-sm font-black ${
-                                                    tacticalResult.confluenceScore >= 70 ? 'text-purple-400'
+                                                <span className={`text-sm font-black ${tacticalResult.confluenceScore >= 70 ? 'text-purple-400'
                                                         : tacticalResult.confluenceScore >= 45 ? 'text-amber-400'
                                                             : 'text-rose-400'
-                                                }`}>{tacticalResult.confluenceScore}%</span>
+                                                    }`}>{tacticalResult.confluenceScore}%</span>
                                             </div>
                                         </div>
 
                                         {/* Direction Badge */}
                                         <div className="flex items-center justify-center">
-                                            <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
-                                                tacticalResult.direction === 'LONG' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                            <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${tacticalResult.direction === 'LONG' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                                                     : tacticalResult.direction === 'SHORT' ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
                                                         : 'bg-slate-500/10 text-slate-400 border-slate-500/30'
-                                            }`}>
+                                                }`}>
                                                 {tacticalResult.direction === 'LONG' ? '▲' : tacticalResult.direction === 'SHORT' ? '▼' : '◆'} {tacticalResult.direction} BIAS · RSI {tacticalResult.rsi}
                                             </span>
                                         </div>

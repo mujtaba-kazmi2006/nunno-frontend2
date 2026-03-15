@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
-import { generateUUID } from '../utils/uuid';
 
 const ChatContext = createContext();
 
@@ -16,7 +15,7 @@ export function ChatProvider({ children }) {
         // Persist conversation ID in sessionStorage so it survives page refreshes
         const stored = sessionStorage.getItem('nunno_conversation_id');
         if (stored) return stored;
-        const newId = generateUUID();
+        const newId = crypto.randomUUID();
         sessionStorage.setItem('nunno_conversation_id', newId);
         return newId;
     });
