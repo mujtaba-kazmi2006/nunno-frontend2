@@ -410,6 +410,8 @@ const EliteChart = () => {
     // WebSocket ref
     const wsRef = useRef(null);
     const reconnectTimerRef = useRef(null);
+    const wsFailCountRef = useRef(0);
+    const usingDirectBinanceRef = useRef(false);
 
     // Token options
     const tokenOptions = [
@@ -992,7 +994,7 @@ const EliteChart = () => {
         }
     };
 
-    // Connect WebSocket
+    // Connect WebSocket — dual-layer: backend proxy first, direct Binance fallback
     const connectWebSocket = () => {
         if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
@@ -1000,6 +1002,13 @@ const EliteChart = () => {
         if (reconnectTimerRef.current) {
             clearTimeout(reconnectTimerRef.current);
             reconnectTimerRef.current = null;
+        }
+
+        // After 3 failed backend WS attempts, switch to direct Binance connection
+        if (wsFailCountRef.current >= 3 && !usingDirectBinanceRef.current) {
+            console.log('⚡ Backend WS failed 3 times. Switching to direct Binance WebSocket...');
+            connectDirectBinance();
+            return;
         }
 
         try {
@@ -1015,7 +1024,9 @@ const EliteChart = () => {
             const ws = new WebSocket(wsUrl);
 
             ws.onopen = () => {
-                console.log('✅ WebSocket connected');
+                console.log('✅ WebSocket connected (backend proxy)');
+                wsFailCountRef.current = 0; // Reset fail counter on success
+                usingDirectBinanceRef.current = false;
                 ws.send(JSON.stringify({
                     type: 'subscribe_kline',
                     symbol: symbol.toLowerCase(),
@@ -1027,56 +1038,7 @@ const EliteChart = () => {
                 try {
                     const message = JSON.parse(event.data);
                     if (message.type === 'kline_update' && message.symbol.toUpperCase() === symbol) {
-                        const kline = message.kline;
-                        const newCandle = {
-                            time: parseInt(kline.t) / 1000,
-                            open: parseFloat(kline.o),
-                            high: parseFloat(kline.h),
-                            low: parseFloat(kline.l),
-                            close: parseFloat(kline.c),
-                            volume: parseFloat(kline.v)
-                        };
-
-                        // Update chart
-                        if (mainSeriesRef.current) {
-                            if (chartType === 'candlestick') {
-                                try {
-                                    mainSeriesRef.current.update(newCandle);
-                                } catch (e) {
-                                    console.warn('Chart update failed:', e);
-                                }
-                            } else {
-                                mainSeriesRef.current.update({
-                                    time: newCandle.time,
-                                    value: newCandle.close
-                                });
-                            }
-                        }
-                        if (volumeSeriesRef.current) {
-                            volumeSeriesRef.current.update({
-                                time: newCandle.time,
-                                value: newCandle.volume,
-                                color: newCandle.close >= newCandle.open ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'
-                            });
-                        }
-
-                        setCurrentPrice(newCandle.close);
-                        setChartData(prev => {
-                            const newData = [...prev];
-                            const lastCandle = newData[newData.length - 1];
-                            if (lastCandle && lastCandle.time === newCandle.time) {
-                                newData[newData.length - 1] = newCandle;
-                            } else {
-                                newData.push(newCandle);
-                                if (newData.length > 1000) newData.shift();
-
-                                // Re-fetch patterns on candle close if enabled
-                                if (selectedIndicators.candlestickPatterns) {
-                                    fetchCandlePatterns();
-                                }
-                            }
-                            return newData;
-                        });
+                        handleKlineUpdate(message.kline);
                     }
                 } catch (error) {
                     console.error('WebSocket message error:', error);
@@ -1090,10 +1052,11 @@ const EliteChart = () => {
             ws.onclose = (event) => {
                 console.log(`🔌 WebSocket disconnected (reason: ${event.reason || 'none'}). Retrying in 5s...`);
                 wsRef.current = null;
+                wsFailCountRef.current += 1;
                 // Attempt to reconnect after 5 seconds
                 if (!reconnectTimerRef.current) {
                     reconnectTimerRef.current = setTimeout(() => {
-                        console.log('🔄 Attempting WebSocket reconnection...');
+                        console.log(`🔄 Attempting WebSocket reconnection (attempt ${wsFailCountRef.current})...`);
                         connectWebSocket();
                     }, 5000);
                 }
@@ -1102,6 +1065,7 @@ const EliteChart = () => {
             wsRef.current = ws;
         } catch (error) {
             console.error('Failed to connect WebSocket:', error);
+            wsFailCountRef.current += 1;
             // Attempt to reconnect after 5 seconds on fail
             if (!reconnectTimerRef.current) {
                 reconnectTimerRef.current = setTimeout(() => {
@@ -1111,16 +1075,172 @@ const EliteChart = () => {
         }
     };
 
+    // Direct Binance WebSocket fallback (connects from user's browser, bypasses VPS)
+    const connectDirectBinance = () => {
+        const streamName = `${symbol.toLowerCase()}@kline_${interval}`;
+        const binanceEndpoints = [
+            `wss://stream.binance.com:9443/ws/${streamName}`,
+            `wss://stream.binance.us:9443/ws/${streamName}`
+        ];
+
+        const tryEndpoint = (index) => {
+            if (index >= binanceEndpoints.length) {
+                // All endpoints failed — fall back to REST polling
+                console.log('⚠️ All direct Binance WS endpoints failed. Using REST polling...');
+                startRestPolling();
+                return;
+            }
+
+            const url = binanceEndpoints[index];
+            console.log(`📡 Direct Binance WS: Connecting to ${url}...`);
+            const ws = new WebSocket(url);
+
+            ws.onopen = () => {
+                console.log('✅ Direct Binance WebSocket connected!');
+                usingDirectBinanceRef.current = true;
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const msg = JSON.parse(event.data);
+                    if (msg.k) {
+                        const kline = msg.k;
+                        handleKlineUpdate({
+                            t: kline.t,
+                            o: kline.o,
+                            h: kline.h,
+                            l: kline.l,
+                            c: kline.c,
+                            v: kline.v
+                        });
+                    }
+                } catch (error) {
+                    console.error('Direct Binance WS message error:', error);
+                }
+            };
+
+            ws.onerror = () => {
+                console.warn(`❌ Direct Binance WS failed for ${url}. Trying next...`);
+                ws.close();
+                tryEndpoint(index + 1);
+            };
+
+            ws.onclose = (event) => {
+                if (usingDirectBinanceRef.current) {
+                    console.log('🔌 Direct Binance WS disconnected. Reconnecting in 5s...');
+                    usingDirectBinanceRef.current = false;
+                    if (!reconnectTimerRef.current) {
+                        reconnectTimerRef.current = setTimeout(() => {
+                            connectDirectBinance();
+                        }, 5000);
+                    }
+                }
+            };
+
+            wsRef.current = ws;
+        };
+
+        tryEndpoint(0);
+    };
+
+    // REST polling fallback — ultimate safety net
+    const pollingTimerRef = useRef(null);
+    const startRestPolling = () => {
+        console.log('📊 Starting REST polling for live candle data...');
+        const poll = async () => {
+            try {
+                const response = await fetch(
+                    `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=1`
+                );
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        const k = data[0];
+                        handleKlineUpdate({
+                            t: k[0],
+                            o: k[1],
+                            h: k[2],
+                            l: k[3],
+                            c: k[4],
+                            v: k[5]
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('REST polling error:', error);
+            }
+        };
+        poll();
+        pollingTimerRef.current = window.setInterval(poll, 5000);
+    };
+
+    // Unified kline update handler — used by all data sources
+    const handleKlineUpdate = (kline) => {
+        const newCandle = {
+            time: parseInt(kline.t) / 1000,
+            open: parseFloat(kline.o),
+            high: parseFloat(kline.h),
+            low: parseFloat(kline.l),
+            close: parseFloat(kline.c),
+            volume: parseFloat(kline.v)
+        };
+
+        // Update chart
+        if (mainSeriesRef.current) {
+            if (chartType === 'candlestick') {
+                try {
+                    mainSeriesRef.current.update(newCandle);
+                } catch (e) {
+                    console.warn('Chart update failed:', e);
+                }
+            } else {
+                mainSeriesRef.current.update({
+                    time: newCandle.time,
+                    value: newCandle.close
+                });
+            }
+        }
+        if (volumeSeriesRef.current) {
+            volumeSeriesRef.current.update({
+                time: newCandle.time,
+                value: newCandle.volume,
+                color: newCandle.close >= newCandle.open ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'
+            });
+        }
+
+        setCurrentPrice(newCandle.close);
+        setChartData(prev => {
+            const newData = [...prev];
+            const lastCandle = newData[newData.length - 1];
+            if (lastCandle && lastCandle.time === newCandle.time) {
+                newData[newData.length - 1] = newCandle;
+            } else {
+                newData.push(newCandle);
+                if (newData.length > 1000) newData.shift();
+
+                // Re-fetch patterns on candle close if enabled
+                if (selectedIndicators.candlestickPatterns) {
+                    fetchCandlePatterns();
+                }
+            }
+            return newData;
+        });
+    };
+
     // Disconnect WebSocket
     const disconnectWebSocket = () => {
         if (reconnectTimerRef.current) {
             clearTimeout(reconnectTimerRef.current);
             reconnectTimerRef.current = null;
         }
+        if (pollingTimerRef.current) {
+            clearInterval(pollingTimerRef.current);
+            pollingTimerRef.current = null;
+        }
 
         if (wsRef.current) {
-            // Only send unsubscribe if the connection is actually open
-            if (wsRef.current.readyState === WebSocket.OPEN) {
+            // Only send unsubscribe if the connection is actually open and via backend
+            if (wsRef.current.readyState === WebSocket.OPEN && !usingDirectBinanceRef.current) {
                 wsRef.current.send(JSON.stringify({
                     type: 'unsubscribe_kline',
                     symbol: symbol.toLowerCase(),
@@ -1130,6 +1250,9 @@ const EliteChart = () => {
             wsRef.current.close();
             wsRef.current = null;
         }
+
+        usingDirectBinanceRef.current = false;
+        wsFailCountRef.current = 0;
     };
 
     // Fetch Candlestick Patterns from Backend
